@@ -1,0 +1,62 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>Webview-WebKit</artifactId>
+
+	<parent>
+		<groupId>co.casterlabs</groupId>
+		<artifactId>Webview</artifactId>
+		<version>1.0.0</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>3.2.1</version>
+				<executions>
+					<execution>
+						<id>shade</id>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<shadedArtifactAttached>true</shadedArtifactAttached>
+					<finalName>${project.artifactId}</finalName>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<repositories>
+		<repository>
+			<id>eclipse-swt-repo</id>
+			<url>https://casterlabs.github.io/eclipse-swt/maven</url>
+		</repository>
+	</repositories>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>co.casterlabs</groupId>
+			<artifactId>Webview-Abstract</artifactId>
+			<version>${project.parent.version}</version>
+			<scope>compile</scope>
+		</dependency>
+
+		<!-- https://github.com/Casterlabs/eclipse-swt -->
+		<dependency>
+			<groupId>org.eclipse.swt</groupId>
+			<artifactId>cocoa.macosx.x86_64</artifactId>
+			<version>4.22</version>
+			<scope>compile</scope>
+		</dependency>
+
+	</dependencies>
+</project>
