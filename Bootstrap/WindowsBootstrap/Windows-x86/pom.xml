@@ -2,36 +2,35 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>ExampleProject</artifactId>
-	<packaging>jar</packaging>
+	<artifactId>Windows-x86</artifactId>
 
 	<parent>
 		<groupId>co.casterlabs</groupId>
-		<artifactId>Kaimen</artifactId>
+		<artifactId>WindowsBootstrap</artifactId>
 		<version>1.0.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<dependencies>
 
-		<!-- NEVER DO THIS. -->
+		<dependency>
+			<groupId>co.casterlabs</groupId>
+			<artifactId>Windows-Common</artifactId>
+			<version>${project.parent.version}</version>
+			<scope>compile</scope>
+		</dependency>
 
+		<!-- CEF -->
 		<dependency>
-			<groupId>co.casterlabs</groupId>
-			<artifactId>Windows-amd64</artifactId>
-			<version>${project.parent.version}</version>
+			<groupId>me.friwi</groupId>
+			<artifactId>jcefmaven</artifactId>
+			<version>95.7.14.7</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
-			<groupId>co.casterlabs</groupId>
-			<artifactId>Windows-x86</artifactId>
-			<version>${project.parent.version}</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>co.casterlabs</groupId>
-			<artifactId>Windows-aarch64</artifactId>
-			<version>${project.parent.version}</version>
+			<groupId>me.friwi</groupId>
+			<artifactId>jcef-natives-windows-i386</artifactId>
+			<version>jcef-544024e+cef-95.7.14+g9f72f35+chromium-95.0.4638.69</version>
 			<scope>compile</scope>
 		</dependency>
 

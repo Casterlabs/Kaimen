@@ -2,36 +2,35 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>ExampleProject</artifactId>
-	<packaging>jar</packaging>
+	<artifactId>Windows-Common</artifactId>
 
 	<parent>
 		<groupId>co.casterlabs</groupId>
-		<artifactId>Kaimen</artifactId>
+		<artifactId>WindowsBootstrap</artifactId>
 		<version>1.0.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<dependencies>
 
-		<!-- NEVER DO THIS. -->
+		<dependency>
+			<groupId>co.casterlabs</groupId>
+			<artifactId>Webview-CEF</artifactId>
+			<version>${project.parent.version}</version>
+			<scope>compile</scope>
+		</dependency>
 
+		<!-- JNA -->
 		<dependency>
-			<groupId>co.casterlabs</groupId>
-			<artifactId>Windows-amd64</artifactId>
-			<version>${project.parent.version}</version>
+			<groupId>net.java.dev.jna</groupId>
+			<artifactId>jna</artifactId>
+			<version>5.10.0</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
-			<groupId>co.casterlabs</groupId>
-			<artifactId>Windows-x86</artifactId>
-			<version>${project.parent.version}</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>co.casterlabs</groupId>
-			<artifactId>Windows-aarch64</artifactId>
-			<version>${project.parent.version}</version>
+			<groupId>net.java.dev.jna</groupId>
+			<artifactId>jna-platform</artifactId>
+			<version>5.10.0</version>
 			<scope>compile</scope>
 		</dependency>
 
