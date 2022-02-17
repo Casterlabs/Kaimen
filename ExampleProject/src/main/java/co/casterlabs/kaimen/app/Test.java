@@ -3,11 +3,15 @@ package co.casterlabs.kaimen.app;
 import java.lang.reflect.InvocationTargetException;
 
 import co.casterlabs.kaimen.app.App.Appearance;
+import co.casterlabs.kaimen.app.ui.UIServer;
 import co.casterlabs.kaimen.util.platform.Platform;
 import co.casterlabs.kaimen.util.threading.MainThread;
 import co.casterlabs.kaimen.webview.Webview;
 import co.casterlabs.kaimen.webview.WebviewFactory;
 import co.casterlabs.kaimen.webview.WebviewLifeCycleListener;
+import co.casterlabs.rakurai.io.http.HttpResponse;
+import co.casterlabs.rakurai.io.http.StandardHttpStatus;
+import lombok.SneakyThrows;
 import xyz.e3ndr.fastloggingframework.FastLoggingFramework;
 import xyz.e3ndr.fastloggingframework.logging.FastLogger;
 import xyz.e3ndr.fastloggingframework.logging.LogLevel;
@@ -19,29 +23,62 @@ public class Test {
             try {
                 FastLoggingFramework.setDefaultLevel(LogLevel.DEBUG);
 
-                FastLogger.logStatic("Running on: %s (%s)", Platform.os, Platform.arch);
-                FastLogger.logStatic("System Appearance: %s", App.getSystemAppearance());
-
+                // Setup the app
                 App.setName("Example Application");
                 App.setAppearance(Appearance.FOLLOW_SYSTEM);
 
-                WebviewFactory factory = WebviewFactory.get();
+                // UI Server
+                UIServer uiServer = new UIServer();
 
+                uiServer.start();
+                uiServer.setHandler((session) -> {
+                    return HttpResponse.newFixedLengthResponse(
+                        StandardHttpStatus.OK,
+                        "<!DOCTYPE html>"
+                            + "<html>"
+                            + "<body style=\"text-align: center; font-family: BlinkMacSystemFont, -apple-system, 'Segoe UI', Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;\">"
+                            + "<br />"
+                            + "<br />"
+                            + "Kaimen Example App"
+                            + "<br />"
+                            + "<br />"
+                            + "<a href='https://google.com'>Open Google</a>"
+                            + "</body>"
+                            + "</html"
+                    );
+                });
+
+                // Log some stuff
+                FastLogger.logStatic("Running on: %s (%s)", Platform.os, Platform.arch);
+                FastLogger.logStatic("System Appearance: %s", App.getSystemAppearance());
+                FastLogger.logStatic("UI Server port (it's Ephemeral): %d", uiServer.getPort());
+
+                // Setup the webview
+                WebviewFactory factory = WebviewFactory.get();
                 Webview webview = factory.produce();
 
                 webview.initialize(new WebviewLifeCycleListener() {
                     @Override
                     public void onNavigate(String url) {
-                        App.setIconURL(
-                            // There's a bug in the Google favicon api, it only really supports http://
-                            // urls.
-                            "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&size=256&url=" + url.replace("https://", "http://")
-                        );
-                        FastLogger.logStatic("Navigated to: %s", url);
+                        try {
+                            App.setIconURL(
+                                // There's a bug in the Google favicon api, it only really supports http://
+                                // urls.
+                                "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&size=256&url=" + url.replace("https://", "http://")
+                            );
+                            FastLogger.logStatic("Navigated to: %s", url);
+                        } catch (Exception ignored) {}
+                    }
+
+                    @SneakyThrows
+                    @Override
+                    public void onCloseRequested() {
+                        uiServer.close();
+                        System.exit(0);
                     }
                 }, null, false, false);
 
-                webview.open("https://google.com");
+                webview.open(uiServer.getAddress());
             } catch (Exception e) {
                 e.printStackTrace();
             }
