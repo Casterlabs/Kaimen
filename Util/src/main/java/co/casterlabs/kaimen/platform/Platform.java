@@ -1,4 +1,4 @@
-package co.casterlabs.kaimen.app.platform;
+package co.casterlabs.kaimen.platform;
 
 public class Platform {
     public static final Arch arch;
