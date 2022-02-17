@@ -2,6 +2,7 @@ package co.casterlabs.kaimen.app;
 
 import java.lang.reflect.InvocationTargetException;
 
+import co.casterlabs.kaimen.app.platform.Platform;
 import co.casterlabs.kaimen.threading.MainThread;
 import co.casterlabs.kaimen.webview.Webview;
 import co.casterlabs.kaimen.webview.WebviewFactory;
@@ -13,6 +14,8 @@ public class Test {
     public static void main(String[] args) throws InvocationTargetException, InterruptedException {
         MainThread.park(() -> {
             try {
+                FastLogger.logStatic("Running on: %s (%s)", Platform.os, Platform.arch);
+
                 WebviewFactory factory = WebviewFactory.get();
 
                 factory.setAppName("Example App");
@@ -32,7 +35,7 @@ public class Test {
                     }
                 }, null, false, false);
 
-                webview.open("https://duckduckgo.com"); // It has a light theme by default
+                webview.open("https://google.com");
             } catch (Exception e) {
                 e.printStackTrace();
             }
