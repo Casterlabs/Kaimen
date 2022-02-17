@@ -21,6 +21,10 @@ public abstract class WebviewFactory implements Producer<Webview> {
         return FACTORY;
     }
 
+    /**
+     * This is used internally.
+     */
+    @Deprecated
     public abstract boolean useNuclearOption();
 
 }
