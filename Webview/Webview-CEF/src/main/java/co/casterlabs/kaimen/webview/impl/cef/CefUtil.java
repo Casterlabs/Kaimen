@@ -13,7 +13,7 @@ import me.friwi.jcefmaven.CefAppBuilder;
 public class CefUtil {
     public static final File bundleDirectory = new File("cef_bundle");
 
-    public static void create(boolean enableOsr) {
+    public static void create(boolean enableOsr, String webviewToken) {
         try {
             CefAppBuilder builder = new CefAppBuilder();
 
@@ -24,7 +24,7 @@ public class CefUtil {
 
             settings.windowless_rendering_enabled = enableOsr;
             settings.log_severity = LogSeverity.LOGSEVERITY_DISABLE;
-//            settings.user_agent_product = String.format("Chromium; Just A CasterlabsCaffeinated (%s)", Webview.STATE_PASSWORD);
+            settings.user_agent_product = String.format("Chromium; Just A Kaimen App (%s)", webviewToken);
 
             builder.setProgressHandler(new CefDownloadProgressDialog());
 
