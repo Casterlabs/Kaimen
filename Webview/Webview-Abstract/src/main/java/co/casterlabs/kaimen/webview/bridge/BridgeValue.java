@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.jetbrains.annotations.Nullable;
 
-import co.casterlabs.kaimen.util.async.AsyncTask;
+import co.casterlabs.kaimen.util.threading.AsyncTask;
 import co.casterlabs.rakurai.json.Rson;
 import co.casterlabs.rakurai.json.element.JsonElement;
 import lombok.Getter;

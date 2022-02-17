@@ -7,7 +7,7 @@ import org.eclipse.swt.widgets.Display;
 import org.jetbrains.annotations.Nullable;
 
 import co.casterlabs.kaimen.app.App;
-import co.casterlabs.kaimen.threading.MainThread;
+import co.casterlabs.kaimen.util.threading.MainThread;
 import co.casterlabs.kaimen.webview.Webview;
 import co.casterlabs.kaimen.webview.impl.webkit.WkWebview;
 import lombok.NonNull;

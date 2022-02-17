@@ -1,11 +1,10 @@
-package co.casterlabs.kaimen.threading;
+package co.casterlabs.kaimen.util.threading;
 
 import java.util.function.Consumer;
 
 import org.jetbrains.annotations.Nullable;
 
-import co.casterlabs.kaimen.util.Producer;
-import co.casterlabs.kaimen.util.async.Lock;
+import co.casterlabs.kaimen.util.functional.Producer;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.SneakyThrows;

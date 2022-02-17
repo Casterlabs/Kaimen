@@ -26,7 +26,7 @@ import org.cef.network.CefRequest.TransitionType;
 import org.jetbrains.annotations.Nullable;
 
 import co.casterlabs.kaimen.app.App;
-import co.casterlabs.kaimen.util.async.AsyncTask;
+import co.casterlabs.kaimen.util.threading.AsyncTask;
 import co.casterlabs.kaimen.webview.Webview;
 import co.casterlabs.kaimen.webview.WebviewFactory;
 import co.casterlabs.kaimen.webview.WebviewRenderer;

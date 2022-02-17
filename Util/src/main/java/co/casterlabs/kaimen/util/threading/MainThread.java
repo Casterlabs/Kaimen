@@ -1,13 +1,10 @@
-package co.casterlabs.kaimen.threading;
+package co.casterlabs.kaimen.util.threading;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
 
 import org.jetbrains.annotations.Nullable;
 
-import co.casterlabs.kaimen.util.async.AsyncTask;
-import co.casterlabs.kaimen.util.async.Lock;
-import co.casterlabs.kaimen.util.async.Promise;
 import lombok.Getter;
 import lombok.NonNull;
 import xyz.e3ndr.fastloggingframework.logging.FastLogger;

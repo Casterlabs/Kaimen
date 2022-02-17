@@ -1,4 +1,4 @@
-package co.casterlabs.kaimen.util;
+package co.casterlabs.kaimen.util.functional;
 
 public interface DualConsumer<T, D> {
 

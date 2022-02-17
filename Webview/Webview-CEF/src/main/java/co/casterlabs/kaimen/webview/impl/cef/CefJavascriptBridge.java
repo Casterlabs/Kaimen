@@ -9,8 +9,8 @@ import org.cef.browser.CefMessageRouter;
 import org.cef.callback.CefQueryCallback;
 import org.cef.handler.CefMessageRouterHandlerAdapter;
 
-import co.casterlabs.kaimen.util.async.AsyncTask;
-import co.casterlabs.kaimen.util.async.Promise;
+import co.casterlabs.kaimen.util.threading.AsyncTask;
+import co.casterlabs.kaimen.util.threading.Promise;
 import co.casterlabs.kaimen.webview.WebviewFileUtil;
 import co.casterlabs.kaimen.webview.bridge.BridgeValue;
 import co.casterlabs.kaimen.webview.bridge.WebviewBridge;

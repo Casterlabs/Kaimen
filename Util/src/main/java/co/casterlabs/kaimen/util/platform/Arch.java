@@ -1,4 +1,4 @@
-package co.casterlabs.kaimen.platform;
+package co.casterlabs.kaimen.util.platform;
 
 import java.util.regex.Pattern;
 

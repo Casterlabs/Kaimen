@@ -11,8 +11,8 @@ import javax.swing.JProgressBar;
 import javax.swing.SwingConstants;
 
 import co.casterlabs.kaimen.app.App;
-import co.casterlabs.kaimen.util.DualConsumer;
-import co.casterlabs.kaimen.util.async.AsyncTask;
+import co.casterlabs.kaimen.util.functional.DualConsumer;
+import co.casterlabs.kaimen.util.threading.AsyncTask;
 import lombok.SneakyThrows;
 import me.friwi.jcefmaven.EnumProgress;
 import me.friwi.jcefmaven.IProgressHandler;

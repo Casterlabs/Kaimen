@@ -3,8 +3,8 @@ package co.casterlabs.kaimen.app;
 import java.lang.reflect.InvocationTargetException;
 
 import co.casterlabs.kaimen.app.App.Appearance;
-import co.casterlabs.kaimen.platform.Platform;
-import co.casterlabs.kaimen.threading.MainThread;
+import co.casterlabs.kaimen.util.platform.Platform;
+import co.casterlabs.kaimen.util.threading.MainThread;
 import co.casterlabs.kaimen.webview.Webview;
 import co.casterlabs.kaimen.webview.WebviewFactory;
 import co.casterlabs.kaimen.webview.WebviewLifeCycleListener;

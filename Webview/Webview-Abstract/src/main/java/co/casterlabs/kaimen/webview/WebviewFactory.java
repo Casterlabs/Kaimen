@@ -1,7 +1,7 @@
 package co.casterlabs.kaimen.webview;
 
-import co.casterlabs.kaimen.platform.Platform;
-import co.casterlabs.kaimen.util.Producer;
+import co.casterlabs.kaimen.util.functional.Producer;
+import co.casterlabs.kaimen.util.platform.Platform;
 import xyz.e3ndr.fastloggingframework.logging.FastLogger;
 import xyz.e3ndr.fastloggingframework.logging.LogLevel;
 import xyz.e3ndr.reflectionlib.ReflectionLib;

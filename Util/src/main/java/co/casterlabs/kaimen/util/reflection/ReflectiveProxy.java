@@ -1,4 +1,4 @@
-package co.casterlabs.kaimen.util;
+package co.casterlabs.kaimen.util.reflection;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;

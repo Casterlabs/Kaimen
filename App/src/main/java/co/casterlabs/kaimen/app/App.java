@@ -9,7 +9,7 @@ import org.jetbrains.annotations.Nullable;
 
 import com.jthemedetecor.OsThemeDetector;
 
-import co.casterlabs.kaimen.platform.Platform;
+import co.casterlabs.kaimen.util.platform.Platform;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.SneakyThrows;

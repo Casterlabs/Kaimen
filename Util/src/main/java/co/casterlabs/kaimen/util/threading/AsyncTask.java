@@ -1,4 +1,4 @@
-package co.casterlabs.kaimen.util.async;
+package co.casterlabs.kaimen.util.threading;
 
 import lombok.NonNull;
 

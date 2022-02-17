@@ -7,7 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import co.casterlabs.kaimen.util.DualConsumer;
+import co.casterlabs.kaimen.util.functional.DualConsumer;
 import co.casterlabs.rakurai.json.element.JsonElement;
 import co.casterlabs.rakurai.json.element.JsonObject;
 import lombok.NonNull;

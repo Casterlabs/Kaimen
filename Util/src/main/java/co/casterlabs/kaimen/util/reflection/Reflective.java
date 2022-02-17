@@ -1,4 +1,4 @@
-package co.casterlabs.kaimen.util;
+package co.casterlabs.kaimen.util.reflection;
 
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
