@@ -12,12 +12,26 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
+	<repositories>
+		<repository>
+			<id>jitpack.io</id>
+			<url>https://jitpack.io</url>
+		</repository>
+	</repositories>
+
 	<dependencies>
 
 		<dependency>
 			<groupId>co.casterlabs</groupId>
 			<artifactId>Webview-Abstract</artifactId>
 			<version>${project.parent.version}</version>
+			<scope>compile</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.github.Dansoftowner</groupId>
+			<artifactId>jSystemThemeDetector</artifactId>
+			<version>3.8</version>
 			<scope>compile</scope>
 		</dependency>
 

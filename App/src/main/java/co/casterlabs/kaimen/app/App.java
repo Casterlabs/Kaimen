@@ -1,8 +1,13 @@
 package co.casterlabs.kaimen.app;
 
 import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.function.Consumer;
 
 import org.jetbrains.annotations.Nullable;
+
+import com.jthemedetecor.OsThemeDetector;
 
 import co.casterlabs.kaimen.platform.Platform;
 import lombok.Getter;
@@ -16,6 +21,10 @@ public abstract class App {
     private static @Getter String name = "Kaimen Application";
     private static @Getter Appearance appearance;
     private static @Getter @Nullable URL iconURL;
+
+    private static OsThemeDetector themeDetector = OsThemeDetector.getDetector();
+
+    private static Set<Consumer<Appearance>> systemThemeChangeListeners = new HashSet<>();
 
     static {
         ClassLoader.getSystemClassLoader().setDefaultAssertionStatus(true); // Enable assertions.
@@ -35,10 +44,42 @@ public abstract class App {
                     break;
             }
 
-            setAppearance(Appearance.LIGHT); // Default.
+            setAppearance(Appearance.FOLLOW_SYSTEM);
+
+            themeDetector.registerListener((ignored) -> {
+                if (appearance == Appearance.FOLLOW_SYSTEM) {
+                    instance.setAppearance0(appearance);
+
+                    Appearance a = getSystemAppearance();
+
+                    systemThemeChangeListeners.forEach((l) -> l.accept(a));
+                }
+            });
         } catch (Exception e) {
             throw new RuntimeException("Failed to find bootstrap:", e);
         }
+    }
+
+    /* Impl */
+
+    protected abstract void setName0(@NonNull String name);
+
+    protected abstract void setAppearance0(@NonNull Appearance appearance);
+
+    protected abstract void setIcon0(@Nullable URL url);
+
+    protected @NonNull Appearance getSystemAppearance0() {
+        return themeDetector.isDark() ? Appearance.DARK : Appearance.LIGHT;
+    }
+
+    /* Public */
+
+    public static void addSystemThemeChangeListener(@NonNull Consumer<Appearance> listener) {
+        systemThemeChangeListeners.add(listener);
+    }
+
+    public static void removeSystemThemeChangeListener(@NonNull Consumer<Appearance> listener) {
+        systemThemeChangeListeners.remove(listener);
     }
 
     public static void setName(@NonNull String newName) {
@@ -66,21 +107,22 @@ public abstract class App {
         }
     }
 
-    public static enum Appearance {
-        DARK,
-        LIGHT;
-
-        public boolean isDark() {
-            return this == DARK;
-        }
+    public static @NonNull Appearance getSystemAppearance() {
+        return instance.getSystemAppearance0();
     }
 
-    /* Impl */
+    public static enum Appearance {
+        DARK,
+        LIGHT,
+        FOLLOW_SYSTEM;
 
-    protected abstract void setName0(@NonNull String name);
-
-    protected abstract void setAppearance0(@NonNull Appearance appearance);
-
-    protected abstract void setIcon0(@Nullable URL url);
+        public boolean isDark() {
+            if (this == FOLLOW_SYSTEM) {
+                return getSystemAppearance() == DARK;
+            } else {
+                return this == DARK;
+            }
+        }
+    }
 
 }

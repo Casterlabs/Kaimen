@@ -18,7 +18,7 @@ public class MacOSBootstrap extends App {
         MainThread.submitTask(() -> {
             // Init the display for the main thread.
             // We need to create atleast one display for OS.setTheme() to work.
-            Display.getDefault();
+            new Display();
         });
     }
 
