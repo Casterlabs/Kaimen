@@ -27,4 +27,6 @@ public abstract class WebviewFactory implements Producer<Webview> {
     @Deprecated
     public abstract boolean useNuclearOption();
 
+    public abstract WebviewRenderer getRendererType();
+
 }

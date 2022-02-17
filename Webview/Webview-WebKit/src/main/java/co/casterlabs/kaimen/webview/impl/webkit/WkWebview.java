@@ -25,6 +25,7 @@ import co.casterlabs.kaimen.threading.MainThreadPromise;
 import co.casterlabs.kaimen.util.async.AsyncTask;
 import co.casterlabs.kaimen.webview.Webview;
 import co.casterlabs.kaimen.webview.WebviewFactory;
+import co.casterlabs.kaimen.webview.WebviewRenderer;
 import co.casterlabs.kaimen.webview.bridge.WebviewBridge;
 import co.casterlabs.rakurai.json.Rson;
 import co.casterlabs.rakurai.json.element.JsonArray;
@@ -81,6 +82,11 @@ public class WkWebview extends Webview {
         @Override
         public boolean useNuclearOption() {
             return true;
+        }
+
+        @Override
+        public WebviewRenderer getRendererType() {
+            return WebviewRenderer.WEBKIT;
         }
 
         // TODO macOS Bootstrap

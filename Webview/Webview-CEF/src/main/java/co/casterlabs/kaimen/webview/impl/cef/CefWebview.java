@@ -29,6 +29,7 @@ import co.casterlabs.kaimen.app.App;
 import co.casterlabs.kaimen.util.async.AsyncTask;
 import co.casterlabs.kaimen.webview.Webview;
 import co.casterlabs.kaimen.webview.WebviewFactory;
+import co.casterlabs.kaimen.webview.WebviewRenderer;
 import co.casterlabs.kaimen.webview.bridge.WebviewBridge;
 import lombok.Getter;
 import lombok.NonNull;
@@ -39,6 +40,7 @@ import xyz.e3ndr.fastloggingframework.logging.FastLogger;
 public class CefWebview extends Webview {
 
     public static final WebviewFactory FACTORY = new WebviewFactory() {
+
         @Override
         public @Nullable Webview produce() throws Exception {
             return new CefWebview();
@@ -48,6 +50,11 @@ public class CefWebview extends Webview {
         public boolean useNuclearOption() {
             // The scheme only works on Windows for some dumb reason.
             return ConsoleUtil.getPlatform() != JavaPlatform.WINDOWS;
+        }
+
+        @Override
+        public WebviewRenderer getRendererType() {
+            return WebviewRenderer.CHROMIUM_EMBEDDED_FRAMEWORK;
         }
 
     };
