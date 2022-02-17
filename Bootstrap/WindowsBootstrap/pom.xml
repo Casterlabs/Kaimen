@@ -20,6 +20,20 @@
 			<scope>compile</scope>
 		</dependency>
 
+		<!-- CEF -->
+		<dependency>
+			<groupId>me.friwi</groupId>
+			<artifactId>jcefmaven</artifactId>
+			<version>95.7.14.7</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>me.friwi</groupId>
+			<artifactId>jcef-natives-windows-amd64</artifactId>
+			<version>jcef-544024e+cef-95.7.14+g9f72f35+chromium-95.0.4638.69</version>
+			<scope>compile</scope>
+		</dependency>
+
 		<!-- JNA -->
 		<dependency>
 			<groupId>net.java.dev.jna</groupId>
