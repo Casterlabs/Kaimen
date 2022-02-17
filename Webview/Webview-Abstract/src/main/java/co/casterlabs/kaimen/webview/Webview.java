@@ -92,4 +92,8 @@ public abstract class Webview {
 
     public abstract boolean isOpen();
 
+    public void reload() {
+        this.loadURL(this.getCurrentURL());
+    }
+
 }
