@@ -1,6 +1,9 @@
 package co.casterlabs.kaimen.webview;
 
+import co.casterlabs.kaimen.platform.Platform;
 import co.casterlabs.kaimen.util.Producer;
+import xyz.e3ndr.fastloggingframework.logging.FastLogger;
+import xyz.e3ndr.fastloggingframework.logging.LogLevel;
 import xyz.e3ndr.reflectionlib.ReflectionLib;
 
 public abstract class WebviewFactory implements Producer<Webview> {
@@ -8,12 +11,53 @@ public abstract class WebviewFactory implements Producer<Webview> {
 
     static {
         try {
-            FACTORY = ReflectionLib.getStaticValue(Class.forName("co.casterlabs.kaimen.webview.impl.webkit.WkWebview"), "FACTORY");
-        } catch (Exception ignored) {}
+            Class<?> wkWebview = null;
+            Class<?> cefWebview = null;
 
-        try {
-            FACTORY = ReflectionLib.getStaticValue(Class.forName("co.casterlabs.kaimen.webview.impl.cef.CefWebview"), "FACTORY");
-        } catch (Exception ignored) {}
+            try {
+                wkWebview = Class.forName("co.casterlabs.kaimen.webview.impl.webkit.WkWebview");
+            } catch (Exception ignored) {}
+
+            try {
+                cefWebview = Class.forName("co.casterlabs.kaimen.webview.impl.cef.CefWebview");
+            } catch (Exception ignored) {}
+
+            switch (Platform.os) {
+                case MACOSX:
+                    if (wkWebview != null) {
+                        FACTORY = ReflectionLib.getStaticValue(wkWebview, "FACTORY");
+                        break;
+                    } else {
+                        break;
+                    }
+
+                case LINUX:
+                case WINDOWS:
+                    if (cefWebview != null) {
+                        FACTORY = ReflectionLib.getStaticValue(cefWebview, "FACTORY");
+                        break;
+                    } else {
+                        break;
+                    }
+            }
+
+            if (FACTORY == null) {
+                if ((wkWebview == null) && (cefWebview == null)) {
+                    FastLogger.logStatic(LogLevel.SEVERE, "Could not find any webviews. Is your project configured correctly?");
+                    throw new RuntimeException();
+                } else {
+                    FastLogger.logStatic(LogLevel.WARNING, "Could not find appropriate webview for %s. Is your project configured correctly? Using fallback.", Platform.os);
+
+                    if (wkWebview != null) {
+                        FACTORY = ReflectionLib.getStaticValue(wkWebview, "FACTORY");
+                    } else {
+                        FACTORY = ReflectionLib.getStaticValue(cefWebview, "FACTORY");
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static WebviewFactory get() {

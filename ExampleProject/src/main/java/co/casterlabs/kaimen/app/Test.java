@@ -2,7 +2,7 @@ package co.casterlabs.kaimen.app;
 
 import java.lang.reflect.InvocationTargetException;
 
-import co.casterlabs.kaimen.app.platform.Platform;
+import co.casterlabs.kaimen.platform.Platform;
 import co.casterlabs.kaimen.threading.MainThread;
 import co.casterlabs.kaimen.webview.Webview;
 import co.casterlabs.kaimen.webview.WebviewFactory;
@@ -17,7 +17,7 @@ public class Test {
                 FastLogger.logStatic("Running on: %s (%s)", Platform.os, Platform.arch);
 
                 App.setAppName("Example Application");
-                App.setTheme(true);
+                App.setTheme(false);
 
                 WebviewFactory factory = WebviewFactory.get();
 

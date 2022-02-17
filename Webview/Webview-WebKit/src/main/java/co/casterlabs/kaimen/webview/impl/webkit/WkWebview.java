@@ -43,7 +43,7 @@ public class WkWebview extends Webview {
     static {
         MainThread.submitTask(() -> {
             if (display == null) {
-                display = Display.getDefault();
+                display = Display.getCurrent();
             }
 
             // We implement our own event loop for the MainThread.
@@ -89,30 +89,6 @@ public class WkWebview extends Webview {
             return WebviewRenderer.WEBKIT;
         }
 
-        // TODO macOS Bootstrap
-//        @Override
-//        protected void setIcon0(@NonNull URL icon) {
-//            for (WeakReference<Webview> wv : webviews) {
-//                ((WkWebview) wv.get()).changeImage(icon);
-//            }
-//        }
-//
-//        @Override
-//        protected void setDarkMode0(boolean isDarkMode) {
-//            MainThread.submitTask(() -> {
-//                OS.setTheme(isDarkMode);
-//            });
-//        }
-//
-//        @Override
-//        protected void setAppName0(@Nullable String name) {
-//            Display.setAppName(name);
-//
-//            for (WeakReference<Webview> wv : webviews) {
-//                ((WkWebview) wv.get()).updateTitle();
-//            }
-//        }
-
     };
 
     static {
@@ -133,7 +109,7 @@ public class WkWebview extends Webview {
     protected void initialize0() {
         MainThread.submitTaskAndWait(this::mt_initialize);
 
-//        this.changeImage(WebviewFactory.getCurrentIcon());
+        this.changeImage(App.getIconURL());
     }
 
     private void mt_initialize() {
@@ -333,7 +309,7 @@ public class WkWebview extends Webview {
     }
 
     @SneakyThrows
-    private void changeImage(URL icon) {
+    public void changeImage(URL icon) {
         if (icon != null) {
             try (InputStream in = icon.openStream()) {
                 Image image = new Image(display, in);

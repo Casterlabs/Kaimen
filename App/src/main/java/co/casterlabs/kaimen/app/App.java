@@ -4,7 +4,7 @@ import java.net.URL;
 
 import org.jetbrains.annotations.Nullable;
 
-import co.casterlabs.kaimen.app.platform.Platform;
+import co.casterlabs.kaimen.platform.Platform;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.SneakyThrows;

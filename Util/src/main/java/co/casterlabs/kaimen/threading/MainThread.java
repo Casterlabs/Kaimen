@@ -8,19 +8,21 @@ import org.jetbrains.annotations.Nullable;
 import co.casterlabs.kaimen.util.async.AsyncTask;
 import co.casterlabs.kaimen.util.async.Lock;
 import co.casterlabs.kaimen.util.async.Promise;
+import lombok.Getter;
 import lombok.NonNull;
 import xyz.e3ndr.fastloggingframework.logging.FastLogger;
 import xyz.e3ndr.fastloggingframework.logging.LogLevel;
 
 public class MainThread {
     private static Deque<Runnable> taskQueue = new ArrayDeque<>();
-    private static Thread mainThread;
     private static Lock lock;
 
-    public static void park(@Nullable Runnable continued) {
-        assert mainThread == null : "Already parked.";
+    private static @Getter Thread thread;
 
-        mainThread = Thread.currentThread();
+    public static void park(@Nullable Runnable continued) {
+        assert thread == null : "Already parked.";
+
+        thread = Thread.currentThread();
         lock = new Lock(); // Create the resource on THIS thread.
 
         if (continued != null) {
@@ -121,7 +123,7 @@ public class MainThread {
     }
 
     public static boolean isMainThread() {
-        return Thread.currentThread() == mainThread;
+        return Thread.currentThread() == thread;
     }
 
 }
