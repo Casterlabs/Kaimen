@@ -24,7 +24,9 @@ public class CefUtil {
 
             settings.windowless_rendering_enabled = enableOsr;
             settings.log_severity = LogSeverity.LOGSEVERITY_DISABLE;
-            settings.user_agent_product = String.format("Chromium; Just A Kaimen App (%s)", webviewToken);
+
+            // TODO figure out how to keep this up-to-date
+            settings.user_agent_product = String.format("Chrome/95.0.4638.69 Kaimen (%s)", webviewToken);
 
             builder.setProgressHandler(new CefDownloadProgressDialog());
 
