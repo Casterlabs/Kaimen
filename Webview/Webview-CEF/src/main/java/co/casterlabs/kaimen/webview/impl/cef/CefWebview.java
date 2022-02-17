@@ -6,8 +6,6 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.lang.ref.WeakReference;
-import java.net.URL;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -27,6 +25,7 @@ import org.cef.handler.CefLoadHandlerAdapter;
 import org.cef.network.CefRequest.TransitionType;
 import org.jetbrains.annotations.Nullable;
 
+import co.casterlabs.kaimen.app.App;
 import co.casterlabs.kaimen.util.async.AsyncTask;
 import co.casterlabs.kaimen.webview.Webview;
 import co.casterlabs.kaimen.webview.WebviewFactory;
@@ -36,7 +35,6 @@ import lombok.NonNull;
 import xyz.e3ndr.consoleutil.ConsoleUtil;
 import xyz.e3ndr.consoleutil.platform.JavaPlatform;
 import xyz.e3ndr.fastloggingframework.logging.FastLogger;
-import xyz.e3ndr.fastloggingframework.logging.LogLevel;
 
 public class CefWebview extends Webview {
 
@@ -52,31 +50,12 @@ public class CefWebview extends Webview {
             return ConsoleUtil.getPlatform() != JavaPlatform.WINDOWS;
         }
 
-        @Override
-        protected void setIcon0(@NonNull URL icon) {
-            for (WeakReference<Webview> wv : webviews) {
-                ((CefWebview) wv.get()).updateAppIcon(icon);
-            }
-        }
-
-        @Override
-        protected void setDarkMode0(boolean isDarkMode) {
-            ThemeableJFrame.setDarkMode(isDarkMode);
-        }
-
-        @Override
-        protected void setAppName0(@NonNull String name) {
-            for (WeakReference<Webview> wv : webviews) {
-                ((CefWebview) wv.get()).updateTitle();
-            }
-        }
-
     };
 
     private static FastLogger logger = new FastLogger();
     private static boolean cefInitialized = false;
 
-    private ThemeableJFrame frame;
+    private JFrame frame;
     private JPanel cefPanel;
 
     private CefClient client;
@@ -99,15 +78,17 @@ public class CefWebview extends Webview {
         this.cefPanel = new JPanel();
         this.cefPanel.setLayout(new BorderLayout(0, 0));
 
-        // Create the frame.
-        this.frame = ThemeableJFrame.FACTORY.produce();
-
         Timer saveTimer = new Timer(500, (e) -> {
             this.windowState.update();
         });
         saveTimer.setRepeats(false);
 
-        this.updateAppIcon(WebviewFactory.getCurrentIcon());
+        // Create the frame.
+        this.frame = new JFrame();
+
+        if (App.getIconURL() != null) {
+            this.frame.setIconImage(new ImageIcon(App.getIconURL()).getImage());
+        }
 
         this.frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
@@ -234,18 +215,12 @@ public class CefWebview extends Webview {
         logger.debug("Loadstate 0");
         this.getLifeCycleListener().onBrowserPreLoad();
         this.client.addLoadHandler(new CefLoadHandlerAdapter() {
-            // 0 = about:blank (preload)
-            // 1 = app://index (load)
-            // 2 = ... (completely loaded)
-            private int loadState = 0;
 
             @Override
             public void onLoadEnd(CefBrowser _browser, CefFrame _frame, int httpStatusCode) {
-                if (this.loadState == 0) {
-                    logger.debug("Loadstate 1");
-                    this.loadState = 2;
-                    logger.debug("Loadstate 2");
-                }
+                new AsyncTask(() -> {
+                    getLifeCycleListener().onNavigate(getCurrentURL());
+                });
             }
 
             @Override
@@ -282,18 +257,20 @@ public class CefWebview extends Webview {
                     pageTitle = title;
                 }
 
+                new AsyncTask(() -> {
+                    getLifeCycleListener().onPageTitleChange(pageTitle);
+                });
+
                 updateTitle();
             }
         });
+
+        App.setTheme(App.isUsingDarkTheme()); // Trigger the set.
     }
 
-    private void updateTitle() {
+    public void updateTitle() {
         new AsyncTask(() -> {
-            StringBuilder title = new StringBuilder();
-
-            if (WebviewFactory.getAppName() != null) {
-                title.append(WebviewFactory.getAppName());
-            }
+            StringBuilder title = new StringBuilder(App.getAppName());
 
             if (this.pageTitle != null) {
                 if (title.length() > 0) {
@@ -372,15 +349,6 @@ public class CefWebview extends Webview {
 
             // Notify
             this.getLifeCycleListener().onBrowserClose();
-        }
-    }
-
-    private void updateAppIcon(@Nullable URL icon) {
-        if (icon != null) {
-            ImageIcon img = new ImageIcon(icon);
-            this.frame.setIconImage(img.getImage());
-
-            FastLogger.logStatic(LogLevel.DEBUG, "Set app icon to %s.", icon);
         }
     }
 

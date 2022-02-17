@@ -1,7 +1,6 @@
 package co.casterlabs.kaimen.webview.impl.webkit;
 
 import java.io.InputStream;
-import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
@@ -15,12 +14,12 @@ import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.internal.cocoa.OS;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.jetbrains.annotations.Nullable;
 
+import co.casterlabs.kaimen.app.App;
 import co.casterlabs.kaimen.threading.MainThread;
 import co.casterlabs.kaimen.threading.MainThreadPromise;
 import co.casterlabs.kaimen.util.async.AsyncTask;
@@ -84,28 +83,29 @@ public class WkWebview extends Webview {
             return true;
         }
 
-        @Override
-        protected void setIcon0(@NonNull URL icon) {
-            for (WeakReference<Webview> wv : webviews) {
-                ((WkWebview) wv.get()).changeImage(icon);
-            }
-        }
-
-        @Override
-        protected void setDarkMode0(boolean isDarkMode) {
-            MainThread.submitTask(() -> {
-                OS.setTheme(isDarkMode);
-            });
-        }
-
-        @Override
-        protected void setAppName0(@Nullable String name) {
-            Display.setAppName(name);
-
-            for (WeakReference<Webview> wv : webviews) {
-                ((WkWebview) wv.get()).updateTitle();
-            }
-        }
+        // TODO macOS Bootstrap
+//        @Override
+//        protected void setIcon0(@NonNull URL icon) {
+//            for (WeakReference<Webview> wv : webviews) {
+//                ((WkWebview) wv.get()).changeImage(icon);
+//            }
+//        }
+//
+//        @Override
+//        protected void setDarkMode0(boolean isDarkMode) {
+//            MainThread.submitTask(() -> {
+//                OS.setTheme(isDarkMode);
+//            });
+//        }
+//
+//        @Override
+//        protected void setAppName0(@Nullable String name) {
+//            Display.setAppName(name);
+//
+//            for (WeakReference<Webview> wv : webviews) {
+//                ((WkWebview) wv.get()).updateTitle();
+//            }
+//        }
 
     };
 
@@ -127,7 +127,7 @@ public class WkWebview extends Webview {
     protected void initialize0() {
         MainThread.submitTaskAndWait(this::mt_initialize);
 
-        this.changeImage(WebviewFactory.getCurrentIcon());
+//        this.changeImage(WebviewFactory.getCurrentIcon());
     }
 
     private void mt_initialize() {
@@ -339,13 +339,9 @@ public class WkWebview extends Webview {
         }
     }
 
-    private void updateTitle() {
+    public void updateTitle() {
         new AsyncTask(() -> {
-            StringBuilder title = new StringBuilder();
-
-            if (WebviewFactory.getAppName() != null) {
-                title.append(WebviewFactory.getAppName());
-            }
+            StringBuilder title = new StringBuilder(App.getAppName());
 
             if (this.pageTitle != null) {
                 if (title.length() > 0) {

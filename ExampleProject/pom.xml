@@ -2,8 +2,8 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>Bootstrap</artifactId>
-	<packaging>pom</packaging>
+	<artifactId>ExampleProject</artifactId>
+	<packaging>jar</packaging>
 
 	<parent>
 		<groupId>co.casterlabs</groupId>
@@ -12,8 +12,14 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<modules>
-		<module>WindowsBootstrap</module>
-	</modules>
+	<dependencies>
 
+		<dependency>
+			<groupId>co.casterlabs</groupId>
+			<artifactId>WindowsBootstrap</artifactId>
+			<version>${project.parent.version}</version>
+			<scope>compile</scope>
+		</dependency>
+
+	</dependencies>
 </project>

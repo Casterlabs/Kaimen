@@ -39,6 +39,16 @@ public abstract class Webview {
         webviews.remove(this.$ref);
     }
 
+    public static List<Webview> getActiveWebviews() {
+        List<Webview> list = new LinkedList<>();
+
+        for (WeakReference<Webview> $ref : webviews) {
+            list.add($ref.get());
+        }
+
+        return list;
+    }
+
     public final void initialize(@Nullable WebviewLifeCycleListener lifeCycleListener, @Nullable WebviewWindowState windowState, boolean offScreenRenderingEnabled, boolean transparencyEnabled) throws Exception {
         assert !this.initialized : "Webview is already initialized.";
 

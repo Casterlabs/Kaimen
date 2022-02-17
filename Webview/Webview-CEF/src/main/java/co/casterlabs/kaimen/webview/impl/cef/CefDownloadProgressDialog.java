@@ -10,6 +10,7 @@ import javax.swing.JLabel;
 import javax.swing.JProgressBar;
 import javax.swing.SwingConstants;
 
+import co.casterlabs.kaimen.app.App;
 import co.casterlabs.kaimen.util.DualConsumer;
 import co.casterlabs.kaimen.util.async.AsyncTask;
 import lombok.SneakyThrows;
@@ -62,7 +63,7 @@ public class CefDownloadProgressDialog implements IProgressHandler, Closeable {
         frame.setResizable(false);
         frame.setSize(300, 100);
         frame.setAlwaysOnTop(true);
-        frame.setTitle("Kaimen - Debug");
+        frame.setTitle(App.getAppName());
 
         frame.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
         frame.addWindowListener(new WindowAdapter() {

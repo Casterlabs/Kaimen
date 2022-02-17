@@ -12,6 +12,7 @@
 		<module>Webview</module>
 		<module>App</module>
 		<module>Bootstrap</module>
+		<module>ExampleProject</module>
 	</modules>
 
 	<properties>
