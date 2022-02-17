@@ -22,14 +22,14 @@ import xyz.e3ndr.fastloggingframework.logging.LogLevel;
 public class WindowsBootstrap extends App {
 
     @Override
-    protected void setAppName0(@NonNull String name) {
+    protected void setName0(@NonNull String name) {
         for (Webview wv : Webview.getActiveWebviews()) {
             ((CefWebview) wv).updateTitle();
         }
     }
 
     @Override
-    protected void setTheme0(boolean useDark) {
+    protected void setAppearance0(@NonNull Appearance appearance) {
         for (Window window : Window.getWindows()) {
             window.setVisible(true); // Make it visible, if not already.
 
@@ -49,7 +49,7 @@ public class WindowsBootstrap extends App {
              */
 
             HWND hwnd = DWM.getHWND(window);
-            BOOLByReference pvAttribute = new BOOLByReference(new BOOL(useDark));
+            BOOLByReference pvAttribute = new BOOLByReference(new BOOL(appearance.isDark()));
 
             DWM.INSTANCE.DwmSetWindowAttribute(
                 hwnd,
@@ -67,8 +67,8 @@ public class WindowsBootstrap extends App {
 
             FastLogger.logStatic(
                 LogLevel.DEBUG,
-                "Set IMMERSIVE_DARK_MODE and DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 to %b.",
-                useDark
+                "Set IMMERSIVE_DARK_MODE and USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 to %b.",
+                appearance.isDark()
             );
 
             // Tricks Windows into repainting the window.
@@ -78,7 +78,7 @@ public class WindowsBootstrap extends App {
     }
 
     @Override
-    protected void setAppIcon0(@Nullable URL url) {
+    protected void setIcon0(@Nullable URL url) {
         for (Window window : Window.getWindows()) {
             if (url == null) {
                 window.setIconImages(Collections.emptyList());

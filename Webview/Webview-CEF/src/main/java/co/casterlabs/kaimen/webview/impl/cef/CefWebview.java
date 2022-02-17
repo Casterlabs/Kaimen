@@ -272,12 +272,12 @@ public class CefWebview extends Webview {
             }
         });
 
-        App.setTheme(App.isUsingDarkTheme()); // Trigger the set.
+        App.setAppearance(App.getAppearance()); // Trigger the set.
     }
 
     public void updateTitle() {
         new AsyncTask(() -> {
-            StringBuilder title = new StringBuilder(App.getAppName());
+            StringBuilder title = new StringBuilder(App.getName());
 
             if (this.pageTitle != null) {
                 if (title.length() > 0) {

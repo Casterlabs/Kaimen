@@ -323,7 +323,7 @@ public class WkWebview extends Webview {
 
     public void updateTitle() {
         new AsyncTask(() -> {
-            StringBuilder title = new StringBuilder(App.getAppName());
+            StringBuilder title = new StringBuilder(App.getName());
 
             if (this.pageTitle != null) {
                 if (title.length() > 0) {

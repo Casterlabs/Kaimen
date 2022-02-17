@@ -13,8 +13,8 @@ import lombok.SneakyThrows;
 public abstract class App {
     private static App instance;
 
-    private static @Getter String appName = "Kaimen Application";
-    private static @Getter boolean usingDarkTheme = false;
+    private static @Getter String name = "Kaimen Application";
+    private static @Getter Appearance appearance;
     private static @Getter @Nullable URL iconURL;
 
     static {
@@ -34,42 +34,53 @@ public abstract class App {
                     instance = (App) Class.forName("co.casterlabs.kaimen.bootstrap.impl.windows.WindowsBootstrap").newInstance();
                     break;
             }
+
+            setAppearance(Appearance.LIGHT); // Default.
         } catch (Exception e) {
             throw new RuntimeException("Failed to find bootstrap:", e);
         }
     }
 
-    public static void setAppName(@NonNull String name) {
-        assert !name.isEmpty() : "App name must not be empty.";
-        appName = name;
-        instance.setAppName0(name);
+    public static void setName(@NonNull String newName) {
+        assert !newName.isEmpty() : "App name must not be empty.";
+        name = newName;
+        instance.setName0(name);
     }
 
-    public static void setTheme(boolean useDark) {
-        usingDarkTheme = useDark;
-        instance.setTheme0(useDark);
+    public static void setAppearance(@NonNull Appearance newAppearance) {
+        appearance = newAppearance;
+        instance.setAppearance0(appearance);
     }
 
-    public static void setAppIcon(@Nullable URL url) {
+    public static void setIcon(@Nullable URL url) {
         iconURL = url;
-        instance.setAppIcon0(url);
+        instance.setIcon0(url);
     }
 
     @SneakyThrows
-    public static void setAppIconURL(@Nullable String url) {
+    public static void setIconURL(@Nullable String url) {
         if (url == null) {
-            setAppIcon(null);
+            setIcon(null);
         } else {
-            setAppIcon(new URL(url));
+            setIcon(new URL(url));
+        }
+    }
+
+    public static enum Appearance {
+        DARK,
+        LIGHT;
+
+        public boolean isDark() {
+            return this == DARK;
         }
     }
 
     /* Impl */
 
-    protected abstract void setAppName0(@NonNull String name);
+    protected abstract void setName0(@NonNull String name);
 
-    protected abstract void setTheme0(boolean useDark);
+    protected abstract void setAppearance0(@NonNull Appearance appearance);
 
-    protected abstract void setAppIcon0(@Nullable URL url);
+    protected abstract void setIcon0(@Nullable URL url);
 
 }

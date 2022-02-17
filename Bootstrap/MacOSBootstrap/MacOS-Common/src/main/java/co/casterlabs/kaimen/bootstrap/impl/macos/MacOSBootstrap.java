@@ -23,7 +23,7 @@ public class MacOSBootstrap extends App {
     }
 
     @Override
-    protected void setAppName0(@NonNull String name) {
+    protected void setName0(@NonNull String name) {
         Display.setAppName(name);
 
         for (Webview wv : Webview.getActiveWebviews()) {
@@ -32,14 +32,14 @@ public class MacOSBootstrap extends App {
     }
 
     @Override
-    protected void setTheme0(boolean useDark) {
+    protected void setAppearance0(@NonNull Appearance appearance) {
         MainThread.submitTask(() -> {
-            OS.setTheme(useDark);
+            OS.setTheme(appearance.isDark());
         });
     }
 
     @Override
-    protected void setAppIcon0(@Nullable URL url) {
+    protected void setIcon0(@Nullable URL url) {
         for (Webview wv : Webview.getActiveWebviews()) {
             ((WkWebview) wv).changeImage(url);
         }

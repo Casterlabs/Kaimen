@@ -16,8 +16,8 @@ public class Test {
             try {
                 FastLogger.logStatic("Running on: %s (%s)", Platform.os, Platform.arch);
 
-                App.setAppName("Example Application");
-                App.setTheme(false);
+                App.setName("Example Application");
+                App.setAppearance(App.Appearance.LIGHT);
 
                 WebviewFactory factory = WebviewFactory.get();
 
@@ -26,7 +26,7 @@ public class Test {
                 webview.initialize(new WebviewLifeCycleListener() {
                     @Override
                     public void onNavigate(String url) {
-                        App.setAppIconURL(
+                        App.setIconURL(
                             // There's a bug in the Google favicon api, it only really supports http://
                             // urls.
                             "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&size=256&url=" + url.replace("https://", "http://")
