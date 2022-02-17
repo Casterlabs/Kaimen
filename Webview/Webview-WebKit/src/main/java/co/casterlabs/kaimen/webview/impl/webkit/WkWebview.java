@@ -41,39 +41,8 @@ import xyz.e3ndr.reflectionlib.ReflectionLib;
 
 @SuppressWarnings("deprecation")
 public class WkWebview extends Webview {
+    private static boolean initialized = false;
     private static Display display;
-
-    static {
-        MainThread.submitTask(() -> {
-            if (display == null) {
-                display = Display.getCurrent();
-            }
-
-            // We implement our own event loop for the MainThread.
-            while (true) {
-
-                if (display.isDisposed()) {
-                    // SWT GOT KILLED, THE END IS NEIGH.
-                    System.exit(0);
-                    return;
-                } else {
-
-                    // Let the main thread do some work (since we're blocking it right now)
-                    MainThread.processTaskQueue();
-
-                    // Execute the SWT dispatch and sleep if there is no more work to be done.
-                    if (!display.readAndDispatch()) {
-                        // We can't use display.sleep() or implement something similar in MainThread
-                        // because they are separate systems without messaging, doing so would mean we
-                        // would forfeit priority to one or the other.
-                        try {
-                            Thread.sleep(100);
-                        } catch (InterruptedException ignored) {}
-                    }
-                }
-            }
-        });
-    }
 
     public static final WebviewFactory FACTORY = new WebviewFactory() {
 
@@ -110,6 +79,39 @@ public class WkWebview extends Webview {
     @SneakyThrows
     @Override
     protected void initialize0() {
+        if (!initialized) {
+            initialized = true;
+            MainThread.submitTask(() -> {
+                if (display == null) {
+                    display = Display.getCurrent();
+                }
+
+                // We implement our own event loop for the MainThread.
+                while (true) {
+
+                    if (display.isDisposed()) {
+                        // SWT GOT KILLED, THE END IS NEIGH.
+                        System.exit(0);
+                        return;
+                    } else {
+
+                        // Let the main thread do some work (since we're blocking it right now)
+                        MainThread.processTaskQueue();
+
+                        // Execute the SWT dispatch and sleep if there is no more work to be done.
+                        if (!display.readAndDispatch()) {
+                            // We can't use display.sleep() or implement something similar in MainThread
+                            // because they are separate systems without messaging, doing so would mean we
+                            // would forfeit priority to one or the other.
+                            try {
+                                Thread.sleep(100);
+                            } catch (InterruptedException ignored) {}
+                        }
+                    }
+                }
+            });
+        }
+
         MainThread.submitTaskAndWait(this::mt_initialize);
 
         this.changeImage(App.getIconURL());
