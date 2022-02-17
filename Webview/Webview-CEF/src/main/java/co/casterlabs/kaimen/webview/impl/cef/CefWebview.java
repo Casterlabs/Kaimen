@@ -78,7 +78,7 @@ public class CefWebview extends Webview {
         // One-time setup.
         if (!cefInitialized) {
             cefInitialized = true;
-            CefUtil.create(false /* I hate this. */, Webview.WEBVIEW_SCHEME, this.getSchemeHandler());
+            CefUtil.create(false /* I hate this. */);
         }
 
         // Setup the panel

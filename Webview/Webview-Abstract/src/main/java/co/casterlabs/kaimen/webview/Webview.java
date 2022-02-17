@@ -7,21 +7,14 @@ import java.util.List;
 import org.jetbrains.annotations.Nullable;
 
 import co.casterlabs.kaimen.webview.bridge.WebviewBridge;
-import co.casterlabs.kaimen.webview.scheme.SchemeHandler;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 
 public abstract class Webview {
-    public static final String WEBVIEW_SCHEME = "app";
-    public static final boolean isDev = false;
-
     protected static List<WeakReference<Webview>> webviews = new LinkedList<>();
 
     private @Getter boolean offScreenRenderingEnabled = false;
     private @Getter boolean transparencyEnabled = false;
-
-    private @Getter @Setter SchemeHandler schemeHandler;
 
     private boolean initialized = false;
 
