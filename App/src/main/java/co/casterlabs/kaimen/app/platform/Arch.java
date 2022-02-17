@@ -8,9 +8,9 @@ import lombok.AllArgsConstructor;
 public enum Arch {
     // @formatter:off
     AMD64    ("amd64",     "amd64|x86_64"),
-    X86      ("i386",      "x86|i386|i486|i586|i686|i786"),
+    X86      ("x86",      "x86|i386|i486|i586|i686|i786"),
     AARCH64  ("aarch64",   "arm64|aarch64"),
-    ARM32    ("arm",       "arm");
+    ARM32    ("arm32",       "arm");
     // @formatter:on
 
     private String str;
