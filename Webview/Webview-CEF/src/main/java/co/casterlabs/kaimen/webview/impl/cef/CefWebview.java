@@ -33,6 +33,7 @@ import co.casterlabs.kaimen.util.threading.AsyncTask;
 import co.casterlabs.kaimen.webview.Webview;
 import co.casterlabs.kaimen.webview.WebviewFactory;
 import co.casterlabs.kaimen.webview.WebviewRenderer;
+import co.casterlabs.kaimen.webview.WebviewWindowProperties;
 import co.casterlabs.kaimen.webview.bridge.WebviewBridge;
 import lombok.Getter;
 import lombok.NonNull;
@@ -400,6 +401,12 @@ public class CefWebview extends Webview {
     @Override
     public void setSize(int width, int height) {
         this.window.setSize(width, height);
+    }
+
+    @Override
+    public void setProperties(@NonNull WebviewWindowProperties properties) {
+        this.window.setFocusable(properties.isFocusable());
+        this.window.setAlwaysOnTop(properties.isAlwaysOnTop());
     }
 
 }

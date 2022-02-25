@@ -9,6 +9,7 @@ import co.casterlabs.kaimen.util.threading.MainThread;
 import co.casterlabs.kaimen.webview.Webview;
 import co.casterlabs.kaimen.webview.WebviewFactory;
 import co.casterlabs.kaimen.webview.WebviewLifeCycleListener;
+import co.casterlabs.kaimen.webview.WebviewWindowProperties;
 import co.casterlabs.rakurai.io.http.HttpResponse;
 import co.casterlabs.rakurai.io.http.StandardHttpStatus;
 import lombok.SneakyThrows;
@@ -51,7 +52,7 @@ public class Test {
                 // Log some stuff
                 FastLogger.logStatic("Running on: %s (%s)", Platform.os, Platform.arch);
                 FastLogger.logStatic("System Appearance: %s", App.getSystemAppearance());
-                FastLogger.logStatic("UI Server port (it's Ephemeral): %d", uiServer.getPort());
+                FastLogger.logStatic("UI Server port (it's ephemeral): %d", uiServer.getPort());
 
                 // Setup the webview
                 WebviewFactory factory = WebviewFactory.get();
@@ -77,6 +78,12 @@ public class Test {
                         System.exit(0);
                     }
                 }, null, false, false);
+
+                webview.setProperties(
+                    new WebviewWindowProperties()
+                        .withAlwaysOnTop(true)
+                        .withFocusable(false)
+                );
 
                 webview.open(uiServer.getAddress());
             } catch (Exception e) {

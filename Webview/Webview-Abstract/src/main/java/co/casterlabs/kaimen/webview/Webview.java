@@ -95,4 +95,6 @@ public abstract class Webview {
 
     public abstract void setSize(int width, int height);
 
+    public abstract void setProperties(@NonNull WebviewWindowProperties properties);
+
 }

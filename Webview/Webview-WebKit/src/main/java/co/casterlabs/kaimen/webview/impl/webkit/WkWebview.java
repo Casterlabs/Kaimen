@@ -28,6 +28,7 @@ import co.casterlabs.kaimen.util.threading.MainThreadPromise;
 import co.casterlabs.kaimen.webview.Webview;
 import co.casterlabs.kaimen.webview.WebviewFactory;
 import co.casterlabs.kaimen.webview.WebviewRenderer;
+import co.casterlabs.kaimen.webview.WebviewWindowProperties;
 import co.casterlabs.kaimen.webview.bridge.WebviewBridge;
 import co.casterlabs.rakurai.json.Rson;
 import co.casterlabs.rakurai.json.element.JsonArray;
@@ -387,6 +388,11 @@ public class WkWebview extends Webview {
         display.asyncExec(() -> {
             this.shell.setSize(width, height);
         });
+    }
+
+    @Override
+    public void setProperties(@NonNull WebviewWindowProperties properties) {
+        // TODO ugh, swt again.
     }
 
 }
