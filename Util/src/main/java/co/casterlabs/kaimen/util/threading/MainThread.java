@@ -25,16 +25,12 @@ public class MainThread {
         if (continued != null) {
             Thread cont = new Thread(continued);
 
-            cont.setName("Start Thread");
+            cont.setName("App Thread");
             cont.start();
         }
 
         while (true) {
-
-            // Process queue.
-            while (!taskQueue.isEmpty()) {
-                processOne();
-            }
+            processTaskQueue();
 
             try {
 //                Thread.yield(); // The thread may lie dormant for a while.

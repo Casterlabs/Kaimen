@@ -27,7 +27,7 @@ public class MainThreadPromise<T> {
     }
 
     public MainThreadPromise(@NonNull Producer<T> producer) {
-        if (MainThread.isMainThread()) {
+        MainThread.submitTask(() -> {
             try {
                 T result = producer.produce();
 
@@ -35,17 +35,7 @@ public class MainThreadPromise<T> {
             } catch (Throwable t) {
                 this.fulfill0(t);
             }
-        } else {
-            MainThread.submitTask(() -> {
-                try {
-                    T result = producer.produce();
-
-                    this.fulfill0(result);
-                } catch (Throwable t) {
-                    this.fulfill0(t);
-                }
-            });
-        }
+        });
     }
 
     public void fulfill(@Nullable T result) {
