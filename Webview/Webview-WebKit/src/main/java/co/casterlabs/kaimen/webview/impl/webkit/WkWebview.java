@@ -56,6 +56,11 @@ public class WkWebview extends Webview {
             return WebviewRenderer.WEBKIT;
         }
 
+        @Override
+        public boolean supportsTransparency() {
+            return false;
+        };
+
     };
 
     static {
@@ -74,6 +79,10 @@ public class WkWebview extends Webview {
     @SneakyThrows
     @Override
     protected void initialize0() {
+        if (this.isTransparencyEnabled()) {
+            throw new UnsupportedOperationException("Transparency is not supported on macOS at this time.");
+        }
+
         if (!initialized) {
             initialized = true;
             MainThread.submitTask(() -> {

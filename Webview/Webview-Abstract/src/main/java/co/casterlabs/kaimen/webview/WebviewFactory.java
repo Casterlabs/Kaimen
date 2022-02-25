@@ -67,4 +67,12 @@ public abstract class WebviewFactory implements Producer<Webview> {
 
     public abstract WebviewRenderer getRendererType();
 
+    public boolean supportsOSR() {
+        return true;
+    }
+
+    public boolean supportsTransparency() {
+        return true;
+    }
+
 }
