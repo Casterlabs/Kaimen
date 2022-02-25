@@ -76,7 +76,7 @@ public class CefWebview extends Webview {
         // One-time setup.
         if (!cefInitialized) {
             cefInitialized = true;
-            CefUtil.create(false /* I hate this. */, Webview.getWebviewToken());
+            CefUtil.create(true /* I hate this. */, Webview.getWebviewToken());
         }
 
         // Setup the panel
@@ -94,7 +94,9 @@ public class CefWebview extends Webview {
 
             dialog.setUndecorated(true);
             dialog.getRootPane().setOpaque(false);
-            dialog.setBackground(new Color(0, true));
+            dialog.getContentPane().setBackground(new Color(0, true));
+            this.cefPanel.setOpaque(false);
+            this.cefPanel.setBackground(new Color(0, true));
 
             this.window = dialog;
         } else {
@@ -341,7 +343,11 @@ public class CefWebview extends Webview {
             }
 
             // Create browser
-            this.browser = this.client.createBrowser(url, this.isOffScreenRenderingEnabled(), this.isTransparencyEnabled());
+            this.browser = this.client.createBrowser(
+                url,
+                this.isOffScreenRenderingEnabled(),
+                this.isTransparencyEnabled()
+            );
 
             // Add it to the JPanel.
             this.cefPanel.add(this.browser.getUIComponent(), BorderLayout.CENTER);

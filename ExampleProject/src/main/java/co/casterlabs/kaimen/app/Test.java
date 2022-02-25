@@ -36,11 +36,11 @@ public class Test {
                     return HttpResponse.newFixedLengthResponse(
                         StandardHttpStatus.OK,
                         "<!DOCTYPE html>"
-                            + "<html>"
+                            + "<html style=\"background-color: transparent;\">"
                             + "<body style=\"text-align: center; font-family: BlinkMacSystemFont, -apple-system, 'Segoe UI', Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;\">"
                             + "<br />"
                             + "<br />"
-                            + "Kaimen Example App"
+                            + "Example App"
                             + "<br />"
                             + "<br />"
                             + "<a href='https://google.com'>Open Google</a>"
@@ -82,7 +82,7 @@ public class Test {
                 webview.setProperties(
                     new WebviewWindowProperties()
                         .withAlwaysOnTop(true)
-                        .withFocusable(false)
+                        .withFocusable(true)
                 );
 
                 webview.open(uiServer.getAddress());

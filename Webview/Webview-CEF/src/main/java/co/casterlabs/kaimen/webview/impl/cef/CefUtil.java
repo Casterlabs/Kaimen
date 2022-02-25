@@ -22,6 +22,7 @@ public class CefUtil {
 
             CefSettings settings = builder.getCefSettings();
 
+            settings.background_color = settings.new ColorType(0, 0, 0, 0);
             settings.windowless_rendering_enabled = enableOsr;
             settings.log_severity = LogSeverity.LOGSEVERITY_DISABLE;
 
