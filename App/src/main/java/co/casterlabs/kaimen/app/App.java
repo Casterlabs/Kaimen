@@ -1,14 +1,12 @@
 package co.casterlabs.kaimen.app;
 
 import java.net.URL;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.function.Consumer;
 
 import org.jetbrains.annotations.Nullable;
 
 import com.jthemedetecor.OsThemeDetector;
 
+import co.casterlabs.kaimen.util.EventProvider;
 import co.casterlabs.kaimen.util.platform.Platform;
 import lombok.Getter;
 import lombok.NonNull;
@@ -24,7 +22,7 @@ public abstract class App {
 
     private static OsThemeDetector themeDetector = OsThemeDetector.getDetector();
 
-    private static Set<Consumer<Appearance>> systemThemeChangeListeners = new HashSet<>();
+    public static final EventProvider<Appearance> systemThemeChangeEvent = new EventProvider<>();
 
     static {
         ClassLoader.getSystemClassLoader().setDefaultAssertionStatus(true); // Enable assertions.
@@ -52,7 +50,7 @@ public abstract class App {
 
                     Appearance a = getSystemAppearance();
 
-                    systemThemeChangeListeners.forEach((l) -> l.accept(a));
+                    systemThemeChangeEvent.fireEvent(a);
                 }
             });
         } catch (Exception e) {
@@ -73,14 +71,6 @@ public abstract class App {
     }
 
     /* Public */
-
-    public static void addSystemThemeChangeListener(@NonNull Consumer<Appearance> listener) {
-        systemThemeChangeListeners.add(listener);
-    }
-
-    public static void removeSystemThemeChangeListener(@NonNull Consumer<Appearance> listener) {
-        systemThemeChangeListeners.remove(listener);
-    }
 
     public static void setName(@NonNull String newName) {
         assert !newName.isEmpty() : "App name must not be empty.";
