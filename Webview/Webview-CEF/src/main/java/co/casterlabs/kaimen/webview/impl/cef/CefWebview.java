@@ -1,13 +1,16 @@
 package co.casterlabs.kaimen.webview.impl.cef;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Window;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 import javax.swing.ImageIcon;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -56,7 +59,7 @@ public class CefWebview extends Webview {
     private static FastLogger logger = new FastLogger();
     private static boolean cefInitialized = false;
 
-    private JFrame frame;
+    private Window window;
     private JPanel cefPanel;
 
     private CefClient client;
@@ -84,23 +87,35 @@ public class CefWebview extends Webview {
         });
         saveTimer.setRepeats(false);
 
-        // Create the frame.
-        this.frame = new JFrame();
+        // Create the window.
+        if (this.isTransparencyEnabled()) {
+            JDialog dialog = new JDialog((Window) null);
 
-        if (App.getIconURL() != null) {
-            this.frame.setIconImage(new ImageIcon(App.getIconURL()).getImage());
+            dialog.setUndecorated(true);
+            dialog.getRootPane().setOpaque(false);
+            dialog.setBackground(new Color(0, true));
+
+            this.window = dialog;
+        } else {
+            JFrame frame = new JFrame();
+
+            frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+            frame.setResizable(true);
+            frame.setMinimumSize(new Dimension(this.windowState.getMinWidth(), this.windowState.getMinHeight()));
+
+            this.window = frame;
         }
 
-        this.frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        if (App.getIconURL() != null) {
+            this.window.setIconImage(new ImageIcon(App.getIconURL()).getImage());
+        }
 
-        this.frame.setSize(this.windowState.getWidth(), this.windowState.getHeight());
-        this.frame.setLocation(this.windowState.getX(), this.windowState.getY());
-        this.frame.setResizable(true);
-        this.frame.setMinimumSize(new Dimension(this.windowState.getMinWidth(), this.windowState.getMinHeight()));
+        this.window.setSize(this.windowState.getWidth(), this.windowState.getHeight());
+        this.window.setLocation(this.windowState.getX(), this.windowState.getY());
 
-        this.frame.add(this.cefPanel, BorderLayout.CENTER);
+        this.window.add(this.cefPanel, BorderLayout.CENTER);
 
-        this.frame.addWindowFocusListener(new WindowAdapter() {
+        this.window.addWindowFocusListener(new WindowAdapter() {
             @Override
             public void windowGainedFocus(WindowEvent e) {
                 CefWebview.this.windowState.setHasFocus(true);
@@ -123,7 +138,7 @@ public class CefWebview extends Webview {
             });
             resizeTimer.setRepeats(false);
 
-            this.frame.addComponentListener(new ComponentAdapter() {
+            this.window.addComponentListener(new ComponentAdapter() {
                 @Override
                 public void componentResized(ComponentEvent e) {
                     resizeTimer.restart();
@@ -136,12 +151,12 @@ public class CefWebview extends Webview {
             });
         }
 
-        this.frame.addComponentListener(new ComponentAdapter() {
+        this.window.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
                 if (!isMaximized()) {
-                    CefWebview.this.windowState.setWidth(frame.getWidth());
-                    CefWebview.this.windowState.setHeight(frame.getHeight());
+                    CefWebview.this.windowState.setWidth(window.getWidth());
+                    CefWebview.this.windowState.setHeight(window.getHeight());
                     saveTimer.restart();
                 }
             }
@@ -149,14 +164,14 @@ public class CefWebview extends Webview {
             @Override
             public void componentMoved(ComponentEvent e) {
                 if (!isMaximized()) {
-                    CefWebview.this.windowState.setX(frame.getX());
-                    CefWebview.this.windowState.setY(frame.getY());
+                    CefWebview.this.windowState.setX(window.getX());
+                    CefWebview.this.windowState.setY(window.getY());
                     saveTimer.restart();
                 }
             }
         });
 
-        this.frame.addWindowListener(new WindowAdapter() {
+        this.window.addWindowListener(new WindowAdapter() {
             @Override
             public void windowIconified(WindowEvent e) {
                 CefWebview.this.getLifeCycleListener().onMinimize();
@@ -270,21 +285,27 @@ public class CefWebview extends Webview {
     }
 
     public void updateTitle() {
-        new AsyncTask(() -> {
-            String title;
+        if (!this.isTransparencyEnabled()) {
+            new AsyncTask(() -> {
+                String title;
 
-            if (this.pageTitle != null) {
-                title = this.pageTitle;
-            } else {
-                title = App.getName();
-            }
+                if (this.pageTitle != null) {
+                    title = this.pageTitle;
+                } else {
+                    title = App.getName();
+                }
 
-            this.frame.setTitle(title);
-        });
+                ((JFrame) this.window).setTitle(title);
+            });
+        }
     }
 
     public boolean isMaximized() {
-        return (this.frame.getExtendedState() & JFrame.MAXIMIZED_BOTH) == JFrame.MAXIMIZED_BOTH;
+        if (this.isTransparencyEnabled()) {
+            return false;
+        } else {
+            return (((JFrame) this.window).getExtendedState() & JFrame.MAXIMIZED_BOTH) == JFrame.MAXIMIZED_BOTH;
+        }
     }
 
     @Override
@@ -323,7 +344,7 @@ public class CefWebview extends Webview {
 
             // Add it to the JPanel.
             this.cefPanel.add(this.browser.getUIComponent(), BorderLayout.CENTER);
-            this.frame.setVisible(true);
+            this.window.setVisible(true);
 
             // Notify
             this.getLifeCycleListener().onBrowserOpen();
@@ -333,7 +354,7 @@ public class CefWebview extends Webview {
     @Override
     public void close() {
         if (this.browser != null) {
-            this.frame.setVisible(false);
+            this.window.setVisible(false);
 
             // Remove the frame
             this.cefPanel.removeAll();
@@ -353,17 +374,17 @@ public class CefWebview extends Webview {
 
     @Override
     public void destroy() {
-        this.frame.dispose();
+        this.window.dispose();
     }
 
     @Override
     public void focus() {
-        this.frame.toFront();
+        this.window.toFront();
     }
 
     @Override
     public boolean isOpen() {
-        return this.frame.isVisible();
+        return this.window.isVisible();
     }
 
     @Override
