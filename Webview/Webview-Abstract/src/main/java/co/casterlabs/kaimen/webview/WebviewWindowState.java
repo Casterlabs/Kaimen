@@ -3,10 +3,12 @@ package co.casterlabs.kaimen.webview;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 
+import co.casterlabs.kaimen.util.threading.MainThread;
 import co.casterlabs.kaimen.webview.bridge.BridgeValue;
 import co.casterlabs.rakurai.json.annotating.JsonClass;
 import co.casterlabs.rakurai.json.annotating.JsonExclude;
 import lombok.Data;
+import lombok.SneakyThrows;
 
 @Data
 @JsonClass(exposeAll = true)
@@ -21,17 +23,19 @@ public class WebviewWindowState {
 
     private @JsonExclude BridgeValue<WebviewWindowState> bridge = new BridgeValue<>("window", this);
 
+    @SneakyThrows
     public WebviewWindowState() {
-//        if (System.getProperty("awt.supported", "").equals("true")) {
-        // Setup Defaults
-        GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+        // Setup Defaults.
+        // Needs to be done on the main thread.
+        MainThread.submitTaskAndWait(() -> {
+            GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
 
-        int monitorWidth = gd.getDisplayMode().getWidth();
-        int monitorHeight = gd.getDisplayMode().getHeight();
+            int monitorWidth = gd.getDisplayMode().getWidth();
+            int monitorHeight = gd.getDisplayMode().getHeight();
 
-        this.x = (monitorWidth - this.width) / 2;
-        this.y = (monitorHeight - this.height) / 2;
-//        }
+            this.x = (monitorWidth - this.width) / 2;
+            this.y = (monitorHeight - this.height) / 2;
+        });
     }
 
     public void update() {
