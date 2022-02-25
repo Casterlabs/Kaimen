@@ -52,11 +52,6 @@ public class WkWebview extends Webview {
         }
 
         @Override
-        public boolean useNuclearOption() {
-            return true;
-        }
-
-        @Override
         public WebviewRenderer getRendererType() {
             return WebviewRenderer.WEBKIT;
         }

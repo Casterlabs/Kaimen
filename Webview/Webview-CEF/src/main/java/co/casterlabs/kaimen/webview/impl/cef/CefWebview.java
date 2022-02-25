@@ -47,12 +47,6 @@ public class CefWebview extends Webview {
         }
 
         @Override
-        public boolean useNuclearOption() {
-            // The scheme only works on Windows for some dumb reason.
-            return ConsoleUtil.getPlatform() != JavaPlatform.WINDOWS;
-        }
-
-        @Override
         public WebviewRenderer getRendererType() {
             return WebviewRenderer.CHROMIUM_EMBEDDED_FRAMEWORK;
         }
