@@ -359,4 +359,25 @@ public class WkWebview extends Webview {
         }).await();
     }
 
+    @Override
+    public void reload() {
+        display.asyncExec(() -> {
+            this.browser.refresh();
+        });
+    }
+
+    @Override
+    public void setPosition(int x, int y) {
+        display.asyncExec(() -> {
+            this.shell.setLocation(x, y);
+        });
+    }
+
+    @Override
+    public void setSize(int width, int height) {
+        display.asyncExec(() -> {
+            this.shell.setSize(width, height);
+        });
+    }
+
 }

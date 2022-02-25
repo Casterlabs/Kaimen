@@ -366,4 +366,19 @@ public class CefWebview extends Webview {
         return this.frame.isVisible();
     }
 
+    @Override
+    public void reload() {
+        this.browser.reloadIgnoreCache();
+    }
+
+    @Override
+    public void setPosition(int x, int y) {
+        this.window.setLocation(x, y);
+    }
+
+    @Override
+    public void setSize(int width, int height) {
+        this.window.setSize(width, height);
+    }
+
 }
