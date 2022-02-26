@@ -1,6 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>Windows-amd64</artifactId>
 
@@ -11,12 +9,36 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<repositories>
-		<repository>
-			<id>eclipse-swt-repo</id>
-			<url>https://casterlabs.github.io/eclipse-swt/maven</url>
-		</repository>
-	</repositories>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.3.2</version>
+				<configuration>
+					<finalName>${project.name}-original</finalName>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>3.2.1</version>
+				<executions>
+					<execution>
+						<id>shade</id>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<shadedArtifactAttached>true</shadedArtifactAttached>
+					<finalName>${project.name}</finalName>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 
 	<dependencies>
 
@@ -38,14 +60,6 @@
 			<groupId>me.friwi</groupId>
 			<artifactId>jcef-natives-windows-amd64</artifactId>
 			<version>jcef-544024e+cef-95.7.14+g9f72f35+chromium-95.0.4638.69</version>
-			<scope>compile</scope>
-		</dependency>
-
-		<!-- https://github.com/Casterlabs/eclipse-swt -->
-		<dependency>
-			<groupId>org.eclipse.swt</groupId>
-			<artifactId>win32.win32.x86_64</artifactId>
-			<version>4.22</version>
 			<scope>compile</scope>
 		</dependency>
 
