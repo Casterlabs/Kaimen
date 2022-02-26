@@ -13,6 +13,7 @@
 		<module>App</module>
 		<module>Bootstrap</module>
 		<module>ExampleProject</module>
+		<module>ProjectBuilder</module>
 	</modules>
 
 	<properties>
