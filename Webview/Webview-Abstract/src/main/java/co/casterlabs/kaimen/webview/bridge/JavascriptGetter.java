@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 
 @Retention(RUNTIME)
 @Target(METHOD)
-public @interface JavascriptGetter {
+@interface JavascriptGetter {
 
     String value();
 
