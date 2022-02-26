@@ -52,22 +52,10 @@ public class ProjectBuilder implements Runnable {
     private List<String> classPath;
 
     @Option(names = {
-            "-vm",
-            "--vm-args"
-    }, description = "The vmargs to start the application with (without the leading dash)")
-    private List<String> vmArgs = new ArrayList<>();
-
-    @Option(names = {
             "-res",
             "--resource"
     }, description = "The resources to be included next to your app's executable")
     private List<File> resources;
-
-    @Option(names = {
-            "-n",
-            "--name"
-    }, description = "The name of the target executable (e.g my_application)", required = true)
-    private String executableName;
 
     @Option(names = {
             "-m",
@@ -76,16 +64,28 @@ public class ProjectBuilder implements Runnable {
     private String mainClass;
 
     @Option(names = {
-            "-id",
-            "--bundleId"
-    }, description = "The bundle identifier to be used on MacOS")
-    private String bundleIdentifier;
+            "-vm",
+            "--vm-args"
+    }, description = "The vmargs to start the application with (without the leading dash)")
+    private List<String> vmArgs = new ArrayList<>();
 
     @Option(names = {
             "-jv",
             "--javaVersion"
     }, description = "The version of Java to bundle")
     private JavaVersion javaVersion = JavaVersion.JAVA11;
+
+    @Option(names = {
+            "-id",
+            "--bundleId"
+    }, description = "The bundle identifier to be used on MacOS")
+    private String bundleIdentifier;
+
+    @Option(names = {
+            "-n",
+            "--appName"
+    }, description = "The name of the target executable (e.g my-application)", required = true)
+    private String appName;
 
     @Option(names = {
             "-v",
@@ -95,7 +95,7 @@ public class ProjectBuilder implements Runnable {
 
     @Option(names = {
             "-i",
-            "--icon"
+            "--appIcon"
     }, description = "The icon of the application")
     private File appIcon;
 
@@ -134,7 +134,7 @@ public class ProjectBuilder implements Runnable {
 
         config.platform = PackrUtil.PLATFORM_MAPPING.get(new Pair<>(this.targetOS, this.targetArch));
         config.jdk = this.javaVersion.getDownloadUrl(this.targetOS, this.targetArch);
-        config.executable = this.executableName;
+        config.executable = this.appName;
         config.jrePath = "jre";
         config.classpath = this.classPath;
         config.mainClass = this.mainClass;
@@ -174,7 +174,7 @@ public class ProjectBuilder implements Runnable {
             Files.writeString(infoPlist.toPath(), contents);
         } else if (this.targetOS == OperatingSystem.WINDOWS) {
             if (Platform.os == OperatingSystem.WINDOWS && new File("rcedit-x64.exe").exists()) {
-                File executable = new File(outputDir, this.executableName + ".exe");
+                File executable = new File(outputDir, this.appName + ".exe");
 
                 if (this.appIcon != null) {
                     RceditUtil.setIconFile(executable, this.appIcon);
