@@ -49,7 +49,7 @@ public class WebviewWindowState {
     }
 
     public int getMinHeight() {
-        return 580;
+        return 600;
     }
 
 }
