@@ -82,16 +82,22 @@ public class ProjectBuilder implements Runnable {
     private String bundleIdentifier;
 
     @Option(names = {
-            "-bi",
-            "--bundleIcon"
-    }, description = "The bundle icon to be used on MacOS (.icns file)")
-    private File bundleIcon;
-
-    @Option(names = {
             "-jv",
             "--javaVersion"
     }, description = "The version of Java to bundle")
     private JavaVersion javaVersion = JavaVersion.JAVA11;
+
+    @Option(names = {
+            "-v",
+            "--appVersion"
+    }, description = "The version of application")
+    private String appVersion = "0.0.0";
+
+    @Option(names = {
+            "-i",
+            "--icon"
+    }, description = "The icon of the application")
+    private File appIcon;
 
     public static void main(String[] args) {
         new CommandLine(new ProjectBuilder()).execute(args);
@@ -123,6 +129,7 @@ public class ProjectBuilder implements Runnable {
 
         if (this.targetOS == OperatingSystem.MACOSX) {
             this.vmArgs.add("XstartOnFirstThread");
+            config.iconResource = this.appIcon;
         }
 
         config.platform = PackrUtil.PLATFORM_MAPPING.get(new Pair<>(this.targetOS, this.targetArch));
@@ -130,17 +137,17 @@ public class ProjectBuilder implements Runnable {
         config.executable = this.executableName;
         config.jrePath = "jre";
         config.classpath = this.classPath;
-        // removelibs
         config.mainClass = this.mainClass;
         config.vmArgs = Collections.emptyList();
         config.useZgcIfSupportedOs = false;
         config.resources = this.resources;
-        // minimizejre
         config.outDir = outputDir;
-        // cachejre
-        config.iconResource = this.bundleIcon;
         config.bundleIdentifier = this.bundleIdentifier;
         config.verbose = this.debug;
+
+        // removelibs
+        // minimizejre
+        // cachejre
 
         try {
             new Packr().pack(config);
@@ -154,7 +161,7 @@ public class ProjectBuilder implements Runnable {
         }
     }
 
-    private void doCompletionTasks(File outputDir) throws IOException {
+    private void doCompletionTasks(File outputDir) throws IOException, InterruptedException {
         if (this.targetOS == OperatingSystem.MACOSX) {
             File appBundle = outputDir.listFiles()[0];
             File infoPlist = new File(appBundle, "/Contents/Info.plist");
@@ -165,10 +172,27 @@ public class ProjectBuilder implements Runnable {
             contents.replace("</dict>\n</plist>", addition);
 
             Files.writeString(infoPlist.toPath(), contents);
+        } else if (this.targetOS == OperatingSystem.WINDOWS) {
+            if (Platform.os == OperatingSystem.WINDOWS && new File("rcedit-x64.exe").exists()) {
+                File executable = new File(outputDir, this.executableName + ".exe");
+
+                if (this.appIcon != null) {
+                    RceditUtil.setIconFile(executable, this.appIcon);
+                }
+
+                if (this.appVersion != null) {
+                    RceditUtil.setVersionString(executable, this.appVersion);
+                }
+            }
         }
     }
 
     private void doPreflightChecks() {
+        if (!PackrUtil.PLATFORM_MAPPING.containsKey(new Pair<>(this.targetOS, this.targetArch))) {
+            FastLogger.logStatic(LogLevel.SEVERE, "Unfortunately, Packr does not support %s:%s.", this.targetOS, this.targetArch);
+            System.exit(1);
+        }
+
         if (this.targetOS == OperatingSystem.MACOSX) {
             if (Platform.os == OperatingSystem.WINDOWS) {
                 FastLogger.logStatic(LogLevel.SEVERE, "You cannot target MacOS when building on windows.");
@@ -176,17 +200,30 @@ public class ProjectBuilder implements Runnable {
             }
 
             assert this.bundleIdentifier != null : "You must specify a bundle identifier when building for MacOS";
-            assert this.bundleIcon != null : "You must specify a bundle icon when building for MacOS";
+            assert this.appIcon != null : "You must specify an app icon when building for MacOS";
+            assert this.appIcon.getName().endsWith(".icns") : "App icon must be an .icns file when building for MacOS";
         }
 
-        if ((this.targetOS == OperatingSystem.LINUX) && (Platform.os == OperatingSystem.WINDOWS)) {
-            FastLogger.logStatic(LogLevel.SEVERE, "You cannot target Linux when building on windows.");
-            System.exit(1);
+        if (this.targetOS == OperatingSystem.LINUX) {
+            if (Platform.os == OperatingSystem.WINDOWS) {
+                FastLogger.logStatic(LogLevel.SEVERE, "You cannot target Linux when building on windows.");
+                System.exit(1);
+            }
         }
 
-        if (!PackrUtil.PLATFORM_MAPPING.containsKey(new Pair<>(this.targetOS, this.targetArch))) {
-            FastLogger.logStatic(LogLevel.SEVERE, "Unfortunately, Packr does not support %s:%s.", this.targetOS, this.targetArch);
-            System.exit(1);
+        if (this.targetOS == OperatingSystem.WINDOWS) {
+            if (!new File("rcedit-x64.exe").exists()) {
+                FastLogger.logStatic(LogLevel.WARNING, "In order for the setting of appIcon and/or appVersion to work you will need to download the 64 bit version of rcedit from here: https://github.com/electron/rcedit/releases/latest");
+            }
+
+            if (((this.appIcon != null) || (this.appVersion != null)) &&
+                (Platform.os != OperatingSystem.WINDOWS)) {
+                FastLogger.logStatic(LogLevel.WARNING, "Setting appIcon and/or appVersion when building for Windows but not building on Windows has no effect.");
+            }
+
+            if (this.appIcon != null) {
+                assert this.appIcon.getName().endsWith(".ico") : "App icon must be an .ico file when building for Windows";
+            }
         }
     }
 
