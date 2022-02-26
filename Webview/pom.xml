@@ -13,9 +13,10 @@
 	</parent>
 
 	<modules>
+		<module>Webview-Abstract</module>
 		<module>Webview-CEF</module>
 		<module>Webview-WebKit</module>
-		<module>Webview-Abstract</module>
+		<module>Webview-WV</module>
 	</modules>
 
 </project>

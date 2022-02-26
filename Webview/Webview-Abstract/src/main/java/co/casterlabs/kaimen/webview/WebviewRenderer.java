@@ -2,6 +2,7 @@ package co.casterlabs.kaimen.webview;
 
 public enum WebviewRenderer {
     WEBKIT,
-    CHROMIUM_EMBEDDED_FRAMEWORK;
+    CHROMIUM_EMBEDDED_FRAMEWORK,
+    WEBVIEW_PROJECT;
 
 }
