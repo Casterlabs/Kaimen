@@ -46,6 +46,12 @@ public class ProjectBuilder implements Runnable {
     private Arch targetArch;
 
     @Option(names = {
+            "-kv",
+            "--kaimenVersion"
+    }, description = "The version of Kaimen to bundle", required = true)
+    private String kaimenVersion;
+
+    @Option(names = {
             "-cp",
             "--classpath"
     }, description = "The resources to be included on the classpath (e.g your app's .jar file)", required = true)
@@ -56,12 +62,6 @@ public class ProjectBuilder implements Runnable {
             "--resource"
     }, description = "The resources to be included next to your app's executable")
     private List<File> resources;
-
-    @Option(names = {
-            "-m",
-            "--mainClass"
-    }, description = "The mainclass to be executed", required = true)
-    private String mainClass;
 
     @Option(names = {
             "-vm",
@@ -137,7 +137,7 @@ public class ProjectBuilder implements Runnable {
         config.executable = this.appName;
         config.jrePath = "jre";
         config.classpath = this.classPath;
-        config.mainClass = this.mainClass;
+        config.mainClass = "co.casterlabs.kaimen.app.AppBootstrap";
         config.vmArgs = Collections.emptyList();
         config.useZgcIfSupportedOs = false;
         config.resources = this.resources;
@@ -145,9 +145,15 @@ public class ProjectBuilder implements Runnable {
         config.bundleIdentifier = this.bundleIdentifier;
         config.verbose = this.debug;
 
-        // removelibs
-        // minimizejre
-        // cachejre
+        try {
+            File bootstrap = MavenUtil.getKaimenBootstrap(this.targetOS, this.targetArch, this.kaimenVersion);
+
+            this.classPath.add(bootstrap.getCanonicalPath());
+        } catch (Exception e) {
+            FastLogger.logStatic(LogLevel.SEVERE, "Build prep failed :(");
+            FastLogger.logException(e);
+            return;
+        }
 
         try {
             new Packr().pack(config);
