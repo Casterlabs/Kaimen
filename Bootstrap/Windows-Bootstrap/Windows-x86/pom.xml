@@ -1,10 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>Windows-amd64</artifactId>
+	<artifactId>Windows-x86</artifactId>
 
 	<parent>
 		<groupId>co.casterlabs</groupId>
-		<artifactId>WindowsBootstrap</artifactId>
+		<artifactId>Windows-Bootstrap</artifactId>
 		<version>1.0.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
@@ -58,7 +58,7 @@
 		</dependency>
 		<dependency>
 			<groupId>me.friwi</groupId>
-			<artifactId>jcef-natives-windows-amd64</artifactId>
+			<artifactId>jcef-natives-windows-i386</artifactId>
 			<version>jcef-544024e+cef-95.7.14+g9f72f35+chromium-95.0.4638.69</version>
 			<scope>compile</scope>
 		</dependency>

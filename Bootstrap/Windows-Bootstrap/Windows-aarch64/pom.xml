@@ -4,7 +4,7 @@
 
 	<parent>
 		<groupId>co.casterlabs</groupId>
-		<artifactId>WindowsBootstrap</artifactId>
+		<artifactId>Windows-Bootstrap</artifactId>
 		<version>1.0.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>

@@ -2,37 +2,36 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>MacOS-Common</artifactId>
+	<artifactId>Windows-Common</artifactId>
 
 	<parent>
 		<groupId>co.casterlabs</groupId>
-		<artifactId>MacOSBootstrap</artifactId>
+		<artifactId>Windows-Bootstrap</artifactId>
 		<version>1.0.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
-
-	<repositories>
-		<repository>
-			<id>eclipse-swt-repo</id>
-			<url>https://casterlabs.github.io/eclipse-swt/maven</url>
-		</repository>
-	</repositories>
 
 	<dependencies>
 
 		<dependency>
 			<groupId>co.casterlabs</groupId>
-			<artifactId>Webview-WebKit</artifactId>
+			<artifactId>Webview-CEF</artifactId>
 			<version>${project.parent.version}</version>
 			<scope>compile</scope>
 		</dependency>
 
-		<!-- https://github.com/Casterlabs/eclipse-swt -->
+		<!-- JNA -->
 		<dependency>
-			<groupId>org.eclipse.swt</groupId>
-			<artifactId>cocoa.macosx.x86_64</artifactId>
-			<version>4.22</version>
-			<scope>provided</scope>
+			<groupId>net.java.dev.jna</groupId>
+			<artifactId>jna</artifactId>
+			<version>5.10.0</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>net.java.dev.jna</groupId>
+			<artifactId>jna-platform</artifactId>
+			<version>5.10.0</version>
+			<scope>compile</scope>
 		</dependency>
 
 	</dependencies>
