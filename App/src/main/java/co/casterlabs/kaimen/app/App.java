@@ -23,6 +23,7 @@ public abstract class App {
     private static OsThemeDetector themeDetector = OsThemeDetector.getDetector();
 
     public static final EventProvider<Appearance> systemThemeChangeEvent = new EventProvider<>();
+    public static final EventProvider<URL> appIconChangeEvent = new EventProvider<>();
 
     static void init(String[] args) {
         try {
@@ -83,6 +84,7 @@ public abstract class App {
 
     public static void setIcon(@Nullable URL url) {
         iconURL = url;
+        appIconChangeEvent.fireEvent(url);
         instance.setIcon0(url);
     }
 
