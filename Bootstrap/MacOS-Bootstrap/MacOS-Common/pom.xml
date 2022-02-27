@@ -22,6 +22,12 @@
 
 		<dependency>
 			<groupId>co.casterlabs</groupId>
+			<artifactId>Abstract-Bootstrap</artifactId>
+			<version>${project.parent.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>co.casterlabs</groupId>
 			<artifactId>Webview-WebKit</artifactId>
 			<version>${project.parent.version}</version>
 			<scope>compile</scope>
