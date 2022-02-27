@@ -15,6 +15,7 @@
 	<modules>
 		<module>Windows-Bootstrap</module>
 		<module>MacOS-Bootstrap</module>
+		<module>Abstract-Bootstrap</module>
 	</modules>
 
 </project>

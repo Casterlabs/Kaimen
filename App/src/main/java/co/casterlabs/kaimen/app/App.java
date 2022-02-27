@@ -24,7 +24,7 @@ public abstract class App {
 
     public static final EventProvider<Appearance> systemThemeChangeEvent = new EventProvider<>();
 
-    static {
+    static void init(String[] args) {
         ClassLoader.getSystemClassLoader().setDefaultAssertionStatus(true); // Enable assertions.
 
         try {
@@ -54,7 +54,7 @@ public abstract class App {
                 }
             });
         } catch (Exception e) {
-            throw new RuntimeException("Failed to find bootstrap:", e);
+            throw new IllegalStateException("Failed to find bootstrap:", e);
         }
     }
 
