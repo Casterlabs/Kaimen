@@ -16,6 +16,8 @@ import xyz.e3ndr.reflectionlib.helpers.AccessHelper;
 public class AppBootstrap {
 
     public static void main(String[] args) throws InvocationTargetException, InterruptedException {
+        ClassLoader.getSystemClassLoader().setDefaultAssertionStatus(true); // Enable assertions.
+
         MainThread.park(() -> {
             // Go ahead and get the access warning out of the way
             try {

@@ -25,8 +25,6 @@ public abstract class App {
     public static final EventProvider<Appearance> systemThemeChangeEvent = new EventProvider<>();
 
     static void init(String[] args) {
-        ClassLoader.getSystemClassLoader().setDefaultAssertionStatus(true); // Enable assertions.
-
         try {
             switch (Platform.os) {
                 case LINUX:
