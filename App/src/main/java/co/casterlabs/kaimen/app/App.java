@@ -25,7 +25,12 @@ public abstract class App {
     public static final EventProvider<Appearance> systemThemeChangeEvent = new EventProvider<>();
     public static final EventProvider<URL> appIconChangeEvent = new EventProvider<>();
 
+    @Getter
+    private static String[] args;
+
     static void init(String[] args) {
+        App.args = args;
+
         try {
             switch (Platform.os) {
                 case LINUX:
