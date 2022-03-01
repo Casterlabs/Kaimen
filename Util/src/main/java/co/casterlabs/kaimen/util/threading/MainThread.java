@@ -45,17 +45,6 @@ public class MainThread {
         }
     }
 
-    private static void processOne() {
-        Runnable popped = taskQueue.pop();
-
-        try {
-            popped.run();
-        } catch (Throwable t) {
-            FastLogger.logStatic(LogLevel.SEVERE, "An exception occurred whilst processing task on the main thread:");
-            FastLogger.logException(t);
-        }
-    }
-
     /**
      * This is here since the SWT event loop mandates special behavior.
      * 
@@ -69,7 +58,14 @@ public class MainThread {
             return false;
         } else {
             while (!taskQueue.isEmpty()) {
-                processOne();
+                Runnable popped = taskQueue.pop();
+
+                try {
+                    popped.run();
+                } catch (Throwable t) {
+                    FastLogger.logStatic(LogLevel.SEVERE, "An exception occurred whilst processing task on the main thread:");
+                    FastLogger.logException(t);
+                }
             }
             return true;
         }
