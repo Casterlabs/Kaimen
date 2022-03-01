@@ -9,6 +9,37 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<finalName>ProjectBuilder</finalName>
+							<archive>
+								<manifest>
+									<mainClass>
+										co.casterlabs.kaimen.projectbuilder.ProjectBuilder
+									</mainClass>
+								</manifest>
+							</archive>
+							<descriptorRefs>
+								<descriptorRef>jar-with-dependencies</descriptorRef>
+							</descriptorRefs>
+							<appendAssemblyId>false</appendAssemblyId>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
 	<repositories>
 		<repository>
 			<id>packr-repo</id>
@@ -47,12 +78,12 @@
 			<version>1.13.0</version>
 			<scope>compile</scope>
 		</dependency>
-        <dependency>
-            <groupId>info.picocli</groupId>
-            <artifactId>picocli</artifactId>
-            <version>4.3.0</version>
-            <scope>compile</scope>
-        </dependency>
+		<dependency>
+			<groupId>info.picocli</groupId>
+			<artifactId>picocli</artifactId>
+			<version>4.3.0</version>
+			<scope>compile</scope>
+		</dependency>
 
 	</dependencies>
 </project>
