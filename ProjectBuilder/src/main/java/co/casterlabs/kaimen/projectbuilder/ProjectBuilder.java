@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import com.badlogicgames.packr.Packr;
@@ -130,6 +129,7 @@ public class ProjectBuilder implements Runnable {
         if (this.targetOS == OperatingSystem.MACOSX) {
             this.vmArgs.add("XstartOnFirstThread");
             config.iconResource = this.appIcon;
+            outputDir = new File(outputDir, this.appName + ".app");
         }
 
         config.platform = PackrUtil.PLATFORM_MAPPING.get(new Pair<>(this.targetOS, this.targetArch));
@@ -138,7 +138,7 @@ public class ProjectBuilder implements Runnable {
         config.jrePath = "jre";
         config.classpath = this.classPath;
         config.mainClass = "co.casterlabs.kaimen.app.AppBootstrap";
-        config.vmArgs = Collections.emptyList();
+        config.vmArgs = this.vmArgs;
         config.useZgcIfSupportedOs = false;
         config.resources = this.resources;
         config.outDir = outputDir;
@@ -169,10 +169,9 @@ public class ProjectBuilder implements Runnable {
 
     private void doCompletionTasks(File outputDir) throws IOException, InterruptedException {
         if (this.targetOS == OperatingSystem.MACOSX) {
-            File appBundle = outputDir.listFiles()[0];
-            File infoPlist = new File(appBundle, "/Contents/Info.plist");
+            File infoPlist = new File(outputDir, "/Contents/Info.plist");
 
-            String addition = IOUtil.readString(ProjectBuilder.class.getResource("add_Info.plist").openStream());
+            String addition = IOUtil.readString(ProjectBuilder.class.getResourceAsStream("/add_Info.plist"));
             String contents = Files.readString(infoPlist.toPath());
 
             contents.replace("</dict>\n</plist>", addition);

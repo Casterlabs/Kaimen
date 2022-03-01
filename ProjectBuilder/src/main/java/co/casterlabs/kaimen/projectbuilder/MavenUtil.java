@@ -1,14 +1,16 @@
 package co.casterlabs.kaimen.projectbuilder;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
 
 import co.casterlabs.kaimen.util.platform.Arch;
 import co.casterlabs.kaimen.util.platform.OperatingSystem;
-import co.casterlabs.kaimen.util.platform.Platform;
-import xyz.e3ndr.fastloggingframework.FastLoggingFramework;
+import co.casterlabs.rakurai.io.IOUtil;
 import xyz.e3ndr.fastloggingframework.logging.FastLogger;
-import xyz.e3ndr.fastloggingframework.logging.LogLevel;
 
 public class MavenUtil {
 
@@ -18,59 +20,27 @@ public class MavenUtil {
 
         artifact = artifact.substring(0, 1).toUpperCase() + artifact.substring(1); // Just some silly string manipulation.
 
-        downloadDependency(group, artifact, version);
-
-        return new File(String.format("./dist/tmp/%s-%s-shaded.jar", artifact, version));
+        return downloadDependency(group, artifact, version);
     }
 
-    public static void downloadDependency(String group, String artifact, String version) throws InterruptedException, IOException {
+    private static File downloadDependency(String group, String artifact, String version) throws InterruptedException, IOException {
         FastLogger.logStatic("Downloading dependency: %s:%s:%s", group, artifact, version);
 
-        execute(
-            "mvn",
-            "dependency:get",
-            "-DremoteRepositories=https://repo.maven.apache.org/maven2,https://jitpack.io",
-            "-DgroupId=" + group,
-            "-DartifactId=" + artifact,
-            "-Dversion=" + version,
-            "-Dclassifier=shaded",
-            "-Dtransitive=false"
-        );
+        String url = String.format("https://jitpack.io/%s/%s/%s/%s-%s-shaded.jar", group.replace('.', '/'), artifact, version, artifact, version);
+        File target = new File(String.format("./dist/tmp/%s-%s-shaded.jar", artifact, version));
 
-        FastLogger.logStatic("Copying dependency: %s:%s:%s", group, artifact, version);
+        if (!target.exists()) {
+            target.getParentFile().mkdirs();
+            target.createNewFile();
 
-        // Copy the result.
-        execute(
-            "mvn",
-            "dependency:copy",
-            String.format("-Dartifact=%s:%s:%s:jar:shaded", group, artifact, version),
-            "-DoutputDirectory=./dist/tmp"
-        );
-
-        FastLogger.logStatic("Finished downloading dependency: %s:%s:%s", group, artifact, version);
-    }
-
-    private static void execute(String... cmd) throws InterruptedException, IOException {
-        String[] trueCommand;
-
-        if (Platform.os == OperatingSystem.WINDOWS) {
-            trueCommand = new String[] {
-                    "cmd",
-                    "/c",
-                    String.join(" ", cmd)
-            };
-        } else {
-            trueCommand = cmd; // Unix doesn't have these issues.
+            try (InputStream in = new URL(url).openStream()) {
+                try (OutputStream out = new FileOutputStream(target)) {
+                    IOUtil.writeInputStreamToOutputStream(in, out);
+                }
+            }
         }
 
-        ProcessBuilder pb = new ProcessBuilder()
-            .command(trueCommand);
-
-        if (FastLoggingFramework.getDefaultLevel() == LogLevel.DEBUG) {
-            pb.inheritIO();
-        }
-
-        pb.start().waitFor();
+        return target;
     }
 
 }
