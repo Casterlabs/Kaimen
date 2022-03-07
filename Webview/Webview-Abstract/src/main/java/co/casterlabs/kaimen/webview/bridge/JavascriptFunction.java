@@ -10,8 +10,6 @@ import java.lang.annotation.Target;
 @Target(METHOD)
 public @interface JavascriptFunction {
 
-    String value();
-
-    boolean useRaw() default false;
+    String value() default "";
 
 }

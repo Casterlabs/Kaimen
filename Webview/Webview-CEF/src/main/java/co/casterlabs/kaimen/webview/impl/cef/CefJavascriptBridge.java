@@ -24,6 +24,7 @@ import co.casterlabs.rakurai.json.serialization.JsonParseException;
 import lombok.NonNull;
 import xyz.e3ndr.fastloggingframework.logging.FastLogger;
 import xyz.e3ndr.fastloggingframework.logging.LogLevel;
+import xyz.e3ndr.fastloggingframework.logging.LoggingUtil;
 
 public class CefJavascriptBridge extends WebviewBridge {
     private static String bridgeScript = "";
@@ -133,6 +134,7 @@ public class CefJavascriptBridge extends WebviewBridge {
         // Inject the bridge script.
         this.frame = frame;
         this.frame.executeJavaScript(bridgeScript, "", 1);
+        this.init();
         this.loadPromise.fulfill(null);
     }
 
@@ -143,7 +145,66 @@ public class CefJavascriptBridge extends WebviewBridge {
 
         FastLogger.logStatic(LogLevel.TRACE, "%s: %s", type, data);
 
-        if (this.onEvent != null) {
+        if (type.startsWith("_get:")) {
+            String id = type.substring("_get:".length());
+            String property = data.getString("property");
+            String nonce = data.getString("nonce");
+
+            try {
+                JsonElement result = this.processGet(id, property);
+
+                emit(
+                    "_get:" + nonce,
+                    new JsonObject()
+                        .put("isError", false)
+                        .put("result", result)
+                );
+            } catch (Throwable e) {
+                String error = LoggingUtil.getExceptionStack(e);
+
+                emit(
+                    "_get:" + nonce,
+                    new JsonObject()
+                        .put("isError", true)
+                        .put("result", error)
+                );
+            }
+        } else if (type.startsWith("_set:")) {
+            String id = type.substring("_set:".length());
+            String property = data.getString("property");
+            JsonElement value = data.get("value");
+
+            try {
+                this.processSet(id, property, value);
+            } catch (Throwable e) {
+                FastLogger.logException(e);
+            }
+        } else if (type.startsWith("_invoke:")) {
+            String id = type.substring("_invoke:".length());
+            String function = data.getString("function");
+            JsonArray args = data.getArray("args");
+            String nonce = data.getString("nonce");
+
+            try {
+                JsonElement result = this.processInvoke(id, function, args);
+
+                emit(
+                    "_invoke:" + nonce,
+                    new JsonObject()
+                        .put("isError", false)
+                        .put("result", result)
+                );
+            } catch (Throwable e) {
+                String error = LoggingUtil.getExceptionStack(e);
+
+                emit(
+                    "_invoke:" + nonce,
+                    new JsonObject()
+                        .put("isError", true)
+                        .put("result", error)
+                );
+            }
+        } else if (this.onEvent != null) {
             this.onEvent.accept(type, data);
         }
     }

@@ -221,8 +221,20 @@ if (!window.Bridge) {
 		});
 	}
 
+	function stringifyAndRegisterCallbacks(obj) {
+		return JSON.parse(
+			JSON.stringify(obj, (k, v) => {
+				if (v instanceof Function) {
+					return Bridge.internal_registerCallback(v);
+				} else {
+					return v;
+				}
+			})
+		);
+	}
+
 	const Bridge = {
-		registerCallback(callback) {
+		internal_registerCallback(callback) {
 			const callbackId = `${Math.random()}${Math.random()}`.split(".").join("");
 			const id = eventHandler.on(`callback:${callbackId}`, callback);
 
@@ -232,6 +244,61 @@ if (!window.Bridge) {
 					eventHandler.off(`callback:${callbackId}`, id);
 				}
 			};
+		},
+
+		internal_define(name, id) {
+			const object = {
+				__deffun(name) {
+					Object.defineProperty(object, name, {
+						value: function () {
+							const args = Array.from(arguments);
+
+							return new Promise((resolve, reject) => {
+								const nonce = `${Math.random()}${Math.random()}`.split(".").join("");
+
+								eventHandler.once(`_invoke:${nonce}`, ({ isError, result }) => {
+									if (isError) {
+										reject(result);
+									} else {
+										resolve(result);
+									}
+								});
+
+								Bridge.emit(`_invoke:${id}`, { function: name, args: stringifyAndRegisterCallbacks(args), nonce: nonce });
+							});
+						}
+					});
+				}
+			};
+
+			const handler = {
+				get(obj, property) {
+					if (typeof obj[property] != "undefined") {
+						return obj[property];
+					}
+
+					return new Promise((resolve, reject) => {
+						const nonce = `${Math.random()}${Math.random()}`.split(".").join("");
+
+						eventHandler.once(`_get:${nonce}`, ({ isError, result }) => {
+							if (isError) {
+								reject(result);
+							} else {
+								resolve(result);
+							}
+						});
+
+						Bridge.emit(`_get:${id}`, { property: property, nonce: nonce });
+					});
+				},
+				set(obj, property, value) {
+					Bridge.emit(`_set:${id}`, { property: property, value: stringifyAndRegisterCallbacks(value) });
+					// Indicate success
+					return true;
+				}
+			};
+
+			window[name] = new Proxy(object, handler);
 		},
 
 		emit(type, data = {}) {

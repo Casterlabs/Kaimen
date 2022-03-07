@@ -1,6 +1,7 @@
 package co.casterlabs.kaimen.webview.bridge;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -8,13 +9,14 @@ import java.util.UUID;
 
 import org.jetbrains.annotations.Nullable;
 
-import co.casterlabs.kaimen.util.functional.Either;
 import co.casterlabs.rakurai.json.Rson;
 import co.casterlabs.rakurai.json.element.JsonArray;
 import co.casterlabs.rakurai.json.element.JsonElement;
+import co.casterlabs.rakurai.json.element.JsonString;
 import co.casterlabs.rakurai.json.serialization.JsonParseException;
 import lombok.Getter;
 import lombok.NonNull;
+import xyz.e3ndr.reflectionlib.helpers.AccessHelper;
 
 public abstract class JavascriptObject {
     private @Getter String id = UUID.randomUUID().toString();
@@ -30,6 +32,9 @@ public abstract class JavascriptObject {
 
                 FieldMapping mapping = new FieldMapping(this);
 
+                mapping.value = field;
+                AccessHelper.makeAccessible(field);
+
                 this.properties.put(name, mapping);
             }
         }
@@ -40,6 +45,7 @@ public abstract class JavascriptObject {
                 String name = annotation.value().isEmpty() ? method.getName() : annotation.value();
 
                 this.functions.put(name, new MethodMapping(this, method));
+                AccessHelper.makeAccessible(method);
             } else if (method.isAnnotationPresent(JavascriptGetter.class)) {
                 JavascriptGetter annotation = method.getAnnotation(JavascriptGetter.class);
                 String name = annotation.value().isEmpty() ? method.getName() : annotation.value();
@@ -52,6 +58,7 @@ public abstract class JavascriptObject {
                 }
 
                 mapping.getter = method;
+                AccessHelper.makeAccessible(method);
             } else if (method.isAnnotationPresent(JavascriptSetter.class)) {
                 JavascriptSetter annotation = method.getAnnotation(JavascriptSetter.class);
                 String name = annotation.value().isEmpty() ? method.getName() : annotation.value();
@@ -64,30 +71,55 @@ public abstract class JavascriptObject {
                 }
 
                 mapping.setter = method;
+                AccessHelper.makeAccessible(method);
             }
         }
 
     }
 
-    public @Nullable Either<JsonElement, JavascriptObject> get(@NonNull String property) throws Exception {
-        FieldMapping mapping = this.properties.get(property);
-        assert mapping != null : "Could not find property: " + property;
+    void init(String name, WebviewBridge bridge) {
+        bridge.eval(
+            String.format("window.Bridge.internal_define(%s,%s);", new JsonString(name), new JsonString(this.id))
+        );
 
-        return mapping.get();
+        for (String functionName : this.functions.keySet()) {
+            bridge.eval(
+                String.format("window[%s].__deffun(%s);", new JsonString(name), new JsonString(functionName))
+            );
+        }
     }
 
-    public void set(@NonNull String property, JsonElement value) throws Exception {
-        FieldMapping mapping = this.properties.get(property);
-        assert mapping != null : "Could not find property: " + property;
+    public @Nullable JsonElement get(@NonNull String property) throws Throwable {
+        try {
+            FieldMapping mapping = this.properties.get(property);
+            assert mapping != null : "Could not find property: " + property;
 
-        mapping.set(value);
+            return mapping.get();
+        } catch (InvocationTargetException e) {
+            throw e.getCause();
+        }
     }
 
-    public @Nullable Either<JsonElement, JavascriptObject> invoke(@NonNull String function, @NonNull JsonArray arguments) throws Exception {
-        MethodMapping mapping = this.functions.get(function);
-        assert mapping != null : "Could not find function: " + function;
+    public void set(@NonNull String property, JsonElement value) throws Throwable {
+        try {
+            FieldMapping mapping = this.properties.get(property);
+            assert mapping != null : "Could not find property: " + property;
 
-        return mapping.invoke(arguments);
+            mapping.set(value);
+        } catch (InvocationTargetException e) {
+            throw e.getCause();
+        }
+    }
+
+    public @Nullable JsonElement invoke(@NonNull String function, @NonNull JsonArray arguments) throws Throwable {
+        try {
+            MethodMapping mapping = this.functions.get(function);
+            assert mapping != null : "Could not find function: " + function;
+
+            return mapping.invoke(arguments);
+        } catch (InvocationTargetException e) {
+            throw e.getCause();
+        }
     }
 
     private static class MethodMapping {
@@ -100,7 +132,7 @@ public abstract class JavascriptObject {
             this.method = method;
         }
 
-        public @Nullable Either<JsonElement, JavascriptObject> invoke(@NonNull JsonArray arguments) throws Exception {
+        public @Nullable JsonElement invoke(@NonNull JsonArray arguments) throws Exception {
             Class<?>[] argTypes = method.getParameterTypes();
             assert argTypes.length == arguments.size() : "The invoking arguments do not match the expected length: " + argTypes.length;
 
@@ -116,11 +148,7 @@ public abstract class JavascriptObject {
 
             Object result = this.method.invoke($i, args);
 
-            if (result instanceof JavascriptObject) {
-                return new Either<>(result);
-            } else {
-                return new Either<>(Rson.DEFAULT.toJson(result));
-            }
+            return Rson.DEFAULT.toJson(result);
         }
 
     }
@@ -158,20 +186,16 @@ public abstract class JavascriptObject {
             }
         }
 
-        public @Nullable Either<JsonElement, JavascriptObject> get() throws Exception {
+        public @Nullable JsonElement get() throws Exception {
             Object result;
 
             if (this.getter != null) {
                 result = this.getter.invoke($i);
             } else {
-                result = value.get($i);
+                result = this.value.get($i);
             }
 
-            if (result instanceof JavascriptObject) {
-                return new Either<>(result);
-            } else {
-                return new Either<>(Rson.DEFAULT.toJson(result));
-            }
+            return Rson.DEFAULT.toJson(result);
         }
 
     }

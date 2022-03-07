@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jetbrains.annotations.Nullable;
+
 import co.casterlabs.kaimen.util.functional.DualConsumer;
 import co.casterlabs.rakurai.json.element.JsonArray;
 import co.casterlabs.rakurai.json.element.JsonElement;
@@ -20,6 +22,7 @@ public abstract class WebviewBridge {
     private WeakReference<WebviewBridge> $ref = new WeakReference<>(this);
 
     private Map<String, BridgeValue<?>> personalQueryData = new HashMap<>();
+    private Map<String, JavascriptObject> objects = new HashMap<>();
 
     protected @Setter DualConsumer<String, JsonObject> onEvent;
 
@@ -47,6 +50,45 @@ public abstract class WebviewBridge {
 
         for (BridgeValue<?> bv : this.personalQueryData.values()) {
             bv.attachedBridges.remove(this.$ref);
+        }
+    }
+
+    protected void init() {
+        for (Map.Entry<String, JavascriptObject> entry : this.objects.entrySet()) {
+            entry.getValue().init(entry.getKey(), this);
+        }
+    }
+
+    public void defineObject(@NonNull String name, @NonNull JavascriptObject obj) {
+        this.objects.put(name, obj);
+        obj.init(name, this);
+    }
+
+    protected @Nullable JsonElement processGet(String id, String property) throws Throwable {
+        for (JavascriptObject obj : this.objects.values()) {
+            if (obj.getId().equals(id)) {
+                return obj.get(property);
+            }
+        }
+
+        return null;
+    }
+
+    protected @Nullable JsonElement processInvoke(String id, String function, JsonArray args) throws Throwable {
+        for (JavascriptObject obj : this.objects.values()) {
+            if (obj.getId().equals(id)) {
+                return obj.invoke(function, args);
+            }
+        }
+
+        return null;
+    }
+
+    protected void processSet(String id, String property, JsonElement value) throws Throwable {
+        for (JavascriptObject obj : this.objects.values()) {
+            if (obj.getId().equals(id)) {
+                obj.set(property, value);
+            }
         }
     }
 

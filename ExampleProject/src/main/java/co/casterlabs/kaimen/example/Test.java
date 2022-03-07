@@ -3,15 +3,18 @@ package co.casterlabs.kaimen.example;
 import java.lang.reflect.InvocationTargetException;
 
 import co.casterlabs.kaimen.app.App;
+import co.casterlabs.kaimen.app.App.Appearance;
 import co.casterlabs.kaimen.app.AppBootstrap;
 import co.casterlabs.kaimen.app.AppEntry;
-import co.casterlabs.kaimen.app.App.Appearance;
 import co.casterlabs.kaimen.app.ui.UIServer;
 import co.casterlabs.kaimen.util.platform.Platform;
 import co.casterlabs.kaimen.webview.Webview;
 import co.casterlabs.kaimen.webview.WebviewFactory;
 import co.casterlabs.kaimen.webview.WebviewLifeCycleListener;
 import co.casterlabs.kaimen.webview.WebviewWindowProperties;
+import co.casterlabs.kaimen.webview.bridge.JavascriptFunction;
+import co.casterlabs.kaimen.webview.bridge.JavascriptObject;
+import co.casterlabs.kaimen.webview.bridge.JavascriptValue;
 import co.casterlabs.rakurai.io.http.HttpResponse;
 import co.casterlabs.rakurai.io.http.StandardHttpStatus;
 import lombok.SneakyThrows;
@@ -91,6 +94,24 @@ public class Test {
         );
 
         webview.open(uiServer.getAddress());
+
+        webview
+            .getBridge()
+            .defineObject("test", new JavascriptObject() {
+                @JavascriptValue
+                private int twelve = 12;
+
+                @JavascriptFunction
+                public long nanoTime() {
+                    return System.nanoTime();
+                }
+
+                @JavascriptFunction
+                public void testThrow() {
+                    throw new IllegalStateException("Test throw.");
+                }
+
+            });
     }
 
 }
