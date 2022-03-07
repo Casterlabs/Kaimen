@@ -207,6 +207,18 @@ if (!window.Bridge) {
 	}
 
 	const Bridge = {
+		registerCallback(callback) {
+			const callbackId = `${Math.random()}${Math.random()}`.split(".").join("");
+			const id = eventHandler.on(`callback:${callbackId}`, callback);
+
+			return {
+				callbackId: callbackId,
+				remove() {
+					eventHandler.off(`callback:${callbackId}`, id);
+				}
+			};
+		},
+
 		clearQueryQueue() {
 			if (queryQueue.length > 0) {
 				const copy = queryQueue;

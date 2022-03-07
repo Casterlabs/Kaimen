@@ -8,8 +8,10 @@ import java.lang.annotation.Target;
 
 @Retention(RUNTIME)
 @Target(METHOD)
-@interface JavascriptFunction {
+public @interface JavascriptFunction {
 
     String value();
+
+    boolean useRaw() default false;
 
 }

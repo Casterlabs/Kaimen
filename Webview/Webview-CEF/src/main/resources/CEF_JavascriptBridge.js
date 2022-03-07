@@ -222,6 +222,18 @@ if (!window.Bridge) {
 	}
 
 	const Bridge = {
+		registerCallback(callback) {
+			const callbackId = `${Math.random()}${Math.random()}`.split(".").join("");
+			const id = eventHandler.on(`callback:${callbackId}`, callback);
+
+			return {
+				callbackId: callbackId,
+				remove() {
+					eventHandler.off(`callback:${callbackId}`, id);
+				}
+			};
+		},
+
 		emit(type, data = {}) {
 			sendToParent({
 				type: type,

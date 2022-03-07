@@ -15,6 +15,7 @@ import co.casterlabs.kaimen.webview.WebviewFileUtil;
 import co.casterlabs.kaimen.webview.bridge.BridgeValue;
 import co.casterlabs.kaimen.webview.bridge.WebviewBridge;
 import co.casterlabs.rakurai.json.Rson;
+import co.casterlabs.rakurai.json.element.JsonArray;
 import co.casterlabs.rakurai.json.element.JsonElement;
 import co.casterlabs.rakurai.json.element.JsonNull;
 import co.casterlabs.rakurai.json.element.JsonObject;
@@ -100,7 +101,7 @@ public class CefJavascriptBridge extends WebviewBridge {
     }
 
     @Override
-    protected void emit0(@NonNull String type, @NonNull JsonElement data) {
+    public void emit(@NonNull String type, @NonNull JsonElement data) {
         new AsyncTask(() -> {
             try {
                 this.loadPromise.await();
@@ -113,7 +114,7 @@ public class CefJavascriptBridge extends WebviewBridge {
     }
 
     @Override
-    protected void eval0(@NonNull String script) {
+    public void eval(@NonNull String script) {
         new AsyncTask(() -> {
             try {
                 this.loadPromise.await();
@@ -121,6 +122,11 @@ public class CefJavascriptBridge extends WebviewBridge {
 
             this.frame.executeJavaScript(script, "", 1);
         });
+    }
+
+    @Override
+    public void invokeCallback(@NonNull String invokeId, @NonNull JsonArray arguments) {
+        this.emit("callback:" + invokeId, arguments);
     }
 
     public void injectBridgeScript(@NonNull CefFrame frame) {
