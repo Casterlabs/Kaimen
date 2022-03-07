@@ -2,6 +2,7 @@ package co.casterlabs.kaimen.util.threading;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.NoSuchElementException;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -58,14 +59,16 @@ public class MainThread {
             return false;
         } else {
             while (!taskQueue.isEmpty()) {
-                Runnable popped = taskQueue.pop();
-
                 try {
-                    popped.run();
-                } catch (Throwable t) {
-                    FastLogger.logStatic(LogLevel.SEVERE, "An exception occurred whilst processing task on the main thread:");
-                    FastLogger.logException(t);
-                }
+                    Runnable popped = taskQueue.pop();
+
+                    try {
+                        popped.run();
+                    } catch (Throwable t) {
+                        FastLogger.logStatic(LogLevel.SEVERE, "An exception occurred whilst processing task on the main thread:");
+                        FastLogger.logException(t);
+                    }
+                } catch (NoSuchElementException ignored) {}
             }
             return true;
         }
