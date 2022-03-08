@@ -249,25 +249,23 @@ if (!window.Bridge) {
 		internal_define(name, id) {
 			const object = {
 				__deffun(name) {
-					Object.defineProperty(object, name, {
-						value: function () {
-							const args = Array.from(arguments);
+				    object[name] = function () {
+						const args = Array.from(arguments);
 
-							return new Promise((resolve, reject) => {
-								const nonce = `${Math.random()}${Math.random()}`.split(".").join("");
+						return new Promise((resolve, reject) => {
+							const nonce = `${Math.random()}${Math.random()}`.split(".").join("");
 
-								eventHandler.once(`_invoke:${nonce}`, ({ isError, result }) => {
-									if (isError) {
-										reject(result);
-									} else {
-										resolve(result);
-									}
-								});
-
-								Bridge.emit(`_invoke:${id}`, { function: name, args: stringifyAndRegisterCallbacks(args), nonce: nonce });
+							eventHandler.once(`_invoke:${nonce}`, ({ isError, result }) => {
+								if (isError) {
+									reject(result);
+								} else {
+									resolve(result);
+								}
 							});
-						}
-					});
+
+							Bridge.emit(`_invoke:${id}`, { function: name, args: stringifyAndRegisterCallbacks(args), nonce: nonce });
+						});
+					};
 				}
 			};
 
