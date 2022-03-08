@@ -222,17 +222,27 @@ if (!window.Bridge) {
 	const Bridge = {
 		internal_registerCallback(callback) {
 			const callbackId = `${Math.random()}${Math.random()}`.split(".").join("");
+
 			const id = eventHandler.on(`callback:${callbackId}`, callback);
+			const removeHandlerId = eventHandler.on(`callback:${callbackId}:remove`, () => {
+				eventHandler.off(`callback:${callbackId}`, id);
+				eventHandler.off(`callback:${callbackId}:remove`, removeHandlerId);
+			});
 
 			return {
-				callbackId: callbackId,
-				remove() {
-					eventHandler.off(`callback:${callbackId}`, id);
-				}
+				callbackId: callbackId
 			};
 		},
 
-		internal_define(name, id) {
+		internal_define(path, id) {
+			path = path.split(".");
+			const propertyName = path.pop();
+			let root = window;
+
+			for (const part of path) {
+				root = root[part];
+			}
+
 			const object = {
 				__deffun(name) {
 					Object.defineProperty(object, name, {
@@ -253,6 +263,11 @@ if (!window.Bridge) {
 								Bridge.emit(`_invoke:${id}`, { function: name, args: stringifyAndRegisterCallbacks(args), nonce: nonce });
 							});
 						}
+					});
+				},
+				__defraw(name, v) {
+					Object.defineProperty(object, name, {
+						value: v
 					});
 				}
 			};
@@ -284,7 +299,13 @@ if (!window.Bridge) {
 				}
 			};
 
-			window[name] = new Proxy(object, handler);
+			const proxy = new Proxy(object, handler);
+
+			if (typeof root.__defraw == "function") {
+				root.__defraw(propertyName, proxy);
+			} else {
+				root[propertyName] = proxy;
+			}
 		},
 
 		clearQueryQueue() {

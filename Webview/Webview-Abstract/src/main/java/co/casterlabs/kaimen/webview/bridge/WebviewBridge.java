@@ -26,7 +26,7 @@ public abstract class WebviewBridge {
     private List<WeakReference<WebviewBridge>> attachedBridges = new LinkedList<>();
 
     private Map<String, BridgeValue<?>> personalQueryData = new HashMap<>();
-    private Map<String, JavascriptObject> objects = new HashMap<>();
+    Map<String, JavascriptObject> objects = new HashMap<>();
 
     protected @Setter DualConsumer<String, JsonObject> onEvent;
 
@@ -67,8 +67,10 @@ public abstract class WebviewBridge {
     }
 
     protected void init() {
-        for (Map.Entry<String, JavascriptObject> entry : this.objects.entrySet()) {
-            entry.getValue().init(entry.getKey(), this);
+        for (Map.Entry<String, JavascriptObject> entry : new ArrayList<>(this.objects.entrySet())) {
+            if (!entry.getKey().contains(".")) {
+                entry.getValue().init(entry.getKey(), this);
+            }
         }
 
         for (WeakReference<WebviewBridge> wb : this.attachedBridges) {
@@ -77,14 +79,13 @@ public abstract class WebviewBridge {
     }
 
     public void defineObject(@NonNull String name, @NonNull JavascriptObject obj) {
-        this.objects.put(name, obj);
         obj.init(name, this);
     }
 
     protected @Nullable JsonElement processGet(String id, String property) throws Throwable {
         for (JavascriptObject obj : this.objects.values()) {
             if (obj.getId().equals(id)) {
-                return obj.get(property);
+                return obj.get(property, this);
             }
         }
 
@@ -94,7 +95,7 @@ public abstract class WebviewBridge {
     protected @Nullable JsonElement processInvoke(String id, String function, JsonArray args) throws Throwable {
         for (JavascriptObject obj : this.objects.values()) {
             if (obj.getId().equals(id)) {
-                return obj.invoke(function, args);
+                return obj.invoke(function, args, this);
             }
         }
 
@@ -104,7 +105,7 @@ public abstract class WebviewBridge {
     protected void processSet(String id, String property, JsonElement value) throws Throwable {
         for (JavascriptObject obj : this.objects.values()) {
             if (obj.getId().equals(id)) {
-                obj.set(property, value);
+                obj.set(property, value, this);
             }
         }
     }
@@ -125,11 +126,19 @@ public abstract class WebviewBridge {
         }
     }
 
-    public void invokeCallback(@NonNull String invokeId, @NonNull JsonArray arguments) {
+    void invokeCallback(@NonNull String invokeId, @NonNull JsonArray arguments) {
         this.invokeCallback0(invokeId, arguments);
 
         for (WeakReference<WebviewBridge> wb : this.downstreamBridges) {
             wb.get().invokeCallback0(invokeId, arguments);
+        }
+    }
+
+    void removeCallback(@NonNull String invokeId) {
+        this.removeCallback0(invokeId);
+
+        for (WeakReference<WebviewBridge> wb : this.downstreamBridges) {
+            wb.get().removeCallback0(invokeId);
         }
     }
 
@@ -140,6 +149,8 @@ public abstract class WebviewBridge {
     protected abstract void eval0(@NonNull String script);
 
     protected abstract void invokeCallback0(@NonNull String invokeId, @NonNull JsonArray arguments);
+
+    protected abstract void removeCallback0(@NonNull String invokeId);
 
     /* Statics */
 

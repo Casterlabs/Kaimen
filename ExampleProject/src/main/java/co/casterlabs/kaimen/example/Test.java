@@ -101,17 +101,22 @@ public class Test {
                 @JavascriptValue
                 private int twelve = 12;
 
-                @JavascriptFunction
-                public long nanoTime() {
-                    return System.nanoTime();
-                }
+                private JavascriptObject system = new JavascriptObject() {
 
-                @JavascriptFunction
-                public void testThrow() {
-                    throw new IllegalStateException("Test throw.");
-                }
+                    @JavascriptFunction
+                    public long nanoTime() {
+                        return System.nanoTime();
+                    }
+
+                    @JavascriptFunction
+                    public void testThrow() {
+                        throw new IllegalStateException("Test throw.");
+                    }
+
+                };
 
             });
+
     }
 
 }

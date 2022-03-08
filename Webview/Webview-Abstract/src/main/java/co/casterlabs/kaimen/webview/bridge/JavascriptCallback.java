@@ -1,5 +1,7 @@
 package co.casterlabs.kaimen.webview.bridge;
 
+import java.lang.ref.WeakReference;
+
 import co.casterlabs.rakurai.json.Rson;
 import co.casterlabs.rakurai.json.annotating.JsonClass;
 import co.casterlabs.rakurai.json.element.JsonArray;
@@ -36,16 +38,26 @@ import lombok.NonNull;
 @JsonClass(exposeAll = true)
 public class JavascriptCallback {
     private String invokeId;
+    WeakReference<WebviewBridge> $bridge;
 
-    public void invoke(@NonNull WebviewBridge ctx, @NonNull Object... args) {
+    public void invoke(@NonNull Object... args) {
         JsonArray arguments = (JsonArray) Rson.DEFAULT.toJson(args);
 
-        ctx.invokeCallback(this.invokeId, arguments);
+        if ($bridge.get() != null) {
+            $bridge.get().invokeCallback(this.invokeId, arguments);
+        }
     }
 
     @Override
     public int hashCode() {
         return this.invokeId.hashCode();
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        if ($bridge.get() != null) {
+            $bridge.get().removeCallback(this.invokeId);
+        }
     }
 
 }

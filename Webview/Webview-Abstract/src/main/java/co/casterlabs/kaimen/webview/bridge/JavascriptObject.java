@@ -1,5 +1,6 @@
 package co.casterlabs.kaimen.webview.bridge;
 
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -16,6 +17,7 @@ import co.casterlabs.rakurai.json.element.JsonString;
 import co.casterlabs.rakurai.json.serialization.JsonParseException;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 import xyz.e3ndr.reflectionlib.helpers.AccessHelper;
 
 public abstract class JavascriptObject {
@@ -23,16 +25,26 @@ public abstract class JavascriptObject {
 
     private Map<String, FieldMapping> properties = new HashMap<>();
     private Map<String, MethodMapping> functions = new HashMap<>();
+    private Map<String, Field> subObjects = new HashMap<>();
 
+    @SneakyThrows
     public JavascriptObject() {
         for (Field field : this.getClass().getDeclaredFields()) {
-            if (field.isAnnotationPresent(JavascriptValue.class)) {
+            if (JavascriptObject.class.isAssignableFrom(field.getType())) {
+                AccessHelper.makeAccessible(field);
+
+                this.subObjects.put(
+                    field.getName(),
+                    field
+                );
+            } else if (field.isAnnotationPresent(JavascriptValue.class)) {
                 JavascriptValue annotation = field.getAnnotation(JavascriptValue.class);
                 String name = annotation.value().isEmpty() ? field.getName() : annotation.value();
 
-                FieldMapping mapping = new FieldMapping(this);
+                FieldMapping mapping = new FieldMapping(this, name);
 
                 mapping.value = field;
+                mapping.valueAnnotation = annotation;
                 AccessHelper.makeAccessible(field);
 
                 this.properties.put(name, mapping);
@@ -53,7 +65,7 @@ public abstract class JavascriptObject {
                 FieldMapping mapping = this.properties.get(name);
 
                 if (mapping == null) {
-                    mapping = new FieldMapping(this);
+                    mapping = new FieldMapping(this, name);
                     this.properties.put(name, mapping);
                 }
 
@@ -66,7 +78,7 @@ public abstract class JavascriptObject {
                 FieldMapping mapping = this.properties.get(name);
 
                 if (mapping == null) {
-                    mapping = new FieldMapping(this);
+                    mapping = new FieldMapping(this, name);
                     this.properties.put(name, mapping);
                 }
 
@@ -74,22 +86,38 @@ public abstract class JavascriptObject {
                 AccessHelper.makeAccessible(method);
             }
         }
-
     }
 
     void init(String name, WebviewBridge bridge) {
+        this.init(name, bridge, null);
+    }
+
+    @SneakyThrows
+    private void init(String name, WebviewBridge bridge, @Nullable JavascriptObject parent) {
+        bridge.objects.put(name, this);
+
         bridge.eval(
             String.format("window.Bridge.internal_define(%s,%s);", new JsonString(name), new JsonString(this.id))
         );
 
         for (String functionName : this.functions.keySet()) {
             bridge.eval(
-                String.format("window[%s].__deffun(%s);", new JsonString(name), new JsonString(functionName))
+                // We directly access the property without `[]` for subobject support.
+                String.format("window.%s.__deffun(%s,%s);", name, new JsonString(functionName), new JsonString(this.id))
             );
+        }
+
+        for (Map.Entry<String, Field> entry : this.subObjects.entrySet()) {
+            JavascriptObject value = (JavascriptObject) entry.getValue().get(this);
+
+            if ((value != null) && (value != parent)) {
+                value.init(name + "." + entry.getKey(), bridge, this);
+            }
         }
     }
 
-    public @Nullable JsonElement get(@NonNull String property) throws Throwable {
+    @Nullable
+    JsonElement get(@NonNull String property, @NonNull WebviewBridge bridge) throws Throwable {
         try {
             FieldMapping mapping = this.properties.get(property);
             assert mapping != null : "Could not find property: " + property;
@@ -100,23 +128,23 @@ public abstract class JavascriptObject {
         }
     }
 
-    public void set(@NonNull String property, JsonElement value) throws Throwable {
+    void set(@NonNull String property, JsonElement value, @NonNull WebviewBridge bridge) throws Throwable {
         try {
             FieldMapping mapping = this.properties.get(property);
             assert mapping != null : "Could not find property: " + property;
 
-            mapping.set(value);
+            mapping.set(value, bridge);
         } catch (InvocationTargetException e) {
             throw e.getCause();
         }
     }
 
-    public @Nullable JsonElement invoke(@NonNull String function, @NonNull JsonArray arguments) throws Throwable {
+    public @Nullable JsonElement invoke(@NonNull String function, @NonNull JsonArray arguments, @NonNull WebviewBridge bridge) throws Throwable {
         try {
             MethodMapping mapping = this.functions.get(function);
             assert mapping != null : "Could not find function: " + function;
 
-            return mapping.invoke(arguments);
+            return mapping.invoke(arguments, bridge);
         } catch (InvocationTargetException e) {
             throw e.getCause();
         }
@@ -132,7 +160,7 @@ public abstract class JavascriptObject {
             this.method = method;
         }
 
-        public @Nullable JsonElement invoke(@NonNull JsonArray arguments) throws Exception {
+        public @Nullable JsonElement invoke(@NonNull JsonArray arguments, @NonNull WebviewBridge bridge) throws Exception {
             Class<?>[] argTypes = method.getParameterTypes();
             assert argTypes.length == arguments.size() : "The invoking arguments do not match the expected length: " + argTypes.length;
 
@@ -146,6 +174,8 @@ public abstract class JavascriptObject {
                 }
             }
 
+            filterForCallbacks(bridge, args);
+
             Object result = this.method.invoke($i, args);
 
             return Rson.DEFAULT.toJson(result);
@@ -155,16 +185,19 @@ public abstract class JavascriptObject {
 
     private static class FieldMapping {
         private @NonNull Object $i;
+        private @NonNull String $name;
 
         private Method getter;
         private Method setter;
         private Field value;
+        private JavascriptValue valueAnnotation;
 
-        public FieldMapping(Object i) {
+        public FieldMapping(Object i, String name) {
             this.$i = i;
+            this.$name = name;
         }
 
-        public void set(@NonNull JsonElement v) throws Exception {
+        public void set(@NonNull JsonElement v, @NonNull WebviewBridge bridge) throws Exception {
             if (this.setter != null) {
                 Object o = null;
 
@@ -188,8 +221,6 @@ public abstract class JavascriptObject {
                 } else {
                     throw new UnsupportedOperationException("SET is not allowed for the field: " + $name);
                 }
-
-                this.value.set($i, o);
             }
         }
 
@@ -210,6 +241,16 @@ public abstract class JavascriptObject {
             return Rson.DEFAULT.toJson(result);
         }
 
+    }
+
+    private static void filterForCallbacks(@NonNull WebviewBridge bridge, @Nullable Object... items) {
+        if (items != null) {
+            for (Object obj : items) {
+                if (obj instanceof JavascriptCallback) {
+                    ((JavascriptCallback) obj).$bridge = new WeakReference<>(bridge);
+                }
+            }
+        }
     }
 
 }

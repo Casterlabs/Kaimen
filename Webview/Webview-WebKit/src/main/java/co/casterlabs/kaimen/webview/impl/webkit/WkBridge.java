@@ -57,6 +57,11 @@ public class WkBridge extends WebviewBridge {
         this.emit("callback:" + invokeId, arguments);
     }
 
+    @Override
+    protected void removeCallback0(@NonNull String invokeId) {
+        this.emit("callback:" + invokeId + ":remove", null);
+    }
+
     public void injectBridgeScript() {
         this.eval(bridgeScript);
         this.init();
