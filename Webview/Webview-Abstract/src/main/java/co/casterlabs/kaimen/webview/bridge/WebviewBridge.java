@@ -3,6 +3,7 @@ package co.casterlabs.kaimen.webview.bridge;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -21,6 +22,9 @@ public abstract class WebviewBridge {
 
     private WeakReference<WebviewBridge> $ref = new WeakReference<>(this);
 
+    private List<WeakReference<WebviewBridge>> downstreamBridges = new LinkedList<>();
+    private List<WeakReference<WebviewBridge>> attachedBridges = new LinkedList<>();
+
     private Map<String, BridgeValue<?>> personalQueryData = new HashMap<>();
     private Map<String, JavascriptObject> objects = new HashMap<>();
 
@@ -28,6 +32,15 @@ public abstract class WebviewBridge {
 
     public WebviewBridge() {
         bridges.add(this.$ref);
+    }
+
+    @Deprecated
+    public void mergeWith(WebviewBridge parent) {
+        parent.downstreamBridges.add(this.$ref);
+        this.attachedBridges.add(parent.$ref);
+        this.personalQueryData = parent.personalQueryData; // Pointer copy.
+        this.objects = parent.objects; // Pointer copy.
+        this.onEvent = parent.onEvent;
     }
 
     public void attachValue(@NonNull BridgeValue<?> bv) {
@@ -56,6 +69,10 @@ public abstract class WebviewBridge {
     protected void init() {
         for (Map.Entry<String, JavascriptObject> entry : this.objects.entrySet()) {
             entry.getValue().init(entry.getKey(), this);
+        }
+
+        for (WeakReference<WebviewBridge> wb : this.attachedBridges) {
+            wb.get().downstreamBridges.remove(this.$ref);
         }
     }
 
@@ -92,13 +109,37 @@ public abstract class WebviewBridge {
         }
     }
 
+    public void emit(@NonNull String type, @NonNull JsonElement data) {
+        this.emit0(type, data);
+
+        for (WeakReference<WebviewBridge> wb : this.downstreamBridges) {
+            wb.get().emit0(type, data);
+        }
+    }
+
+    public void eval(@NonNull String script) {
+        this.eval0(script);
+
+        for (WeakReference<WebviewBridge> wb : this.downstreamBridges) {
+            wb.get().eval0(script);
+        }
+    }
+
+    public void invokeCallback(@NonNull String invokeId, @NonNull JsonArray arguments) {
+        this.invokeCallback0(invokeId, arguments);
+
+        for (WeakReference<WebviewBridge> wb : this.downstreamBridges) {
+            wb.get().invokeCallback0(invokeId, arguments);
+        }
+    }
+
     /* Impl */
 
-    public abstract void emit(@NonNull String type, @NonNull JsonElement data);
+    protected abstract void emit0(@NonNull String type, @NonNull JsonElement data);
 
-    public abstract void eval(@NonNull String script);
+    protected abstract void eval0(@NonNull String script);
 
-    public abstract void invokeCallback(@NonNull String invokeId, @NonNull JsonArray arguments);
+    protected abstract void invokeCallback0(@NonNull String invokeId, @NonNull JsonArray arguments);
 
     /* Statics */
 
@@ -107,11 +148,11 @@ public abstract class WebviewBridge {
     }
 
     public static void emitAll(@NonNull String type, @NonNull JsonElement data) {
-        bridges.forEach((b) -> b.get().emit(type, data));
+        bridges.forEach((b) -> b.get().emit0(type, data));
     }
 
     public static void evalAll(@NonNull String script) {
-        bridges.forEach((b) -> b.get().eval(script));
+        bridges.forEach((b) -> b.get().eval0(script));
     }
 
 }

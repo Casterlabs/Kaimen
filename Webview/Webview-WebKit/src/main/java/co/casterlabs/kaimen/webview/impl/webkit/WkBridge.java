@@ -37,7 +37,7 @@ public class WkBridge extends WebviewBridge {
     }
 
     @Override
-    public void emit(@NonNull String type, @NonNull JsonElement data) {
+    protected void emit0(@NonNull String type, @NonNull JsonElement data) {
         String script = String.format("window.Bridge.broadcast(%s,%s);", new JsonString(type), data);
 
 //        if (!type.startsWith("querynonce:")) {
@@ -48,12 +48,12 @@ public class WkBridge extends WebviewBridge {
     }
 
     @Override
-    public void eval(@NonNull String script) {
+    protected void eval0(@NonNull String script) {
         webview.executeJavaScript(script);
     }
 
     @Override
-    public void invokeCallback(@NonNull String invokeId, @NonNull JsonArray arguments) {
+    protected void invokeCallback0(@NonNull String invokeId, @NonNull JsonArray arguments) {
         this.emit("callback:" + invokeId, arguments);
     }
 
