@@ -175,11 +175,18 @@ public abstract class JavascriptObject {
 
                 this.setter.invoke($i, o);
             } else {
-                Object o = null;
+                if (this.valueAnnotation.allowSet()) {
+                    Object o = null;
 
-                if (!v.isJsonNull()) {
-                    Class<?> type = this.value.getType();
-                    o = Rson.DEFAULT.fromJson(v, type);
+                    if (!v.isJsonNull()) {
+                        Class<?> type = this.value.getType();
+                        o = Rson.DEFAULT.fromJson(v, type);
+                        filterForCallbacks(bridge, o);
+                    }
+
+                    this.value.set($i, o);
+                } else {
+                    throw new UnsupportedOperationException("SET is not allowed for the field: " + $name);
                 }
 
                 this.value.set($i, o);
@@ -192,7 +199,12 @@ public abstract class JavascriptObject {
             if (this.getter != null) {
                 result = this.getter.invoke($i);
             } else {
-                result = this.value.get($i);
+                if (this.valueAnnotation.allowGet()) {
+
+                    result = this.value.get($i);
+                } else {
+                    throw new UnsupportedOperationException("GET is not allowed for the field: " + $name);
+                }
             }
 
             return Rson.DEFAULT.toJson(result);

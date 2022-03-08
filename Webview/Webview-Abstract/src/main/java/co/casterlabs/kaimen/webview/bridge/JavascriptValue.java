@@ -12,4 +12,8 @@ public @interface JavascriptValue {
 
     String value() default "";
 
+    boolean allowGet() default true;
+
+    boolean allowSet() default true;
+
 }
