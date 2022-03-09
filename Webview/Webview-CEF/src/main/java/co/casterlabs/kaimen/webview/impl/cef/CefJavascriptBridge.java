@@ -12,12 +12,10 @@ import org.cef.handler.CefMessageRouterHandlerAdapter;
 import co.casterlabs.kaimen.util.threading.AsyncTask;
 import co.casterlabs.kaimen.util.threading.Promise;
 import co.casterlabs.kaimen.webview.WebviewFileUtil;
-import co.casterlabs.kaimen.webview.bridge.BridgeValue;
 import co.casterlabs.kaimen.webview.bridge.WebviewBridge;
 import co.casterlabs.rakurai.json.Rson;
 import co.casterlabs.rakurai.json.element.JsonArray;
 import co.casterlabs.rakurai.json.element.JsonElement;
-import co.casterlabs.rakurai.json.element.JsonNull;
 import co.casterlabs.rakurai.json.element.JsonObject;
 import co.casterlabs.rakurai.json.element.JsonString;
 import co.casterlabs.rakurai.json.serialization.JsonParseException;
@@ -59,23 +57,6 @@ public class CefJavascriptBridge extends WebviewBridge {
                         case "emission": {
                             if (!persistent) {
                                 handleEmission(query);
-                            }
-                            break;
-                        }
-
-                        case "query": {
-                            if (!persistent) {
-                                String queryField = query.getString("field");
-                                String queryNonce = query.getString("nonce");
-
-                                BridgeValue<?> bv = CefJavascriptBridge.this.getQueryData().get(queryField);
-                                JsonElement el = JsonNull.INSTANCE;
-
-                                if (bv != null) {
-                                    el = bv.getAsJson();
-                                }
-
-                                emit("querynonce:" + queryNonce, new JsonObject().put("data", el));
                             }
                             break;
                         }

@@ -10,6 +10,7 @@ import java.util.UUID;
 
 import org.jetbrains.annotations.Nullable;
 
+import co.casterlabs.kaimen.util.reflection.FieldMutationListener;
 import co.casterlabs.rakurai.json.Rson;
 import co.casterlabs.rakurai.json.element.JsonArray;
 import co.casterlabs.rakurai.json.element.JsonElement;
@@ -26,6 +27,9 @@ public abstract class JavascriptObject {
     private Map<String, FieldMapping> properties = new HashMap<>();
     private Map<String, MethodMapping> functions = new HashMap<>();
     private Map<String, Field> subObjects = new HashMap<>();
+
+    private WeakReference<WebviewBridge> $bridge = new WeakReference<>(null);
+    private String name;
 
     @SneakyThrows
     public JavascriptObject() {
@@ -48,6 +52,19 @@ public abstract class JavascriptObject {
                 AccessHelper.makeAccessible(field);
 
                 this.properties.put(name, mapping);
+
+                if (annotation.watchForMutate()) {
+                    new FieldMutationListener(field, this)
+                        .onMutate((value) -> {
+                            WebviewBridge bridge = $bridge.get();
+
+                            if (bridge != null) {
+                                bridge.eval(
+                                    String.format("window.%s.__triggerMutate(%s,%s);", this.name, new JsonString(name), Rson.DEFAULT.toJson(value))
+                                );
+                            }
+                        });
+                }
             }
         }
 
@@ -94,6 +111,9 @@ public abstract class JavascriptObject {
 
     @SneakyThrows
     private void init(String name, WebviewBridge bridge, @Nullable JavascriptObject parent) {
+        $bridge = new WeakReference<>(bridge);
+        this.name = name;
+
         bridge.objects.put(name, this);
 
         bridge.eval(

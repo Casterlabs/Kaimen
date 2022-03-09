@@ -150,14 +150,20 @@ public class WkWebview extends Webview {
         this.browser.addProgressListener(new ProgressListener() {
             @Override
             public void changed(ProgressEvent event) {
-                bridge.injectBridgeScript();
+//                FastLogger.logStatic(event);
+
+                if (event.current == 100) {
+                    bridge.injectBridgeScript();
+
+                    new AsyncTask(() -> {
+                        getLifeCycleListener().onNavigate(getCurrentURL());
+                    });
+                }
             }
 
             @Override
             public void completed(ProgressEvent event) {
-                new AsyncTask(() -> {
-                    getLifeCycleListener().onNavigate(getCurrentURL());
-                });
+                this.changed(event);
             }
         });
 
@@ -194,7 +200,6 @@ public class WkWebview extends Webview {
 
                 windowState.setX(loc.x);
                 windowState.setY(loc.y);
-                windowState.update();
             }
 
             @Override
@@ -203,7 +208,6 @@ public class WkWebview extends Webview {
 
                 windowState.setWidth(size.x);
                 windowState.setHeight(size.y);
-                windowState.update();
             }
         });
 
@@ -264,8 +268,8 @@ public class WkWebview extends Webview {
 
     @Override
     public void executeJavaScript(@NonNull String script) {
-        if (!display.isDisposed()) {
-            display.asyncExec(() -> {
+        if ((display != null) && !display.isDisposed()) {
+            display.syncExec(() -> {
                 this.browser.execute(script);
             });
         }

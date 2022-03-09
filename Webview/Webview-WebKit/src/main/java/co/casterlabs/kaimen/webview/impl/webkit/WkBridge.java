@@ -2,14 +2,11 @@ package co.casterlabs.kaimen.webview.impl.webkit;
 
 import java.io.IOException;
 
-import co.casterlabs.kaimen.util.threading.AsyncTask;
 import co.casterlabs.kaimen.webview.WebviewFileUtil;
-import co.casterlabs.kaimen.webview.bridge.BridgeValue;
 import co.casterlabs.kaimen.webview.bridge.WebviewBridge;
 import co.casterlabs.rakurai.json.Rson;
 import co.casterlabs.rakurai.json.element.JsonArray;
 import co.casterlabs.rakurai.json.element.JsonElement;
-import co.casterlabs.rakurai.json.element.JsonNull;
 import co.casterlabs.rakurai.json.element.JsonObject;
 import co.casterlabs.rakurai.json.element.JsonString;
 import co.casterlabs.rakurai.json.serialization.JsonParseException;
@@ -34,6 +31,7 @@ public class WkBridge extends WebviewBridge {
 
     public WkBridge(WkWebview webview) {
         this.webview = webview;
+        this.defineObject("windowState", this.webview.getWindowState());
     }
 
     @Override
@@ -65,12 +63,6 @@ public class WkBridge extends WebviewBridge {
     public void injectBridgeScript() {
         this.eval(bridgeScript);
         this.init();
-
-        // Lifecycle listener. (Outside of the main thread)
-        new AsyncTask(() -> {
-//            this.loadPromise.fulfill(null);
-            this.attachValue(this.webview.getWindowState().getBridge());
-        });
     }
 
     // Called by SwtWebview
@@ -150,21 +142,6 @@ public class WkBridge extends WebviewBridge {
                     } else if (this.onEvent != null) {
                         this.onEvent.accept(type, data);
                     }
-                    break;
-                }
-
-                case "query": {
-                    String queryField = query.getString("field");
-                    String queryNonce = query.getString("nonce");
-
-                    BridgeValue<?> bv = this.getQueryData().get(queryField);
-                    JsonElement el = JsonNull.INSTANCE;
-
-                    if (bv != null) {
-                        el = bv.getAsJson();
-                    }
-
-                    emit("querynonce:" + queryNonce, new JsonObject().put("data", el));
                     break;
                 }
             }

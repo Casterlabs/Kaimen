@@ -16,4 +16,6 @@ public @interface JavascriptValue {
 
     boolean allowSet() default true;
 
+    boolean watchForMutate() default false;
+
 }

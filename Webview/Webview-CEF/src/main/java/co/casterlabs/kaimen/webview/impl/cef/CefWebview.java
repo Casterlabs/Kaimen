@@ -83,11 +83,6 @@ public class CefWebview extends Webview {
         this.cefPanel = new JPanel();
         this.cefPanel.setLayout(new BorderLayout(0, 0));
 
-        Timer saveTimer = new Timer(500, (e) -> {
-            this.windowState.update();
-        });
-        saveTimer.setRepeats(false);
-
         // Create the window.
         if (this.isTransparencyEnabled()) {
             JDialog dialog = new JDialog((Window) null);
@@ -122,13 +117,11 @@ public class CefWebview extends Webview {
             @Override
             public void windowGainedFocus(WindowEvent e) {
                 CefWebview.this.windowState.setHasFocus(true);
-                CefWebview.this.windowState.update();
             }
 
             @Override
             public void windowLostFocus(WindowEvent e) {
                 CefWebview.this.windowState.setHasFocus(false);
-                CefWebview.this.windowState.update();
             }
         });
 
@@ -160,7 +153,6 @@ public class CefWebview extends Webview {
                 if (!isMaximized()) {
                     CefWebview.this.windowState.setWidth(window.getWidth());
                     CefWebview.this.windowState.setHeight(window.getHeight());
-                    saveTimer.restart();
                 }
             }
 
@@ -169,7 +161,6 @@ public class CefWebview extends Webview {
                 if (!isMaximized()) {
                     CefWebview.this.windowState.setX(window.getX());
                     CefWebview.this.windowState.setY(window.getY());
-                    saveTimer.restart();
                 }
             }
         });
@@ -246,8 +237,8 @@ public class CefWebview extends Webview {
             public void onLoadStart(CefBrowser _browser, CefFrame _frame, TransitionType transitionType) {
                 if (browser == _browser) {
                     logger.info("Injected Bridge.");
+                    bridge.defineObject("windowState", windowState);
                     bridge.injectBridgeScript(browser.getMainFrame());
-                    bridge.attachValue(windowState.getBridge());
                 }
             }
         });

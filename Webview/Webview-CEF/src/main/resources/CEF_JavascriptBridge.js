@@ -41,7 +41,7 @@ if (!window.Bridge) {
 				delete listeners[type][callbackId];
 			},
 
-			broadcast(type, data, clone = true) {
+			broadcast(type, data) {
 				// Broadcast under a wildcard.
 				{
 					const wildCardCallbacks = listeners["*"];
@@ -49,11 +49,7 @@ if (!window.Bridge) {
 					if (wildCardCallbacks) {
 						Object.values(wildCardCallbacks).forEach((callback) => {
 							try {
-								if (clone) {
-									callback(type.toLowerCase(), Object.assign({}, data));
-								} else {
-									callback(type.toLowerCase(), data);
-								}
+								callback(type.toLowerCase(), data);
 							} catch (e) {
 								console.error("A listener produced an exception: ");
 								console.error(e);
@@ -69,11 +65,7 @@ if (!window.Bridge) {
 					if (callbacks) {
 						Object.values(callbacks).forEach((callback) => {
 							try {
-								if (clone) {
-									callback(Object.assign({}, data));
-								} else {
-									callback(data);
-								}
+								callback(data);
 							} catch (e) {
 								console.error("A listener produced an exception: ");
 								console.error(e);
@@ -127,7 +119,7 @@ if (!window.Bridge) {
 				delete listeners[type][callbackId];
 			},
 
-			broadcast(type, data, clone = true) {
+			broadcast(type, data) {
 				// Broadcast under a wildcard.
 				{
 					const wildCardCallbacks = listeners["*"];
@@ -135,11 +127,7 @@ if (!window.Bridge) {
 					if (wildCardCallbacks) {
 						Object.values(wildCardCallbacks).forEach((callback) => {
 							try {
-								if (clone) {
-									callback(type.toLowerCase(), Object.assign({}, data));
-								} else {
-									callback(type.toLowerCase(), data);
-								}
+								callback(type.toLowerCase(), data);
 							} catch (e) {
 								console.error("A listener produced an exception: ");
 								console.error(e);
@@ -155,11 +143,7 @@ if (!window.Bridge) {
 					if (callbacks) {
 						Object.values(callbacks).forEach((callback) => {
 							try {
-								if (clone) {
-									callback(Object.assign({}, data));
-								} else {
-									callback(data);
-								}
+								callback(data);
 							} catch (e) {
 								console.error("A listener produced an exception: ");
 								console.error(e);
@@ -206,21 +190,6 @@ if (!window.Bridge) {
 		});
 	}
 
-	function sendQuery(field, nonce) {
-		const payload = {
-			type: "query",
-			field: field,
-			nonce: nonce
-		};
-
-		cefQuery({
-			request: JSON.stringify(payload),
-			persistent: false,
-			onSuccess(response) { },
-			onFailure: onFailure
-		});
-	}
-
 	function stringifyAndRegisterCallbacks(obj) {
 		return JSON.parse(
 			JSON.stringify(obj, (k, v) => {
@@ -257,7 +226,22 @@ if (!window.Bridge) {
 				root = root[part];
 			}
 
+			let proxy;
+
+			const mutateEventHandler = new EventHandler();
 			const object = {
+				mutate(field, handler) {
+					proxy[field].then(handler);
+
+					return [field, mutateEventHandler.on(field, handler)];
+				},
+				off(id) {
+					mutateEventHandler.off(id[0], id[1]);
+				},
+
+				__triggerMutate(field, data) {
+					mutateEventHandler.broadcast(field, data);
+				},
 				__deffun(name) {
 					Object.defineProperty(object, name, {
 						value: function () {
@@ -313,7 +297,7 @@ if (!window.Bridge) {
 				}
 			};
 
-			const proxy = new Proxy(object, handler);
+			proxy = new Proxy(object, handler);
 
 			if (typeof root.__defraw == "function") {
 				root.__defraw(propertyName, proxy);
@@ -327,20 +311,6 @@ if (!window.Bridge) {
 				type: type,
 				data: data
 			});
-		},
-
-		query(field) {
-			return new Promise((resolve) => {
-				const nonce = `${Math.random()}${Math.random()}`.split(".").join("");
-
-				eventHandler.once(`querynonce:${nonce}`, resolve);
-
-				sendQuery(field, nonce);
-			});
-		},
-
-		createThrowawayEventHandler() {
-			return new ThrowawayEventHandler();
 		},
 
 		...eventHandler

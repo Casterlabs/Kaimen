@@ -17,7 +17,6 @@ import lombok.NonNull;
 import lombok.Setter;
 
 public abstract class WebviewBridge {
-    private static Map<String, BridgeValue<?>> globalQueryData = new HashMap<>();
     private static List<WeakReference<WebviewBridge>> bridges = new ArrayList<>();
 
     private WeakReference<WebviewBridge> $ref = new WeakReference<>(this);
@@ -25,7 +24,6 @@ public abstract class WebviewBridge {
     private List<WeakReference<WebviewBridge>> downstreamBridges = new LinkedList<>();
     private List<WeakReference<WebviewBridge>> attachedBridges = new LinkedList<>();
 
-    private Map<String, BridgeValue<?>> personalQueryData = new HashMap<>();
     Map<String, JavascriptObject> objects = new HashMap<>();
 
     protected @Setter DualConsumer<String, JsonObject> onEvent;
@@ -38,32 +36,13 @@ public abstract class WebviewBridge {
     public void mergeWith(WebviewBridge parent) {
         parent.downstreamBridges.add(this.$ref);
         this.attachedBridges.add(parent.$ref);
-        this.personalQueryData = parent.personalQueryData; // Pointer copy.
         this.objects = parent.objects; // Pointer copy.
         this.onEvent = parent.onEvent;
-    }
-
-    public void attachValue(@NonNull BridgeValue<?> bv) {
-        this.personalQueryData.put(bv.getKey(), bv);
-        bv.attachedBridges.add(this.$ref);
-    }
-
-    protected Map<String, BridgeValue<?>> getQueryData() {
-        Map<String, BridgeValue<?>> combined = new HashMap<>();
-
-        combined.putAll(this.personalQueryData);
-        combined.putAll(globalQueryData);
-
-        return combined;
     }
 
     @Override
     protected void finalize() {
         bridges.remove(this.$ref);
-
-        for (BridgeValue<?> bv : this.personalQueryData.values()) {
-            bv.attachedBridges.remove(this.$ref);
-        }
     }
 
     protected void init() {
@@ -76,6 +55,8 @@ public abstract class WebviewBridge {
         for (WeakReference<WebviewBridge> wb : this.attachedBridges) {
             wb.get().downstreamBridges.remove(this.$ref);
         }
+
+        this.eval("try { onBridgeInit(); } catch (ignored) { }");
     }
 
     public void defineObject(@NonNull String name, @NonNull JavascriptObject obj) {
@@ -153,10 +134,6 @@ public abstract class WebviewBridge {
     protected abstract void removeCallback0(@NonNull String invokeId);
 
     /* Statics */
-
-    protected static void attachGlobalBridge(@NonNull BridgeValue<?> bv) {
-        globalQueryData.put(bv.getKey(), bv);
-    }
 
     public static void emitAll(@NonNull String type, @NonNull JsonElement data) {
         bridges.forEach((b) -> b.get().emit0(type, data));

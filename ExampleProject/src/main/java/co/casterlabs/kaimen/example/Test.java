@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 
 import co.casterlabs.kaimen.app.App;
 import co.casterlabs.kaimen.app.App.Appearance;
+import co.casterlabs.kaimen.app.App.PowerManagementHint;
 import co.casterlabs.kaimen.app.AppBootstrap;
 import co.casterlabs.kaimen.app.AppEntry;
 import co.casterlabs.kaimen.app.ui.UIServer;
@@ -35,6 +36,7 @@ public class Test {
         // Setup the app
         App.setName("Example Application");
         App.setAppearance(Appearance.FOLLOW_SYSTEM);
+        App.setPowermanagementHint(PowerManagementHint.HIGH_PERFORMANCE);
 
         // UI Server
         UIServer uiServer = new UIServer();
@@ -52,6 +54,15 @@ public class Test {
                     + "<br />"
                     + "<br />"
                     + "<a href='https://google.com'>Open Google</a>"
+                    + "<p>x: <span id='x'></span> y: <span id='y'></span></p>"
+                    + "<script>"
+                    + "function onBridgeInit() {"
+                    + "const xElem = document.querySelector('#x');"
+                    + "const yElem = document.querySelector('#y');"
+                    + "windowState.mutate('x', (x) => xElem.innerText = x);"
+                    + "windowState.mutate('y', (y) => yElem.innerText = y);"
+                    + "}"
+                    + "</script>"
                     + "</body>"
                     + "</html"
             );
