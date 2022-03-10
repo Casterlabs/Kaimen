@@ -154,6 +154,7 @@ public class WkWebview extends Webview {
 
                 if (event.current == 100) {
                     bridge.injectBridgeScript();
+                    browser.evaluate("try { onBridgeInit(); } catch (ignored) { }");
 
                     new AsyncTask(() -> {
                         getLifeCycleListener().onNavigate(getCurrentURL());

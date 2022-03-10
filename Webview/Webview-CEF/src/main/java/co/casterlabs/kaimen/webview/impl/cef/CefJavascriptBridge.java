@@ -97,13 +97,13 @@ public class CefJavascriptBridge extends WebviewBridge {
 
     @Override
     protected void eval0(@NonNull String script) {
-        new AsyncTask(() -> {
-            try {
-                this.loadPromise.await();
-            } catch (Throwable e) {}
+        if (this.frame != null) {
+//            try {
+//                this.loadPromise.await();
+//            } catch (Throwable e) {}
 
             this.frame.executeJavaScript(script, "", 1);
-        });
+        }
     }
 
     @Override
@@ -119,9 +119,13 @@ public class CefJavascriptBridge extends WebviewBridge {
     public void injectBridgeScript(@NonNull CefFrame frame) {
         // Inject the bridge script.
         this.frame = frame;
-        this.frame.executeJavaScript(bridgeScript, "", 1);
         this.init();
         this.loadPromise.fulfill(null);
+    }
+
+    @Override
+    protected String getNativeBridgeScript() {
+        return bridgeScript;
     }
 
     private void handleEmission(@NonNull JsonObject query) {

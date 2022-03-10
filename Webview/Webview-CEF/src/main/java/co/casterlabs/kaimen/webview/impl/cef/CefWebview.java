@@ -228,6 +228,8 @@ public class CefWebview extends Webview {
 
             @Override
             public void onLoadEnd(CefBrowser _browser, CefFrame _frame, int httpStatusCode) {
+                executeJavaScript("try { onBridgeInit(); } catch (ignored) { }");
+
                 new AsyncTask(() -> {
                     getLifeCycleListener().onNavigate(getCurrentURL());
                 });

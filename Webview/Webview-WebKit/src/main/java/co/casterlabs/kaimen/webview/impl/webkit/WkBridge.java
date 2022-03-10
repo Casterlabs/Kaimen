@@ -61,8 +61,12 @@ public class WkBridge extends WebviewBridge {
     }
 
     public void injectBridgeScript() {
-        this.eval(bridgeScript);
         this.init();
+    }
+
+    @Override
+    protected String getNativeBridgeScript() {
+        return bridgeScript;
     }
 
     // Called by SwtWebview

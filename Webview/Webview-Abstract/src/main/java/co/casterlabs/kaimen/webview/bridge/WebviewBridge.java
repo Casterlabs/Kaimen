@@ -1,5 +1,6 @@
 package co.casterlabs.kaimen.webview.bridge;
 
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,6 +11,7 @@ import java.util.Map;
 import org.jetbrains.annotations.Nullable;
 
 import co.casterlabs.kaimen.util.functional.DualConsumer;
+import co.casterlabs.kaimen.webview.WebviewFileUtil;
 import co.casterlabs.rakurai.json.element.JsonArray;
 import co.casterlabs.rakurai.json.element.JsonElement;
 import co.casterlabs.rakurai.json.element.JsonObject;
@@ -17,6 +19,8 @@ import lombok.NonNull;
 import lombok.Setter;
 
 public abstract class WebviewBridge {
+    private static String bridgeScript = "";
+
     private static List<WeakReference<WebviewBridge>> bridges = new ArrayList<>();
 
     private WeakReference<WebviewBridge> $ref = new WeakReference<>(this);
@@ -27,6 +31,14 @@ public abstract class WebviewBridge {
     Map<String, JavascriptObject> objects = new HashMap<>();
 
     protected @Setter DualConsumer<String, JsonObject> onEvent;
+
+    static {
+        try {
+            bridgeScript = WebviewFileUtil.loadResourceFromBuildProject("WebviewBridge.js", "Webview-Abstract");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     public WebviewBridge() {
         bridges.add(this.$ref);
@@ -46,6 +58,9 @@ public abstract class WebviewBridge {
     }
 
     protected void init() {
+        String script = bridgeScript.replace("\"replace with native comms code\";", this.getNativeBridgeScript());
+        this.eval0(script);
+
         for (Map.Entry<String, JavascriptObject> entry : new ArrayList<>(this.objects.entrySet())) {
             if (!entry.getKey().contains(".")) {
                 entry.getValue().init(entry.getKey(), this);
@@ -55,8 +70,6 @@ public abstract class WebviewBridge {
         for (WeakReference<WebviewBridge> wb : this.attachedBridges) {
             wb.get().downstreamBridges.remove(this.$ref);
         }
-
-        this.eval("try { onBridgeInit(); } catch (ignored) { }");
     }
 
     public void defineObject(@NonNull String name, @NonNull JavascriptObject obj) {
@@ -99,7 +112,7 @@ public abstract class WebviewBridge {
         }
     }
 
-    public void eval(@NonNull String script) {
+    public synchronized void eval(@NonNull String script) {
         this.eval0(script);
 
         for (WeakReference<WebviewBridge> wb : this.downstreamBridges) {
@@ -132,6 +145,8 @@ public abstract class WebviewBridge {
     protected abstract void invokeCallback0(@NonNull String invokeId, @NonNull JsonArray arguments);
 
     protected abstract void removeCallback0(@NonNull String invokeId);
+
+    protected abstract String getNativeBridgeScript();
 
     /* Statics */
 

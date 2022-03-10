@@ -29,6 +29,7 @@ public abstract class JavascriptObject {
     private Map<String, Field> subObjects = new HashMap<>();
 
     private WeakReference<WebviewBridge> $bridge = new WeakReference<>(null);
+    @SuppressWarnings("unused")
     private String name;
 
     @SneakyThrows
@@ -60,7 +61,12 @@ public abstract class JavascriptObject {
 
                             if (bridge != null) {
                                 bridge.eval(
-                                    String.format("window.%s.__triggerMutate(%s,%s);", this.name, new JsonString(name), Rson.DEFAULT.toJson(value))
+                                    String.format(
+                                        "window.Bridge.internal__triggermutate(`__mutate:${%s}:${%s}`,%s);",
+                                        new JsonString(this.id),
+                                        new JsonString(name),
+                                        Rson.DEFAULT.toJson(value)
+                                    )
                                 );
                             }
                         });
@@ -117,13 +123,20 @@ public abstract class JavascriptObject {
         bridge.objects.put(name, this);
 
         bridge.eval(
-            String.format("window.Bridge.internal_define(%s,%s);", new JsonString(name), new JsonString(this.id))
+            String.format("window.Bridge.internal__define(%s,%s);", new JsonString(name), new JsonString(this.id))
         );
 
         for (String functionName : this.functions.keySet()) {
             bridge.eval(
                 // We directly access the property without `[]` for subobject support.
-                String.format("window.%s.__deffun(%s,%s);", name, new JsonString(functionName), new JsonString(this.id))
+                String.format("window.%s.internal__deffun(%s,%s);", name, new JsonString(functionName), new JsonString(this.id))
+            );
+        }
+
+        for (String propertyName : this.properties.keySet()) {
+            bridge.eval(
+                // We directly access the property without `[]` for subobject support.
+                String.format("window.%s.internal__defprop(%s);", name, new JsonString(propertyName))
             );
         }
 
