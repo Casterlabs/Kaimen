@@ -229,7 +229,7 @@ public class WkWebview extends Webview {
             // Note that AsyncTask will not hold the JVM open, so we can safely use it
             // without a shutdown mechanism.
             while (!this.shell.isDisposed()) {
-                String result = (String) this.eval("return window.Bridge?.clearQueryQueue();");
+                String result = (String) this.eval("return window.Bridge?.internal__wkGetQueryQueue();");
 
                 if (result != null) {
                     try {
@@ -269,7 +269,7 @@ public class WkWebview extends Webview {
 
     @Override
     public void executeJavaScript(@NonNull String script) {
-        if ((display != null) && !display.isDisposed()) {
+        if ((display != null) && !display.isDisposed() && (this.browser != null)) {
             display.syncExec(() -> {
                 this.browser.execute(script);
             });
