@@ -112,7 +112,7 @@ public abstract class WebviewBridge {
         }
     }
 
-    public synchronized void eval(@NonNull String script) {
+    public void eval(@NonNull String script) {
         this.eval0(script);
 
         for (WeakReference<WebviewBridge> wb : this.downstreamBridges) {
