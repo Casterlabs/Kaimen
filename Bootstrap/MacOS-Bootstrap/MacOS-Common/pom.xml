@@ -26,11 +26,18 @@
 			<version>${project.parent.version}</version>
 			<scope>compile</scope>
 		</dependency>
+		
 		<dependency>
 			<groupId>co.casterlabs</groupId>
-			<artifactId>Webview-WebKit</artifactId>
+			<artifactId>Webview-Webkit</artifactId>
 			<version>${project.parent.version}</version>
-			<scope>compile</scope>
+			<scope>protected</scope>
+		</dependency>
+		<dependency>
+			<groupId>co.casterlabs</groupId>
+			<artifactId>Webview-WV</artifactId>
+			<version>${project.parent.version}</version>
+			<scope>protected</scope>
 		</dependency>
 
 		<!-- https://github.com/Casterlabs/eclipse-swt -->

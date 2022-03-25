@@ -8,6 +8,10 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.swing.ImageIcon;
 import javax.swing.JDialog;
@@ -29,6 +33,8 @@ import org.cef.network.CefRequest.TransitionType;
 import org.jetbrains.annotations.Nullable;
 
 import co.casterlabs.kaimen.app.App;
+import co.casterlabs.kaimen.util.platform.Arch;
+import co.casterlabs.kaimen.util.platform.OperatingSystem;
 import co.casterlabs.kaimen.util.threading.AsyncTask;
 import co.casterlabs.kaimen.webview.Webview;
 import co.casterlabs.kaimen.webview.WebviewFactory;
@@ -49,6 +55,23 @@ public class CefWebview extends Webview {
         public @Nullable Webview produce() throws Exception {
             return new CefWebview();
         }
+
+        @Override
+        public Map<OperatingSystem, List<Arch>> getSupportMap() {
+            Map<OperatingSystem, List<Arch>> supported = new HashMap<>();
+
+            supported.put(
+                OperatingSystem.LINUX,
+                Arrays.asList(Arch.AARCH64, Arch.AMD64, Arch.X86)
+            );
+
+            supported.put(
+                OperatingSystem.WINDOWS,
+                Arrays.asList(Arch.AARCH64, Arch.AMD64, Arch.X86)
+            );
+
+            return supported;
+        };
 
         @Override
         public WebviewRenderer getRendererType() {

@@ -1,6 +1,13 @@
 package co.casterlabs.kaimen.webview;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 import co.casterlabs.kaimen.util.functional.Producer;
+import co.casterlabs.kaimen.util.platform.Arch;
+import co.casterlabs.kaimen.util.platform.OperatingSystem;
 import co.casterlabs.kaimen.util.platform.Platform;
 import xyz.e3ndr.fastloggingframework.logging.FastLogger;
 import xyz.e3ndr.fastloggingframework.logging.LogLevel;
@@ -11,48 +18,50 @@ public abstract class WebviewFactory implements Producer<Webview> {
 
     static {
         try {
-            Class<?> wkWebview = null;
-            Class<?> cefWebview = null;
+            List<WebviewFactory> factories = new ArrayList<>();
 
             try {
-                wkWebview = Class.forName("co.casterlabs.kaimen.webview.impl.webkit.WkWebview");
+                factories.add(
+                    ReflectionLib.getStaticValue(
+                        Class.forName("co.casterlabs.kaimen.webview.impl.cef.CefWebview"),
+                        "FACTORY"
+                    )
+                );
             } catch (Exception ignored) {}
 
             try {
-                cefWebview = Class.forName("co.casterlabs.kaimen.webview.impl.cef.CefWebview");
+                factories.add(
+                    ReflectionLib.getStaticValue(
+                        Class.forName("co.casterlabs.kaimen.webview.impl.webkit.WkWebview"),
+                        "FACTORY"
+                    )
+                );
             } catch (Exception ignored) {}
 
-            switch (Platform.os) {
-                case MACOSX:
-                    if (wkWebview != null) {
-                        FACTORY = ReflectionLib.getStaticValue(wkWebview, "FACTORY");
-                        break;
-                    } else {
-                        break;
-                    }
-
-                case LINUX:
-                case WINDOWS:
-                    if (cefWebview != null) {
-                        FACTORY = ReflectionLib.getStaticValue(cefWebview, "FACTORY");
-                        break;
-                    } else {
-                        break;
-                    }
-            }
+            try {
+                factories.add(
+                    ReflectionLib.getStaticValue(
+                        Class.forName("co.casterlabs.kaimen.webview.impl.wv.WvWebview"),
+                        "FACTORY"
+                    )
+                );
+            } catch (Exception ignored) {}
 
             if (FACTORY == null) {
-                if ((wkWebview == null) && (cefWebview == null)) {
-                    FastLogger.logStatic(LogLevel.SEVERE, "Could not find any webviews. Is your project configured correctly?");
-                    throw new RuntimeException();
-                } else {
-                    FastLogger.logStatic(LogLevel.WARNING, "Could not find appropriate webview for %s. Is your project configured correctly? Using fallback.", Platform.os);
-
-                    if (wkWebview != null) {
-                        FACTORY = ReflectionLib.getStaticValue(wkWebview, "FACTORY");
-                    } else {
-                        FACTORY = ReflectionLib.getStaticValue(cefWebview, "FACTORY");
+                for (WebviewFactory factory : factories) {
+                    try {
+                        if (factory.supportsPlatform()) {
+                            FACTORY = factory;
+                            break;
+                        }
+                    } catch (Throwable t) {
+                        FastLogger.logException(t);
                     }
+                }
+
+                if (FACTORY == null) {
+                    FastLogger.logStatic(LogLevel.SEVERE, "Could not find any webviews. Is your project configured correctly?");
+                    throw new IllegalStateException("Cannot find any webviews. Is your project configured correctly?");
                 }
             }
         } catch (Exception e) {
@@ -65,7 +74,15 @@ public abstract class WebviewFactory implements Producer<Webview> {
         return FACTORY;
     }
 
+    public boolean supportsPlatform() {
+        List<Arch> arches = this.getSupportMap().getOrDefault(Platform.os, Collections.emptyList());
+
+        return arches.contains(Platform.arch);
+    }
+
     public abstract WebviewRenderer getRendererType();
+
+    public abstract Map<OperatingSystem, List<Arch>> getSupportMap();
 
     public boolean supportsOSR() {
         return true;

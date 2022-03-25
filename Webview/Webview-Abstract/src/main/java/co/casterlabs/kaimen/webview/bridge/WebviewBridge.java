@@ -58,9 +58,15 @@ public abstract class WebviewBridge {
     }
 
     protected void init() {
-        String script = bridgeScript.replace("\"replace with native comms code\";", this.getNativeBridgeScript());
-        this.eval0(script);
+        this.eval0(this.getInitScript());
+        this.initNoInject();
+    }
 
+    protected String getInitScript() {
+        return bridgeScript.replace("\"replace with native comms code\";", this.getNativeBridgeScript());
+    }
+
+    protected void initNoInject() {
         for (Map.Entry<String, JavascriptObject> entry : new ArrayList<>(this.objects.entrySet())) {
             if (!entry.getKey().contains(".")) {
                 entry.getValue().init(entry.getKey(), this);

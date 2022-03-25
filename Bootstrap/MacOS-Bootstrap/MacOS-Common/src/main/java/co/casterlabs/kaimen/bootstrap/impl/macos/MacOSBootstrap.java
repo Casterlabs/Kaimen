@@ -10,6 +10,7 @@ import co.casterlabs.kaimen.app.App;
 import co.casterlabs.kaimen.util.threading.MainThread;
 import co.casterlabs.kaimen.webview.Webview;
 import co.casterlabs.kaimen.webview.impl.webkit.WkWebview;
+import co.casterlabs.kaimen.webview.impl.webviewproject.WvWebview;
 import lombok.NonNull;
 
 public class MacOSBootstrap extends App {
@@ -27,7 +28,11 @@ public class MacOSBootstrap extends App {
         Display.setAppName(name);
 
         for (Webview wv : Webview.getActiveWebviews()) {
-            ((WkWebview) wv).updateTitle();
+            if (wv instanceof WkWebview) {
+                ((WkWebview) wv).updateTitle();
+            } else if (wv instanceof WvWebview) {
+                // TODO
+            }
         }
     }
 
@@ -41,7 +46,11 @@ public class MacOSBootstrap extends App {
     @Override
     protected void setIcon0(@Nullable URL url) {
         for (Webview wv : Webview.getActiveWebviews()) {
-            ((WkWebview) wv).changeImage(url);
+            if (wv instanceof WkWebview) {
+                ((WkWebview) wv).changeImage(url);
+            } else if (wv instanceof WvWebview) {
+                // TODO
+            }
         }
     }
 

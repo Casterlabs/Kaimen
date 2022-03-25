@@ -55,6 +55,12 @@
 			<version>${project.parent.version}</version>
 			<scope>compile</scope>
 		</dependency>
+		<dependency>
+			<groupId>co.casterlabs</groupId>
+			<artifactId>Webview-WebKit</artifactId>
+			<version>${project.parent.version}</version>
+			<scope>compile</scope>
+		</dependency>
 
 		<!-- https://github.com/Casterlabs/eclipse-swt -->
 		<dependency>

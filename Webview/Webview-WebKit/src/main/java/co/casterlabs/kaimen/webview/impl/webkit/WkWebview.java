@@ -2,6 +2,10 @@ package co.casterlabs.kaimen.webview.impl.webkit;
 
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.swt.SWT;
@@ -20,6 +24,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.jetbrains.annotations.Nullable;
 
 import co.casterlabs.kaimen.app.App;
+import co.casterlabs.kaimen.util.platform.Arch;
 import co.casterlabs.kaimen.util.platform.OperatingSystem;
 import co.casterlabs.kaimen.util.platform.Platform;
 import co.casterlabs.kaimen.util.threading.AsyncTask;
@@ -51,6 +56,18 @@ public class WkWebview extends Webview {
         public @Nullable Webview produce() throws Exception {
             return new WkWebview();
         }
+
+        @Override
+        public Map<OperatingSystem, List<Arch>> getSupportMap() {
+            Map<OperatingSystem, List<Arch>> supported = new HashMap<>();
+
+            supported.put(
+                OperatingSystem.MACOSX,
+                Arrays.asList(Arch.AARCH64, Arch.AMD64)
+            );
+
+            return supported;
+        };
 
         @Override
         public WebviewRenderer getRendererType() {
