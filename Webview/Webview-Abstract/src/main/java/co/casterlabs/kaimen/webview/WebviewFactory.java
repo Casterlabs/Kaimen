@@ -41,7 +41,7 @@ public abstract class WebviewFactory implements Producer<Webview> {
             try {
                 factories.add(
                     ReflectionLib.getStaticValue(
-                        Class.forName("co.casterlabs.kaimen.webview.impl.wv.WvWebview"),
+                        Class.forName("co.casterlabs.kaimen.webview.impl.webviewproject.WvWebview"),
                         "FACTORY"
                     )
                 );
@@ -54,9 +54,7 @@ public abstract class WebviewFactory implements Producer<Webview> {
                             FACTORY = factory;
                             break;
                         }
-                    } catch (Throwable t) {
-                        FastLogger.logException(t);
-                    }
+                    } catch (Throwable ignored) {}
                 }
 
                 if (FACTORY == null) {
@@ -75,9 +73,10 @@ public abstract class WebviewFactory implements Producer<Webview> {
     }
 
     public boolean supportsPlatform() {
-        List<Arch> arches = this.getSupportMap().getOrDefault(Platform.os, Collections.emptyList());
-
-        return arches.contains(Platform.arch);
+        return this
+            .getSupportMap()
+            .getOrDefault(Platform.os, Collections.emptyList())
+            .contains(Platform.arch);
     }
 
     public abstract WebviewRenderer getRendererType();

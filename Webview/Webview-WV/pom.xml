@@ -60,7 +60,7 @@
 	    	<groupId>com.github.Casterlabs</groupId>
 	    	<artifactId>webview</artifactId>
 			<version>1.0.1</version>
-			<scope>provided</scope>
+			<scope>compile</scope>
 		</dependency>
 
 	</dependencies>

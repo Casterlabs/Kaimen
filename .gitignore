@@ -14,3 +14,7 @@ target/
 .DS_Store
 __MACOSX
 cef_bundle/ 
+libwebview.dylib
+libwebview.so
+webview.dll
+WebView2Loader.dll

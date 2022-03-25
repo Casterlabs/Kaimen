@@ -9,7 +9,7 @@ import org.jetbrains.annotations.Nullable;
 
 import co.casterlabs.kaimen.util.platform.Arch;
 import co.casterlabs.kaimen.util.platform.OperatingSystem;
-import co.casterlabs.kaimen.util.threading.AsyncTask;
+import co.casterlabs.kaimen.util.threading.MainThread;
 import co.casterlabs.kaimen.webview.Webview;
 import co.casterlabs.kaimen.webview.WebviewFactory;
 import co.casterlabs.kaimen.webview.WebviewRenderer;
@@ -19,6 +19,7 @@ import co.casterlabs.rakurai.json.element.JsonArray;
 import co.casterlabs.rakurai.json.element.JsonElement;
 import co.casterlabs.rakurai.json.element.JsonObject;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 
 public class WvWebview extends Webview {
 
@@ -88,35 +89,38 @@ public class WvWebview extends Webview {
         return this.bridge;
     }
 
+    @SneakyThrows
     @Override
     public void open(@Nullable String url) {
-        this.wv = new dev.webview.Webview();
+        MainThread.submitTaskAndWait(() -> {
+            this.wv = new dev.webview.Webview();
 
-        this.wv.setInitScript(this.bridge.getInitScript());
+            this.wv.setInitScript(this.bridge.getInitScript());
 
-        this.wv.bind("__internal_comms", (JsonArray args) -> {
-            JsonElement e = args.get(0);
+            this.wv.bind("__internal_comms", (JsonArray args) -> {
+                JsonElement e = args.get(0);
 
-            if (e.isJsonObject()) {
-                JsonObject data = e.getAsObject();
+                if (e.isJsonObject()) {
+                    JsonObject data = e.getAsObject();
 
-                this.bridge.handleEmission(data);
-            } else {
-                String value = e.getAsString();
+                    this.bridge.handleEmission(data);
+                } else {
+                    String value = e.getAsString();
 
-                switch (value) {
-                    case "INIT": {
-                        this.bridge.initNoInject();
-                        break;
+                    switch (value) {
+                        case "INIT": {
+                            this.bridge.initNoInject();
+                            break;
+                        }
                     }
                 }
-            }
-            return null;
+                return null;
+            });
+
+            this.wv.loadURL(url);
         });
 
-        this.wv.loadURL(url);
-
-        new AsyncTask(this.wv::run);
+        MainThread.submitTask(this.wv::run);
     }
 
     @Override
