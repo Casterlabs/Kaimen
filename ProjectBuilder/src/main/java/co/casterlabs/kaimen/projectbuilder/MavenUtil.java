@@ -9,6 +9,7 @@ import java.net.URL;
 
 import co.casterlabs.kaimen.util.platform.Arch;
 import co.casterlabs.kaimen.util.platform.OperatingSystem;
+import co.casterlabs.kaimen.webview.WebviewRenderer;
 import co.casterlabs.rakurai.io.IOUtil;
 import xyz.e3ndr.fastloggingframework.logging.FastLogger;
 
@@ -16,9 +17,22 @@ public class MavenUtil {
 
     public static File getKaimenBootstrap(OperatingSystem os, Arch arch, String version) throws InterruptedException, IOException {
         final String group = "co.casterlabs.kaimen";
-        String artifact = String.format("%s-%s", os, arch);
 
-        artifact = artifact.substring(0, 1).toUpperCase() + artifact.substring(1); // Just some silly string manipulation.
+        String osStr = os.toString();
+        osStr = osStr.substring(0, 1).toUpperCase() + osStr.substring(1); // Just some silly string manipulation.
+
+        String artifact = String.format("%s-%s", osStr, arch);
+
+        return downloadDependency(group, artifact, version);
+    }
+
+    public static File getWebviewBootstrap(OperatingSystem os, Arch arch, String version, WebviewRenderer webviewImplementation) throws InterruptedException, IOException {
+        final String group = "co.casterlabs.kaimen";
+
+        String osStr = os.toString();
+        osStr = osStr.substring(0, 1).toUpperCase() + osStr.substring(1); // Just some silly string manipulation.
+
+        String artifact = String.format("%s-%s-%s", webviewImplementation, osStr, arch);
 
         return downloadDependency(group, artifact, version);
     }

@@ -12,6 +12,7 @@ import com.badlogicgames.packr.PackrConfig;
 import co.casterlabs.kaimen.util.platform.Arch;
 import co.casterlabs.kaimen.util.platform.OperatingSystem;
 import co.casterlabs.kaimen.util.platform.Platform;
+import co.casterlabs.kaimen.webview.WebviewRenderer;
 import co.casterlabs.rakurai.io.IOUtil;
 import kotlin.Pair;
 import lombok.ToString;
@@ -43,6 +44,12 @@ public class ProjectBuilder implements Runnable {
             "--targetArch"
     }, description = "The target architecture to compile for", required = true)
     private Arch targetArch;
+
+    @Option(names = {
+            "-wi",
+            "--webviewImplementation"
+    }, description = "The webview implementation to use")
+    private WebviewRenderer webviewImplementation; // NULL = Auto
 
     @Option(names = {
             "-kv",
@@ -108,6 +115,10 @@ public class ProjectBuilder implements Runnable {
             FastLoggingFramework.setDefaultLevel(LogLevel.DEBUG);
         }
 
+        if (this.webviewImplementation == null) {
+
+        }
+
         this.doPreflightChecks();
 
         File outputDir = new File(String.format("./dist/%s-%s", this.targetOS, this.targetArch));
@@ -153,6 +164,18 @@ public class ProjectBuilder implements Runnable {
             FastLogger.logStatic(LogLevel.SEVERE, "Build prep failed :(");
             FastLogger.logException(e);
             return;
+        }
+
+        if (this.webviewImplementation != null) {
+            try {
+                File webview = MavenUtil.getWebviewBootstrap(this.targetOS, this.targetArch, this.kaimenVersion, this.webviewImplementation);
+
+                this.classPath.add(webview.getCanonicalPath());
+            } catch (Exception e) {
+                FastLogger.logStatic(LogLevel.SEVERE, "Build prep failed :(");
+                FastLogger.logException(e);
+                return;
+            }
         }
 
         try {
