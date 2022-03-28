@@ -35,7 +35,7 @@ public class FieldMutationListener {
 
         this.field = field;
         this.$inst = instance;
-        this.lastHash = getHashCodeForField(this.field, $inst != null ? $inst.get() : null);
+        this.lastHash = 0;
 
         this.task = new AsyncTask(this::asyncChecker);
     }
@@ -60,20 +60,24 @@ public class FieldMutationListener {
                 instance = $inst.get();
 
                 if (instance == null) {
-                    return;
+                    return; // We lost the reference, close the handler entirely.
                 }
             }
 
-            int currentHash = getHashCodeForField(this.field, instance);
+            try {
+                int currentHash = getHashCodeForField(this.field, instance);
 
-            if (this.lastHash != currentHash) {
-                this.lastHash = currentHash;
+                if (this.lastHash != currentHash) {
+                    this.lastHash = currentHash;
 
-                if (this.onMutate != null) {
-                    this.onMutate.accept(
-                        this.field.get(instance)
-                    );
+                    if (this.onMutate != null) {
+                        this.onMutate.accept(
+                            this.field.get(instance)
+                        );
+                    }
                 }
+            } catch (Throwable t) {
+                // We ignore any exception thrown.
             }
 
             Thread.yield();
@@ -85,8 +89,7 @@ public class FieldMutationListener {
         this.task.cancel();
     }
 
-    @SneakyThrows
-    private static int getHashCodeForField(Field field, Object instance) {
+    private static int getHashCodeForField(Field field, Object instance) throws IllegalArgumentException, IllegalAccessException {
         Object v = field.get(instance);
 
         if (v == null) {
