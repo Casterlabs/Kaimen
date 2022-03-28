@@ -1,0 +1,36 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>WebviewBootstrap</artifactId>
+	<packaging>pom</packaging>
+
+	<parent>
+		<groupId>co.casterlabs</groupId>
+		<artifactId>Bootstrap</artifactId>
+		<version>1.0.0</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+
+	<modules>
+
+		<module>AllWebviewImpls</module>
+
+		<!-- CEF -->
+
+		<module>CEF-Linux-aarch64</module>
+		<module>CEF-Linux-amd64</module>
+		<module>CEF-Linux-x86</module>
+
+		<module>CEF-Windows-aarch64</module>
+		<module>CEF-Windows-amd64</module>
+		<module>CEF-Windows-x86</module>
+
+		<!-- WebKit -->
+
+		<module>WebKit-MacOS-aarch64</module>
+		<module>WebKit-MacOS-amd64</module>
+		
+	</modules>
+
+</project>

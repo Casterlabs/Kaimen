@@ -22,6 +22,12 @@
 		</dependency>
 
 		<!-- NEVER DO THIS. -->
+		<dependency>
+			<groupId>co.casterlabs</groupId>
+			<artifactId>AllWebviewImpls</artifactId>
+			<version>${project.parent.version}</version>
+			<scope>compile</scope>
+		</dependency>
 
 		<dependency>
 			<groupId>co.casterlabs</groupId>
