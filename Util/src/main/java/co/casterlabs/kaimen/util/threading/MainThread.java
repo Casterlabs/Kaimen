@@ -8,20 +8,20 @@ import org.jetbrains.annotations.Nullable;
 
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import xyz.e3ndr.fastloggingframework.logging.FastLogger;
 import xyz.e3ndr.fastloggingframework.logging.LogLevel;
 
 public class MainThread {
-    private static Deque<Runnable> taskQueue = new ArrayDeque<>();
-    private static Lock lock;
-
     private static @Getter Thread thread;
+
+    private static Impl defaultImpl;
+    private static @Deprecated @Nullable @Setter Impl impl;
 
     public static void park(@Nullable Runnable continued) {
         assert thread == null : "Already parked.";
 
         thread = Thread.currentThread();
-        lock = new Lock(); // Create the resource on THIS thread.
 
         if (continued != null) {
             Thread cont = new Thread(continued);
@@ -30,8 +30,30 @@ public class MainThread {
             cont.start();
         }
 
+        final Lock lock = new Lock(); // Create the resource on THIS thread.
+        final Deque<Runnable> taskQueue = new ArrayDeque<>();
+
+        defaultImpl = (task) -> {
+            taskQueue.add(task);
+
+            synchronized (lock) {
+                lock.notify();
+            }
+        };
+
         while (true) {
-            processTaskQueue();
+            while (!taskQueue.isEmpty()) {
+                try {
+                    Runnable popped = taskQueue.pop();
+
+                    try {
+                        popped.run();
+                    } catch (Throwable t) {
+                        FastLogger.logStatic(LogLevel.SEVERE, "An exception occurred whilst processing task on the main thread:");
+                        FastLogger.logException(t);
+                    }
+                } catch (NoSuchElementException ignored) {}
+            }
 
             try {
 //                Thread.yield(); // The thread may lie dormant for a while.
@@ -46,42 +68,14 @@ public class MainThread {
         }
     }
 
-    /**
-     * This is here since the SWT event loop mandates special behavior.
-     * 
-     * @return true if the queue was processed.
-     */
-    @Deprecated
-    public static boolean processTaskQueue() {
-        assert isMainThread() : "This method may only be called on the main thread.";
-
-        if (taskQueue.isEmpty()) {
-            return false;
-        } else {
-            while (!taskQueue.isEmpty()) {
-                try {
-                    Runnable popped = taskQueue.pop();
-
-                    try {
-                        popped.run();
-                    } catch (Throwable t) {
-                        FastLogger.logStatic(LogLevel.SEVERE, "An exception occurred whilst processing task on the main thread:");
-                        FastLogger.logException(t);
-                    }
-                } catch (NoSuchElementException ignored) {}
-            }
-            return true;
-        }
-    }
-
     public static void submitTask(@NonNull Runnable task) {
         if (isMainThread()) {
             task.run();
         } else {
-            taskQueue.add(task);
-
-            synchronized (lock) {
-                lock.notify();
+            if (impl == null) {
+                defaultImpl.submitTask(task);
+            } else {
+                impl.submitTask(task);
             }
         }
     }
@@ -116,6 +110,12 @@ public class MainThread {
 
     public static boolean isMainThread() {
         return Thread.currentThread() == thread;
+    }
+
+    public static interface Impl {
+
+        public void submitTask(@NonNull Runnable task);
+
     }
 
 }

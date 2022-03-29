@@ -14,11 +14,20 @@ import lombok.NonNull;
 
 public class MacOSBootstrap extends App {
 
+    @SuppressWarnings("deprecation")
     public MacOSBootstrap() {
         MainThread.submitTask(() -> {
             // Init the display for the main thread.
             // We need to create atleast one display for OS.setTheme() to work.
-            new Display();
+            Display display = new Display();
+
+            MainThread.setImpl(display::asyncExec);
+
+            while (display.isDisposed()) {
+                if (!display.readAndDispatch()) {
+                    display.sleep();
+                }
+            }
         });
     }
 

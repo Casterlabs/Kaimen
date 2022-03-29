@@ -45,7 +45,6 @@ import lombok.SneakyThrows;
 import xyz.e3ndr.fastloggingframework.logging.FastLogger;
 import xyz.e3ndr.reflectionlib.ReflectionLib;
 
-@SuppressWarnings("deprecation")
 public class WkWebview extends Webview {
     private static boolean initialized = false;
     private static Display display;
@@ -106,30 +105,6 @@ public class WkWebview extends Webview {
             MainThread.submitTask(() -> {
                 if (display == null) {
                     display = Display.getCurrent();
-                }
-
-                // We implement our own event loop for the MainThread.
-                while (true) {
-
-                    if (display.isDisposed()) {
-                        // SWT GOT KILLED, THE END IS NEIGH.
-                        System.exit(0);
-                        return;
-                    } else {
-
-                        // Let the main thread do some work (since we're blocking it right now)
-                        MainThread.processTaskQueue();
-
-                        // Execute the SWT dispatch and sleep if there is no more work to be done.
-                        if (!display.readAndDispatch()) {
-                            // We can't use display.sleep() or implement something similar in MainThread
-                            // because they are separate systems without messaging, doing so would mean we
-                            // would forfeit priority to one or the other.
-                            try {
-                                Thread.sleep(100);
-                            } catch (InterruptedException ignored) {}
-                        }
-                    }
                 }
             });
         }
@@ -268,7 +243,7 @@ public class WkWebview extends Webview {
 
     @Override
     public void loadURL(@Nullable String _url) {
-        display.asyncExec(() -> {
+        MainThread.submitTask(() -> {
             String url = _url; // Pointer.
 
             if (url == null) {
@@ -284,10 +259,11 @@ public class WkWebview extends Webview {
         return new MainThreadPromise<String>(() -> this.browser.getUrl()).await();
     }
 
+    @SneakyThrows
     @Override
     public void executeJavaScript(@NonNull String script) {
-        if ((display != null) && !display.isDisposed() && (this.browser != null)) {
-            display.syncExec(() -> {
+        if (this.browser != null) {
+            MainThread.submitTaskAndWait(() -> {
                 this.browser.execute(script);
             });
         }
@@ -315,7 +291,7 @@ public class WkWebview extends Webview {
 
         this.getLifeCycleListener().onBrowserOpen();
 
-        display.syncExec(() -> {
+        MainThread.submitTask(() -> {
             this.mt_initialize();
 //            this.shell.pack();
             this.shell.open();
@@ -329,7 +305,7 @@ public class WkWebview extends Webview {
 
     @Override
     public void close() {
-        display.syncExec(() -> {
+        MainThread.submitTask(() -> {
             // We destroy the shell to prevent it from sticking in the Dock.
             this.shell.setVisible(false);
             this.browser.setUrl("about:blank");
@@ -340,12 +316,10 @@ public class WkWebview extends Webview {
 
     @Override
     public void destroy() {
-        if (!display.isDisposed()) {
-            display.syncExec(() -> {
-                this.shell.setVisible(false);
-                this.shell.dispose();
-            });
-        }
+        MainThread.submitTask(() -> {
+            this.shell.setVisible(false);
+            this.shell.dispose();
+        });
     }
 
     @SneakyThrows
@@ -354,7 +328,7 @@ public class WkWebview extends Webview {
             try (InputStream in = icon.openStream()) {
                 Image image = new Image(display, in);
 
-                display.syncExec(() -> {
+                MainThread.submitTask(() -> {
                     this.shell.setImage(image);
                 });
             }
@@ -379,7 +353,7 @@ public class WkWebview extends Webview {
 
     @Override
     public void focus() {
-        display.syncExec(() -> {
+        MainThread.submitTask(() -> {
             this.shell.setActive();
         });
     }
@@ -393,21 +367,21 @@ public class WkWebview extends Webview {
 
     @Override
     public void reload() {
-        display.asyncExec(() -> {
+        MainThread.submitTask(() -> {
             this.browser.refresh();
         });
     }
 
     @Override
     public void setPosition(int x, int y) {
-        display.asyncExec(() -> {
+        MainThread.submitTask(() -> {
             this.shell.setLocation(x, y);
         });
     }
 
     @Override
     public void setSize(int width, int height) {
-        display.asyncExec(() -> {
+        MainThread.submitTask(() -> {
             this.shell.setSize(width, height);
         });
     }
