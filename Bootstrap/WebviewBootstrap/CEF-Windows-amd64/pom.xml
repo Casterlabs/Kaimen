@@ -42,6 +42,13 @@
 
 	<dependencies>
 
+		<dependency>
+			<groupId>co.casterlabs</groupId>
+			<artifactId>Webview-CEF</artifactId>
+			<version>${project.parent.version}</version>
+			<scope>compile</scope>
+		</dependency>
+
 		<!-- CEF -->
 		<dependency>
 			<groupId>me.friwi</groupId>
