@@ -112,6 +112,10 @@ public class MainThread {
         return Thread.currentThread() == thread;
     }
 
+    public static void checkThread() {
+        assert Thread.currentThread() == thread : new IllegalAccessException("This call must be made from the main thread.");
+    }
+
     public static interface Impl {
 
         public void submitTask(@NonNull Runnable task);
