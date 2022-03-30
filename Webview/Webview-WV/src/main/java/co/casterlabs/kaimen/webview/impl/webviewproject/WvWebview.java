@@ -89,6 +89,7 @@ public class WvWebview extends Webview {
         return this.bridge;
     }
 
+    @SuppressWarnings("deprecation")
     @SneakyThrows
     @Override
     public void open(@Nullable String url) {
@@ -120,7 +121,12 @@ public class WvWebview extends Webview {
             this.wv.loadURL(url);
         });
 
-        MainThread.submitTask(this.wv::run);
+        MainThread.submitTask(() -> {
+            MainThread.setImpl(this.wv::dispatch);
+            this.wv.run();
+
+            // The impl is automatically unregistered once this exits.
+        });
     }
 
     @Override
