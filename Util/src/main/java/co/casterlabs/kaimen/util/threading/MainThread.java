@@ -48,6 +48,7 @@ public class MainThread {
 
                     try {
                         popped.run();
+                        impl = null; // Auto unregister any registered impl.
                     } catch (Throwable t) {
                         FastLogger.logStatic(LogLevel.SEVERE, "An exception occurred whilst processing task on the main thread:");
                         FastLogger.logException(t);
