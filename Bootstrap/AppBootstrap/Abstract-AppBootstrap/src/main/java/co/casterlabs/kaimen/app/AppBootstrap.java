@@ -8,6 +8,7 @@ import java.util.Set;
 import org.reflections8.Reflections;
 import org.reflections8.scanners.MethodAnnotationsScanner;
 
+import co.casterlabs.kaimen.util.platform.Platform;
 import co.casterlabs.kaimen.util.threading.MainThread;
 import lombok.AllArgsConstructor;
 import xyz.e3ndr.fastloggingframework.logging.FastLogger;
@@ -15,6 +16,7 @@ import xyz.e3ndr.reflectionlib.helpers.AccessHelper;
 
 public class AppBootstrap {
 
+    @SuppressWarnings("deprecation")
     public static void main(String[] args) throws InvocationTargetException, InterruptedException {
         ClassLoader.getSystemClassLoader().setDefaultAssertionStatus(true); // Enable assertions.
 
@@ -26,7 +28,27 @@ public class AppBootstrap {
             System.err.println("\n------------ ^ Ignore that warning ^ ------------\n\n");
 
             // Init the framework
-            App.init(args);
+            try {
+                App instance = null;
+
+                switch (Platform.os) {
+                    case LINUX:
+                        instance = (App) Class.forName("co.casterlabs.kaimen.bootstrap.impl.linux.LinuxBootstrap").newInstance();
+                        break;
+
+                    case MACOSX:
+                        instance = (App) Class.forName("co.casterlabs.kaimen.bootstrap.impl.macos.MacOSBootstrap").newInstance();
+                        break;
+
+                    case WINDOWS:
+                        instance = (App) Class.forName("co.casterlabs.kaimen.bootstrap.impl.windows.WindowsBootstrap").newInstance();
+                        break;
+                }
+
+                App.init(args, instance);
+            } catch (Exception e) {
+                throw new IllegalStateException("Failed to find bootstrap:", e);
+            }
 
             // Enter into the app
             AppEntryPoint entryPoint = findEntryPoint();

@@ -14,6 +14,7 @@
 		<module>Bootstrap</module>
 		<module>ExampleProject</module>
 		<module>ProjectBuilder</module>
+		<module>IPC</module>
 	</modules>
 
 	<properties>

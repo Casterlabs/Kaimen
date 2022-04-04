@@ -7,14 +7,12 @@ import org.jetbrains.annotations.Nullable;
 import com.jthemedetecor.OsThemeDetector;
 
 import co.casterlabs.kaimen.util.EventProvider;
-import co.casterlabs.kaimen.util.platform.Platform;
 import co.casterlabs.kaimen.util.reflection.FieldMutationListener;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import xyz.e3ndr.reflectionlib.ReflectionLib;
 
-@SuppressWarnings("deprecation")
 public abstract class App {
     private static App instance;
 
@@ -32,39 +30,22 @@ public abstract class App {
     @Getter
     private static String[] args;
 
-    static void init(String[] args) {
+    static void init(String[] args, App instance) {
         App.args = args;
+        App.instance = instance;
 
-        try {
-            switch (Platform.os) {
-                case LINUX:
-                    instance = (App) Class.forName("co.casterlabs.kaimen.bootstrap.impl.linux.LinuxBootstrap").newInstance();
-                    break;
+        setAppearance(Appearance.FOLLOW_SYSTEM);
+        setPowermanagementHint(PowerManagementHint.BALANCED);
 
-                case MACOSX:
-                    instance = (App) Class.forName("co.casterlabs.kaimen.bootstrap.impl.macos.MacOSBootstrap").newInstance();
-                    break;
+        themeDetector.registerListener((ignored) -> {
+            if (appearance == Appearance.FOLLOW_SYSTEM) {
+                instance.setAppearance0(appearance);
 
-                case WINDOWS:
-                    instance = (App) Class.forName("co.casterlabs.kaimen.bootstrap.impl.windows.WindowsBootstrap").newInstance();
-                    break;
+                Appearance a = getSystemAppearance();
+
+                systemThemeChangeEvent.fireEvent(a);
             }
-
-            setAppearance(Appearance.FOLLOW_SYSTEM);
-            setPowermanagementHint(PowerManagementHint.BALANCED);
-
-            themeDetector.registerListener((ignored) -> {
-                if (appearance == Appearance.FOLLOW_SYSTEM) {
-                    instance.setAppearance0(appearance);
-
-                    Appearance a = getSystemAppearance();
-
-                    systemThemeChangeEvent.fireEvent(a);
-                }
-            });
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to find bootstrap:", e);
-        }
+        });
     }
 
     /* Impl */
