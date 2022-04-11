@@ -23,11 +23,13 @@ public class MacOSBootstrap extends App {
 
             MainThread.setImpl(display::asyncExec);
 
-            while (display.isDisposed()) {
+            while (!display.isDisposed()) {
                 if (!display.readAndDispatch()) {
                     display.sleep();
                 }
             }
+
+            // THE END IS NEIGH!
         });
     }
 
