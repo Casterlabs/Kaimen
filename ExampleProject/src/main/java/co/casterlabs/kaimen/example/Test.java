@@ -70,6 +70,7 @@ public class Test {
 
         // Log some stuff
         FastLogger.logStatic("Running on: %s (%s)", Platform.os, Platform.arch);
+        FastLogger.logStatic("Using: %s", WebviewFactory.get().getRendererType());
         FastLogger.logStatic("System Appearance: %s", App.getSystemAppearance());
         FastLogger.logStatic("UI Server port (it's ephemeral): %d", uiServer.getPort());
 
