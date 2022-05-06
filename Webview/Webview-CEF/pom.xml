@@ -53,7 +53,7 @@
 		<dependency>
 			<groupId>me.friwi</groupId>
 			<artifactId>jcefmaven</artifactId>
-            <version>95.7.14.11</version>
+            <version>100.0.14.2</version>
 			<scope>provided</scope>
 		</dependency>
 
