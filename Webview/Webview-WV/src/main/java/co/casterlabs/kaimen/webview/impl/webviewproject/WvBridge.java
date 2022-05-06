@@ -11,7 +11,7 @@ import co.casterlabs.rakurai.json.element.JsonString;
 import lombok.NonNull;
 import xyz.e3ndr.fastloggingframework.logging.FastLogger;
 import xyz.e3ndr.fastloggingframework.logging.LogLevel;
-import xyz.e3ndr.fastloggingframework.logging.LoggingUtil;
+import xyz.e3ndr.fastloggingframework.logging.StringUtil;
 
 public class WvBridge extends WebviewBridge {
     private static String bridgeScript = "";
@@ -66,7 +66,7 @@ public class WvBridge extends WebviewBridge {
                         .put("result", result)
                 );
             } catch (Throwable e) {
-                String error = LoggingUtil.getExceptionStack(e);
+                String error = StringUtil.getExceptionStack(e);
 
                 emit(
                     "_get:" + nonce,
@@ -101,7 +101,7 @@ public class WvBridge extends WebviewBridge {
                         .put("result", result)
                 );
             } catch (Throwable e) {
-                String error = LoggingUtil.getExceptionStack(e);
+                String error = StringUtil.getExceptionStack(e);
 
                 emit(
                     "_invoke:" + nonce,

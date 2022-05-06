@@ -22,7 +22,7 @@ import co.casterlabs.rakurai.json.serialization.JsonParseException;
 import lombok.NonNull;
 import xyz.e3ndr.fastloggingframework.logging.FastLogger;
 import xyz.e3ndr.fastloggingframework.logging.LogLevel;
-import xyz.e3ndr.fastloggingframework.logging.LoggingUtil;
+import xyz.e3ndr.fastloggingframework.logging.StringUtil;
 
 public class CefJavascriptBridge extends WebviewBridge {
     private static String bridgeScript = "";
@@ -150,7 +150,7 @@ public class CefJavascriptBridge extends WebviewBridge {
                         .put("result", result)
                 );
             } catch (Throwable e) {
-                String error = LoggingUtil.getExceptionStack(e);
+                String error = StringUtil.getExceptionStack(e);
 
                 emit(
                     "_get:" + nonce,
@@ -185,7 +185,7 @@ public class CefJavascriptBridge extends WebviewBridge {
                         .put("result", result)
                 );
             } catch (Throwable e) {
-                String error = LoggingUtil.getExceptionStack(e);
+                String error = StringUtil.getExceptionStack(e);
 
                 emit(
                     "_invoke:" + nonce,
