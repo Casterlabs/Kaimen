@@ -2,6 +2,8 @@ package co.casterlabs.kaimen.example.ipctest;
 
 import java.lang.reflect.InvocationTargetException;
 
+import javax.swing.JOptionPane;
+
 import co.casterlabs.kaimen.app.App;
 import co.casterlabs.kaimen.app.App.Appearance;
 import co.casterlabs.kaimen.app.App.PowerManagementHint;
@@ -25,6 +27,8 @@ public class IpcTest {
         App.setName("IPC Test Application");
         App.setAppearance(Appearance.FOLLOW_SYSTEM);
         App.setPowermanagementHint(PowerManagementHint.HIGH_PERFORMANCE);
+
+        JOptionPane.showMessageDialog(null, "Click OK to start the demo.");
 
         TestInterface test = IpcHostHandler.startInstance(TestImpl.class);
 
