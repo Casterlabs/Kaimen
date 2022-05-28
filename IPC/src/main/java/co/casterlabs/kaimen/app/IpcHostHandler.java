@@ -8,7 +8,6 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,12 +15,12 @@ import java.util.Scanner;
 import java.util.UUID;
 
 import co.casterlabs.kaimen.app.IpcPacket.IpcPacketType;
+import co.casterlabs.kaimen.app.IpcPacketInvocationResult.ResultData;
 import co.casterlabs.kaimen.app.IpcPacketPrint.PrintChannel;
 import co.casterlabs.kaimen.util.threading.AsyncTask;
 import co.casterlabs.kaimen.util.threading.Promise;
 import co.casterlabs.rakurai.json.Rson;
 import co.casterlabs.rakurai.json.element.JsonArray;
-import co.casterlabs.rakurai.json.element.JsonElement;
 import co.casterlabs.rakurai.json.element.JsonObject;
 import co.casterlabs.rakurai.json.serialization.JsonParseException;
 import lombok.NonNull;
@@ -29,11 +28,23 @@ import xyz.e3ndr.fastloggingframework.logging.FastLogger;
 import xyz.e3ndr.fastloggingframework.logging.LogLevel;
 
 public class IpcHostHandler {
+    private static final FastLogger LOGGER = new FastLogger();
 
-    @SuppressWarnings("unchecked")
-    public static <T extends IpcObject> T startInstance(@NonNull Class<T> interfaceClazz, @NonNull Class<? extends T> implementingClazz) throws InterruptedException, Throwable {
+    static {
+        LOGGER.setCurrentLevel(LogLevel.NONE); // Stop it.
+    }
+
+    @SuppressWarnings({
+            "unchecked",
+            "deprecation"
+    })
+    public static <T> T startInstance(@NonNull Class<? extends IpcObject> implementingClazz) throws InterruptedException, Throwable {
+        final Class<?> interfaceClazz = implementingClazz.newInstance().getInterfaceClass();
+
+        LOGGER.debug("Starting IPC for %s with %s", interfaceClazz, implementingClazz);
+
         Process process = new ProcessBuilder()
-            .command(getExec("co.casterlabs.kaimen.app.IpcClientHandler", App.getArgs()))
+            .command(getExec("co.casterlabs.kaimen.app.IpcClientHandler"))
             .redirectOutput(Redirect.PIPE)
             .redirectError(Redirect.DISCARD) // Unused.
             .redirectInput(Redirect.PIPE)
@@ -46,18 +57,23 @@ public class IpcHostHandler {
             @Override
             public void sendPacket(IpcPacket packet) {
                 try {
-                    process.getOutputStream().write(
-                        Rson.DEFAULT
-                            .toJson(packet)
-                            .toString()
-                            .getBytes()
-                    );
+                    String packetString = Rson.DEFAULT
+                        .toJson(packet)
+                        .toString();
+
+                    LOGGER.debug("Sending packet:\n%s", packetString);
+
+                    process.getOutputStream().write(packetString.getBytes());
+                    process.getOutputStream().write('\n');
+                    process.getOutputStream().flush();
                 } catch (IOException e) {
                     e.printStackTrace();
                     process.destroy();
                 }
             }
         };
+
+        handler.host = host;
 
         host.sendPacket(
             new IpcPacketInit()
@@ -69,12 +85,14 @@ public class IpcHostHandler {
                 process.waitFor();
             } catch (InterruptedException e) {}
 
+            LOGGER.debug("Ipc closed.");
+
             host.isAlive = false;
         });
 
         new AsyncTask(() -> {
             try (Scanner in = new Scanner(process.getInputStream())) {
-                while (in.hasNext()) {
+                while (host.isAlive) {
                     String line = in.nextLine();
 
                     new AsyncTask(() -> {
@@ -82,6 +100,8 @@ public class IpcHostHandler {
                             IpcPacket packet = IpcPacketType.parsePacket(
                                 Rson.DEFAULT.fromJson(line, JsonObject.class)
                             );
+
+                            LOGGER.debug("Received packet:\n%s", line);
 
                             switch (packet.getType()) {
                                 case CLIENT_READY: {
@@ -94,7 +114,7 @@ public class IpcHostHandler {
 
                                 case INVOCATION_RESULT: {
                                     IpcPacketInvocationResult resultPacket = (IpcPacketInvocationResult) packet;
-                                    Promise<JsonElement> promise = handler.waiting.get(resultPacket.getInvocationId());
+                                    Promise<ResultData> promise = handler.waiting.get(resultPacket.getInvocationId());
 
                                     if (resultPacket.isError()) {
                                         promise.error(new Exception("\n" + resultPacket.getError()));
@@ -109,8 +129,10 @@ public class IpcHostHandler {
 
                                     if (printPacket.getChannel() == PrintChannel.STDOUT) {
                                         System.out.write(printPacket.getBytes());
+                                        System.out.write('\n');
                                     } else {
                                         System.err.write(printPacket.getBytes());
+                                        System.err.write('\n');
                                     }
                                     break;
                                 }
@@ -130,9 +152,7 @@ public class IpcHostHandler {
 
         return (T) Proxy.newProxyInstance(
             interfaceClazz.getClassLoader(),
-            new Class[] {
-                    interfaceClazz
-            },
+            arr(interfaceClazz),
             handler
         );
     }
@@ -145,27 +165,55 @@ public class IpcHostHandler {
     }
 
     private static class ProxyHandler implements InvocationHandler {
+        private static final Object[] EMPTY_ARGS = new Object[0];
+
         private Host host;
 
         private String objectId;
-        private Map<String, Promise<JsonElement>> waiting = new HashMap<>();
+        private Map<String, Promise<ResultData>> waiting = new HashMap<>();
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            if (args == null) {
+                args = EMPTY_ARGS;
+            }
+
             if (this.host.isAlive) {
                 String invocationId = UUID.randomUUID().toString();
                 Class<?> returnType = method.getReturnType();
 
                 Promise<Object> resultPromise = new Promise<>();
-                Promise<JsonElement> resultHandler = new Promise<>();
+                Promise<ResultData> resultHandler = new Promise<>();
 
-                resultHandler.then((e) -> {
+                resultHandler.then((data) -> {
                     try {
                         this.waiting.remove(invocationId);
-                        resultPromise.fulfill(
-                            Rson.DEFAULT.fromJson(e, returnType)
-                        );
-                    } catch (JsonParseException ex) {
+
+                        Object result;
+
+                        if (data.getContent() == null) {
+                            result = null;
+                        } else if (data.isRegularResult()) {
+                            result = Rson.DEFAULT.fromJson(data.getContent(), returnType);
+                        } else {
+                            String objId = data.getContent().getAsObject().getString("objectId");
+                            String objInterface = data.getContent().getAsObject().getString("objectInterface");
+
+                            Class<?> objClazz = Class.forName(objInterface);
+                            ProxyHandler handler = new ProxyHandler();
+
+                            handler.host = this.host;
+                            handler.objectId = objId;
+
+                            result = Proxy.newProxyInstance(
+                                objClazz.getClassLoader(),
+                                arr(objClazz),
+                                handler
+                            );
+                        }
+
+                        resultPromise.fulfill(result);
+                    } catch (JsonParseException | ClassNotFoundException ex) {
                         resultPromise.error(ex);
                     }
                 });
@@ -201,7 +249,7 @@ public class IpcHostHandler {
         }
     }
 
-    private static List<String> getExec(String main, String[] execArgs) throws IOException {
+    private static List<String> getExec(String main) throws IOException {
         List<String> jvmArgs = ManagementFactory.getRuntimeMXBean().getInputArguments();
         String entry = System.getProperty("sun.java.command"); // Tested, present in OpenJDK and Oracle
         String classpath = System.getProperty("java.class.path");
@@ -223,9 +271,14 @@ public class IpcHostHandler {
         result.add("-cp");
         result.add('"' + classpath + '"');
         result.add(main);
-        result.addAll(Arrays.asList(execArgs));
+//        result.addAll(Arrays.asList(execArgs));
 
         return result;
+    }
+
+    @SafeVarargs
+    private static <T> T[] arr(T... a) {
+        return a;
     }
 
 }

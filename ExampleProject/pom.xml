@@ -21,6 +21,13 @@
 			<scope>compile</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>co.casterlabs</groupId>
+			<artifactId>IPC</artifactId>
+			<version>${project.parent.version}</version>
+			<scope>compile</scope>
+		</dependency>
+
 		<!-- NEVER DO THIS. -->
 		<dependency>
 			<groupId>co.casterlabs</groupId>

@@ -10,10 +10,11 @@ import java.util.UUID;
 
 import org.jetbrains.annotations.Nullable;
 
+import co.casterlabs.kaimen.app.IpcPacketInvocationResult.ResultData;
 import co.casterlabs.rakurai.json.Rson;
 import co.casterlabs.rakurai.json.annotating.JsonField;
 import co.casterlabs.rakurai.json.element.JsonArray;
-import co.casterlabs.rakurai.json.element.JsonElement;
+import co.casterlabs.rakurai.json.element.JsonObject;
 import co.casterlabs.rakurai.json.serialization.JsonParseException;
 import lombok.Getter;
 import lombok.NonNull;
@@ -46,8 +47,12 @@ public abstract class IpcObject {
             }
         }
 
+        Class<?> interfaceClazz = this.getInterfaceClass();
+
         for (Method method : this.getClass().getDeclaredMethods()) {
-            if (method.isAnnotationPresent(IpcMethod.class)) {
+            boolean implementsMethod = hasMethod(interfaceClazz, method.getName(), method.getParameterTypes());
+
+            if (implementsMethod) {
                 AccessHelper.makeAccessible(method);
 
                 this.methods.put(
@@ -57,6 +62,17 @@ public abstract class IpcObject {
             }
         }
     }
+
+    public final Class<?> getInterfaceClass() {
+        Class<?> clazz = this.getInterfaceClass0();
+
+        assert clazz.isAssignableFrom(this.getClass()) : "Your ipc object class should extend your implementing class.";
+        assert clazz.isInterface() : "Your implementing class should be an interface.";
+
+        return clazz;
+    }
+
+    protected abstract Class<?> getInterfaceClass0();
 
     @Override
     protected void finalize() throws Throwable {
@@ -69,7 +85,7 @@ public abstract class IpcObject {
         return $ref.get();
     }
 
-    public @Nullable JsonElement invoke(@NonNull String method, @NonNull JsonArray arguments) throws Throwable {
+    public @Nullable ResultData invoke(@NonNull String method, @NonNull JsonArray arguments) throws Throwable {
         try {
             MethodMapping mapping = this.methods.get(method);
             assert mapping != null : "Could not find method: " + method;
@@ -90,7 +106,7 @@ public abstract class IpcObject {
             this.method = method;
         }
 
-        public @Nullable JsonElement invoke(@NonNull JsonArray arguments) throws Exception {
+        public @Nullable ResultData invoke(@NonNull JsonArray arguments) throws Exception {
             Class<?>[] argTypes = method.getParameterTypes();
             assert argTypes.length == arguments.size() : "The invoking arguments do not match the expected length: " + argTypes.length;
 
@@ -106,9 +122,33 @@ public abstract class IpcObject {
 
             Object result = this.method.invoke($i, args);
 
-            return Rson.DEFAULT.toJson(result);
-        }
+            if (result instanceof IpcObject) {
+                IpcObject obj = ((IpcObject) result);
 
+                JsonObject resultElement = new JsonObject()
+                    .put("objectId", obj.id)
+                    .put("objectInterface", obj.getInterfaceClass().getCanonicalName());
+
+                return new ResultData(
+                    false,
+                    resultElement
+                );
+            } else {
+                return new ResultData(
+                    true,
+                    Rson.DEFAULT.toJson(result)
+                );
+            }
+        }
+    }
+
+    private static boolean hasMethod(Class<?> clazz, String name, Class<?>[] parameterTypes) {
+        try {
+            clazz.getMethod(name, parameterTypes);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
 }

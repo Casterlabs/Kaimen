@@ -24,13 +24,13 @@
 		<dependency>
 			<groupId>com.github.casterlabs.rakurai</groupId>
 			<artifactId>Json</artifactId>
-			<version>1.13.1</version>
+			<version>1.14.0</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.github.casterlabs.rakurai</groupId>
 			<artifactId>Util</artifactId>
-			<version>1.13.1</version>
+			<version>1.14.0</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
@@ -49,6 +49,12 @@
 			<groupId>com.github.e3ndr</groupId>
 			<artifactId>ConsoleUtil</artifactId>
 			<version>1.4.0</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>jline</groupId>
+			<artifactId>jline</artifactId>
+			<version>2.14.6</version>
 			<scope>compile</scope>
 		</dependency>
 

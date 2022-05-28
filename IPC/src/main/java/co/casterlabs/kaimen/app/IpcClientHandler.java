@@ -1,25 +1,24 @@
 package co.casterlabs.kaimen.app;
 
-import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Scanner;
 
+import javax.swing.JOptionPane;
+
 import co.casterlabs.kaimen.app.IpcPacket.IpcPacketType;
 import co.casterlabs.kaimen.app.IpcPacketPrint.PrintChannel;
-import co.casterlabs.kaimen.util.platform.Platform;
 import co.casterlabs.kaimen.util.threading.AsyncTask;
 import co.casterlabs.kaimen.util.threading.MainThread;
 import co.casterlabs.rakurai.json.Rson;
-import co.casterlabs.rakurai.json.element.JsonElement;
 import co.casterlabs.rakurai.json.element.JsonObject;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import xyz.e3ndr.fastloggingframework.logging.FastLogger;
 import xyz.e3ndr.fastloggingframework.logging.LogLevel;
-import xyz.e3ndr.fastloggingframework.logging.LoggingUtil;
+import xyz.e3ndr.fastloggingframework.logging.StringUtil;
 
 public class IpcClientHandler {
     private static final PrintStream nativeOut = System.out;
@@ -27,49 +26,57 @@ public class IpcClientHandler {
 
     private static IpcObject mainIpcObject; // So it doesn't get garbage collected.
 
-    @SuppressWarnings("deprecation")
-    public static void main(String[] args /* These are always the args the host was started with */) {
+    private static final FastLogger LOGGER = new FastLogger();
+
+    static {
+        LOGGER.setCurrentLevel(LogLevel.NONE); // Stop it.
+    }
+
+    public static void main(String[] unused) {
         ClassLoader.getSystemClassLoader().setDefaultAssertionStatus(true); // Enable assertions.
 
+        overrideIO();
+
         MainThread.park(() -> {
-            // Init the framework
-            try {
-                final App instance;
+            try (Scanner in = new Scanner(nativeIn)) {
+                while (true) {
+                    String line = in.nextLine();
 
-                switch (Platform.os) {
-                    case LINUX:
-                        instance = (App) Class.forName("co.casterlabs.kaimen.bootstrap.impl.linux.LinuxBootstrap").newInstance();
-                        break;
+                    new AsyncTask(() -> {
+                        try {
+                            IpcPacket packet = IpcPacketType.parsePacket(
+                                Rson.DEFAULT.fromJson(line, JsonObject.class)
+                            );
 
-                    case MACOSX:
-                        instance = (App) Class.forName("co.casterlabs.kaimen.bootstrap.impl.macos.MacOSBootstrap").newInstance();
-                        break;
+                            LOGGER.debug("Received packet:\n%s", line);
 
-                    case WINDOWS:
-                        instance = (App) Class.forName("co.casterlabs.kaimen.bootstrap.impl.windows.WindowsBootstrap").newInstance();
-                        break;
-
-                    default:
-                        // Shut up compiler.
-                        return;
+                            processPacket(packet);
+                        } catch (Exception e) {
+                            JOptionPane.showMessageDialog(null, StringUtil.getExceptionStack(e));
+                            FastLogger.logStatic(LogLevel.SEVERE, "An error occured whilst processing packet: %s\n%s", line, e);
+                        }
+                    });
                 }
-
-                App.init(args, instance);
-                init();
             } catch (Exception e) {
-                throw new IllegalStateException("Failed to find bootstrap:", e);
+                JOptionPane.showMessageDialog(null, StringUtil.getExceptionStack(e));
             }
         });
     }
 
     private static void sendPacket(IpcPacket packet) {
         try {
-            nativeOut.write(
-                Rson.DEFAULT
-                    .toJson(packet)
-                    .toString()
-                    .getBytes()
-            );
+            String packetStr = Rson.DEFAULT
+                .toJson(packet)
+                .toString();
+
+            if (!(packet instanceof IpcPacketPrint)) {
+                // Would cause an infinite loop.
+                LOGGER.debug("Sent packet:\n%s", packetStr);
+            }
+
+            nativeOut.write(packetStr.getBytes());
+            nativeOut.print('\n');
+            nativeOut.flush();
         } catch (Exception e) {
             // An error occured, exit.
             System.exit(1);
@@ -100,13 +107,13 @@ public class IpcClientHandler {
                     .setInvocationId(invokePacket.getInvocationId());
 
                 try {
-                    JsonElement result = IpcObject
-                        .getObject(invokePacket.getObjectId())
-                        .invoke(invokePacket.getMethod(), invokePacket.getArgs());
-
-                    resultPacket.setResult(result);
+                    resultPacket.setResult(
+                        IpcObject
+                            .getObject(invokePacket.getObjectId())
+                            .invoke(invokePacket.getMethod(), invokePacket.getArgs())
+                    );
                 } catch (Throwable t) {
-                    String error = LoggingUtil.getExceptionStack(t);
+                    String error = StringUtil.getExceptionStack(t);
 
                     resultPacket.setError(error);
                 }
@@ -118,30 +125,6 @@ public class IpcClientHandler {
             default:
                 break;
         }
-    }
-
-    private static void init() {
-        overrideIO();
-
-        new AsyncTask(() -> {
-            try (Scanner in = new Scanner(nativeIn)) {
-                while (in.hasNext()) {
-                    String line = in.nextLine();
-
-                    new AsyncTask(() -> {
-                        try {
-                            IpcPacket packet = IpcPacketType.parsePacket(
-                                Rson.DEFAULT.fromJson(line, JsonObject.class)
-                            );
-
-                            processPacket(packet);
-                        } catch (Exception e) {
-                            FastLogger.logStatic(LogLevel.SEVERE, "An error occured whilst processing packet: %s\n%s", line, e);
-                        }
-                    });
-                }
-            }
-        });
     }
 
     @AllArgsConstructor
@@ -174,17 +157,15 @@ public class IpcClientHandler {
 
         System.setOut(
             new PrintStream(
-                new BufferedOutputStream(
-                    new IpcOutputStream(PrintChannel.STDOUT)
-                )
+                new IpcOutputStream(PrintChannel.STDOUT),
+                true
             )
         );
 
         System.setErr(
             new PrintStream(
-                new BufferedOutputStream(
-                    new IpcOutputStream(PrintChannel.STDERR)
-                )
+                new IpcOutputStream(PrintChannel.STDERR),
+                true
             )
         );
     }
