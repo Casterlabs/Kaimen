@@ -6,10 +6,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
+import org.eclipse.swt.browser.BrowserFunction;
 import org.eclipse.swt.browser.ProgressEvent;
 import org.eclipse.swt.browser.ProgressListener;
 import org.eclipse.swt.browser.TitleEvent;
@@ -35,14 +35,9 @@ import co.casterlabs.kaimen.webview.WebviewFactory;
 import co.casterlabs.kaimen.webview.WebviewRenderer;
 import co.casterlabs.kaimen.webview.WebviewWindowProperties;
 import co.casterlabs.kaimen.webview.bridge.WebviewBridge;
-import co.casterlabs.rakurai.json.Rson;
-import co.casterlabs.rakurai.json.element.JsonArray;
-import co.casterlabs.rakurai.json.element.JsonElement;
-import co.casterlabs.rakurai.json.serialization.JsonParseException;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.SneakyThrows;
-import xyz.e3ndr.fastloggingframework.logging.FastLogger;
 import xyz.e3ndr.reflectionlib.ReflectionLib;
 
 public class WkWebview extends Webview {
@@ -88,6 +83,7 @@ public class WkWebview extends Webview {
     private WkBridge bridge = new WkBridge(this);
     private boolean hasPreloaded = false;
 
+    private BrowserFunction func;
     private Browser browser;
     private Shell shell;
 
@@ -119,6 +115,18 @@ public class WkWebview extends Webview {
         this.shell.setLayout(new FillLayout());
 
         this.browser = new Browser(this.shell, SWT.WEBKIT);
+
+        if (this.func != null) {
+            this.func.dispose();
+        }
+
+        this.func = new BrowserFunction(this.browser, "__wkinternal_ipc_send") {
+            @Override
+            public Object function(Object[] arguments) {
+                bridge.query((String) arguments[0]);
+                return null;
+            }
+        };
 
         this.browser.setUrl("about:blank");
 
@@ -215,30 +223,6 @@ public class WkWebview extends Webview {
                 this.getLifeCycleListener().onOpenRequested();
             });
         }
-
-        new AsyncTask(() -> {
-            // The bridge query code.
-            // Note that AsyncTask will not hold the JVM open, so we can safely use it
-            // without a shutdown mechanism.
-            while (!this.shell.isDisposed()) {
-                String result = (String) this.eval("return window.Bridge?.internal__wkGetQueryQueue();");
-
-                if (result != null) {
-                    try {
-                        JsonArray arr = Rson.DEFAULT.fromJson(result, JsonArray.class);
-
-                        for (JsonElement e : arr) {
-                            bridge.query(e.getAsString());
-                        }
-                    } catch (JsonParseException e) {
-                        FastLogger.logException(e);
-                    }
-                }
-                try {
-                    TimeUnit.MILLISECONDS.sleep(300);
-                } catch (InterruptedException e) {}
-            }
-        });
     }
 
     @Override
@@ -267,10 +251,6 @@ public class WkWebview extends Webview {
                 this.browser.execute(script);
             });
         }
-    }
-
-    private Object eval(String line) {
-        return new MainThreadPromise<Object>(() -> this.browser.evaluate(line, true)).await();
     }
 
     @Override
@@ -318,6 +298,7 @@ public class WkWebview extends Webview {
     public void destroy() {
         MainThread.submitTask(() -> {
             this.shell.setVisible(false);
+            this.func.dispose();
             this.shell.dispose();
         });
     }

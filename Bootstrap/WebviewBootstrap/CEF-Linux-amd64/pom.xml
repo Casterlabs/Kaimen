@@ -53,13 +53,13 @@
 		<dependency>
 			<groupId>me.friwi</groupId>
 			<artifactId>jcefmaven</artifactId>
-			<version>95.7.14.7</version>
+			<version>100.0.14.2</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>me.friwi</groupId>
 			<artifactId>jcef-natives-linux-amd64</artifactId>
-			<version>jcef-56fb723+cef-95.7.14+g9f72f35+chromium-95.0.4638.69</version>
+			<version>jcef-f9b884e+cef-100.0.14+g4e5ba66+chromium-100.0.4896.75</version>
 			<scope>compile</scope>
 		</dependency>
 
