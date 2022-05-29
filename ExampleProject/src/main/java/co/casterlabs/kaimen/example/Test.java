@@ -6,6 +6,7 @@ import co.casterlabs.kaimen.app.App;
 import co.casterlabs.kaimen.app.App.Appearance;
 import co.casterlabs.kaimen.app.App.PowerManagementHint;
 import co.casterlabs.kaimen.app.AppBootstrap;
+import co.casterlabs.kaimen.app.AppEntry;
 import co.casterlabs.kaimen.app.ui.UIServer;
 import co.casterlabs.kaimen.util.platform.Platform;
 import co.casterlabs.kaimen.webview.Webview;
@@ -28,7 +29,7 @@ public class Test {
         AppBootstrap.main(args);
     }
 
-//    @AppEntry
+    @AppEntry
     public static void entry() throws Exception {
         FastLoggingFramework.setDefaultLevel(LogLevel.DEBUG);
 

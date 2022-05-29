@@ -8,7 +8,6 @@ import co.casterlabs.kaimen.app.App;
 import co.casterlabs.kaimen.app.App.Appearance;
 import co.casterlabs.kaimen.app.App.PowerManagementHint;
 import co.casterlabs.kaimen.app.AppBootstrap;
-import co.casterlabs.kaimen.app.AppEntry;
 import co.casterlabs.kaimen.app.IpcHostHandler;
 import xyz.e3ndr.fastloggingframework.FastLoggingFramework;
 import xyz.e3ndr.fastloggingframework.logging.LogLevel;
@@ -19,7 +18,7 @@ public class IpcTest {
         AppBootstrap.main(args);
     }
 
-    @AppEntry
+//    @AppEntry
     public static void entry() throws Throwable {
         FastLoggingFramework.setDefaultLevel(LogLevel.DEBUG);
 

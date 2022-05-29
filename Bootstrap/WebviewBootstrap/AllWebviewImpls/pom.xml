@@ -97,5 +97,20 @@
 			<scope>compile</scope>
 		</dependency>
 
+		<!-- Webview -->
+
+		<dependency>
+			<groupId>co.casterlabs</groupId>
+			<artifactId>WV-Windows-amd64</artifactId>
+			<version>${project.parent.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>co.casterlabs</groupId>
+			<artifactId>WV-Windows-x86</artifactId>
+			<version>${project.parent.version}</version>
+			<scope>compile</scope>
+		</dependency>
+
 	</dependencies>
 </project>
