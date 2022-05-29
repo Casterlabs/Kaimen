@@ -23,6 +23,15 @@ public abstract class WebviewFactory implements Producer<Webview> {
             try {
                 factories.add(
                     ReflectionLib.getStaticValue(
+                        Class.forName("co.casterlabs.kaimen.webview.impl.webviewproject.WvWebview"),
+                        "FACTORY"
+                    )
+                );
+            } catch (Exception ignored) {}
+
+            try {
+                factories.add(
+                    ReflectionLib.getStaticValue(
                         Class.forName("co.casterlabs.kaimen.webview.impl.cef.CefWebview"),
                         "FACTORY"
                     )
@@ -33,15 +42,6 @@ public abstract class WebviewFactory implements Producer<Webview> {
                 factories.add(
                     ReflectionLib.getStaticValue(
                         Class.forName("co.casterlabs.kaimen.webview.impl.webkit.WkWebview"),
-                        "FACTORY"
-                    )
-                );
-            } catch (Exception ignored) {}
-
-            try {
-                factories.add(
-                    ReflectionLib.getStaticValue(
-                        Class.forName("co.casterlabs.kaimen.webview.impl.webviewproject.WvWebview"),
                         "FACTORY"
                     )
                 );
