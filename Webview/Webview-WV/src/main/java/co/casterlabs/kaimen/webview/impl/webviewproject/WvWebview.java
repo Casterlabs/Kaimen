@@ -151,14 +151,14 @@ public class WvWebview extends Webview {
 
     private void updateWebviewSize(int width, int height) {
         if (this.wv != null) {
-            // There is a random margin on Windows that isn't visible, so we must
-            // compensate.
+            // There is a random margin on Windows, so we must compensate.
             // TODO figure out what this is caused by.
             if (Platform.os == OperatingSystem.WINDOWS) {
-                width -= 15;
+                width -= 32;
                 height -= 78;
             }
 
+            this.wv.setSize(width, height);
             this.wv.setFixedSize(width, height);
         }
     }
