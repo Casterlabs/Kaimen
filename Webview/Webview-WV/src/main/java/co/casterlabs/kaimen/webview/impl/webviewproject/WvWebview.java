@@ -21,6 +21,7 @@ import org.jetbrains.annotations.Nullable;
 import co.casterlabs.kaimen.app.App;
 import co.casterlabs.kaimen.util.platform.Arch;
 import co.casterlabs.kaimen.util.platform.OperatingSystem;
+import co.casterlabs.kaimen.util.platform.Platform;
 import co.casterlabs.kaimen.util.threading.MainThread;
 import co.casterlabs.kaimen.webview.Webview;
 import co.casterlabs.kaimen.webview.WebviewFactory;
@@ -113,14 +114,15 @@ public class WvWebview extends Webview {
         this.window.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
+                int width = window.getWidth();
+                int height = window.getHeight();
+
                 if (!isMaximized()) {
-                    windowState.setWidth(window.getWidth());
-                    windowState.setHeight(window.getHeight());
+                    windowState.setWidth(width);
+                    windowState.setHeight(height);
                 }
 
-                if (wv != null) {
-                    wv.setFixedSize(window.getWidth(), window.getHeight());
-                }
+                updateWebviewSize(width, height);
             }
 
             @Override
@@ -145,6 +147,20 @@ public class WvWebview extends Webview {
         });
 
         this.bridge.defineObject("windowState", this.windowState);
+    }
+
+    private void updateWebviewSize(int width, int height) {
+        if (this.wv != null) {
+            // There is a random margin on Windows that isn't visible, so we must
+            // compensate.
+            // TODO figure out what this is caused by.
+            if (Platform.os == OperatingSystem.WINDOWS) {
+                width -= 15;
+                height -= 78;
+            }
+
+            this.wv.setFixedSize(width, height);
+        }
     }
 
     private boolean isMaximized() {
@@ -218,6 +234,8 @@ public class WvWebview extends Webview {
             this.wv.setInitScript(this.bridge.getInitScript());
 
             this.wv.loadURL(url);
+
+            this.updateWebviewSize(this.window.getWidth(), this.window.getHeight());
         });
 
         MainThread.submitTask(() -> {
