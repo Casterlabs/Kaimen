@@ -26,7 +26,6 @@ import org.jetbrains.annotations.Nullable;
 import co.casterlabs.kaimen.app.App;
 import co.casterlabs.kaimen.util.platform.Arch;
 import co.casterlabs.kaimen.util.platform.OperatingSystem;
-import co.casterlabs.kaimen.util.platform.Platform;
 import co.casterlabs.kaimen.util.threading.AsyncTask;
 import co.casterlabs.kaimen.util.threading.MainThread;
 import co.casterlabs.kaimen.util.threading.MainThreadPromise;
@@ -38,7 +37,6 @@ import co.casterlabs.kaimen.webview.bridge.WebviewBridge;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.SneakyThrows;
-import xyz.e3ndr.reflectionlib.ReflectionLib;
 
 public class WkWebview extends Webview {
     private static boolean initialized = false;
@@ -130,22 +128,22 @@ public class WkWebview extends Webview {
 
         this.browser.setUrl("about:blank");
 
-        try {
-            if (Platform.os == OperatingSystem.MACOSX) {
-                Object webkit = ReflectionLib.getValue(browser, "webBrowser"); // org.eclipse.swt.browser.WebKit
-                Object view = ReflectionLib.getValue(webkit, "webView"); // org.eclipse.swt.internal.cocoa.WebView
-
-                Object ns_applicationName = ReflectionLib.invokeStaticMethod(
-                    Class.forName("org.eclipse.swt.internal.cocoa.NSString"),
-                    "stringWith",
-                    String.format("Safari/522.0 Kaimen (%s)", Webview.getWebviewToken())
-                );
-
-                ReflectionLib.invokeMethod(view, "setApplicationNameForUserAgent", ns_applicationName);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        try {
+//            if (Platform.os == OperatingSystem.MACOSX) {
+//                Object webkit = ReflectionLib.getValue(browser, "webBrowser"); // org.eclipse.swt.browser.WebKit
+//                Object view = ReflectionLib.getValue(webkit, "webView"); // org.eclipse.swt.internal.cocoa.WebView
+//
+//                Object ns_applicationName = ReflectionLib.invokeStaticMethod(
+//                    Class.forName("org.eclipse.swt.internal.cocoa.NSString"),
+//                    "stringWith",
+//                    String.format("Safari/522.0 Kaimen (%s)", Webview.getWebviewToken())
+//                );
+//
+//                ReflectionLib.invokeMethod(view, "setApplicationNameForUserAgent", ns_applicationName);
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
 
         this.browser.addProgressListener(new ProgressListener() {
             @Override

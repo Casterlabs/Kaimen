@@ -20,10 +20,8 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.SneakyThrows;
-import xyz.e3ndr.reflectionlib.ReflectionLib;
 
 public class UIServer implements Closeable {
-
     private @Setter ConsumingProducer<HttpSession, HttpResponse> handler;
 
     private HttpServer server;
@@ -31,7 +29,7 @@ public class UIServer implements Closeable {
 
     @SneakyThrows
     public UIServer() {
-        String webviewToken = ReflectionLib.getStaticValue(Webview.class, "webviewToken");
+        String baseDomain = Webview.getWebviewBaseUrl();
 
         // Find a random port.
         try (ServerSocket serverSocket = new ServerSocket()) {
@@ -42,12 +40,12 @@ public class UIServer implements Closeable {
 
         this.server = HttpServerBuilder
             .getUndertowBuilder()
-            .setHostname("127.0.0.1")
+            .setHostname(baseDomain)
             .setPort(this.port)
             .build(new HttpListener() {
                 @Override
                 public @Nullable HttpResponse serveSession(@NonNull String host, @NonNull HttpSession session, boolean secure) {
-                    if (session.getHeader("User-Agent").contains(webviewToken)) {
+                    if (host.contains(baseDomain)) {
                         try {
                             return handler.produce(session);
                         } catch (InterruptedException e) {}
@@ -64,7 +62,7 @@ public class UIServer implements Closeable {
     }
 
     public String getAddress() {
-        return String.format("http://127.0.0.1:%d", this.port);
+        return String.format("http://%s:%d", Webview.getWebviewBaseUrl(), this.port);
     }
 
     public void start() throws IOException {

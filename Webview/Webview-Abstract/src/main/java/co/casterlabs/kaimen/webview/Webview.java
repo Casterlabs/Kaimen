@@ -8,14 +8,15 @@ import org.jetbrains.annotations.Nullable;
 
 import co.casterlabs.kaimen.util.Crypto;
 import co.casterlabs.kaimen.webview.bridge.WebviewBridge;
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 
 public abstract class Webview {
     protected static List<WeakReference<Webview>> webviews = new LinkedList<>();
 
-    private static @Getter(AccessLevel.PROTECTED) String webviewToken = new String(Crypto.generateSecureRandomKey());
+    private static @Getter String webviewBaseUrl =
+        // https://sslip.io/
+        String.format("%s.127-0-0-1.sslip.io", new String(Crypto.generateRandomKey(16)));
 
     private @Getter boolean offScreenRenderingEnabled = false;
     private @Getter boolean transparencyEnabled = false;
