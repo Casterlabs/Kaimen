@@ -1,12 +1,24 @@
 package co.casterlabs.kaimen.webview.impl.webviewproject;
 
+import java.awt.BorderLayout;
+import java.awt.Canvas;
+import java.awt.Dimension;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.WindowConstants;
+
 import org.jetbrains.annotations.Nullable;
 
+import co.casterlabs.kaimen.app.App;
 import co.casterlabs.kaimen.util.platform.Arch;
 import co.casterlabs.kaimen.util.platform.OperatingSystem;
 import co.casterlabs.kaimen.util.threading.MainThread;
@@ -34,9 +46,9 @@ public class WvWebview extends Webview {
         public Map<OperatingSystem, List<Arch>> getSupportMap() {
             Map<OperatingSystem, List<Arch>> supported = new HashMap<>();
 
-            for (OperatingSystem os : OperatingSystem.values()) {
-                supported.put(os, Arrays.asList(Arch.AMD64));
-            }
+//            for (OperatingSystem os : OperatingSystem.values()) {
+//                supported.put(os, Arrays.asList(Arch.AMD64));
+//            }
 
             supported.put(
                 OperatingSystem.WINDOWS,
@@ -58,11 +70,86 @@ public class WvWebview extends Webview {
 
     };
 
+    private JFrame window;
+    private Canvas wvCanvas;
+
     private dev.webview.Webview wv;
     private WvBridge bridge = new WvBridge(this);
 
     @Override
-    protected void initialize0() throws Exception {}
+    protected void initialize0() throws Exception {
+        // Setup the canvas
+        this.wvCanvas = new Canvas();
+
+        // Create the window.
+        this.window = new JFrame();
+
+        this.window.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        this.window.setResizable(true);
+        this.window.setMinimumSize(new Dimension(this.windowState.getMinWidth(), this.windowState.getMinHeight()));
+
+        if (App.getIconURL() != null) {
+            this.window.setIconImage(new ImageIcon(App.getIconURL()).getImage());
+        }
+
+        this.window.setSize(this.windowState.getWidth(), this.windowState.getHeight());
+        this.window.setLocation(this.windowState.getX(), this.windowState.getY());
+
+        this.window.add(this.wvCanvas, BorderLayout.CENTER);
+
+        // Listeners galore.
+        this.window.addWindowFocusListener(new WindowAdapter() {
+            @Override
+            public void windowGainedFocus(WindowEvent e) {
+                windowState.setHasFocus(true);
+            }
+
+            @Override
+            public void windowLostFocus(WindowEvent e) {
+                windowState.setHasFocus(false);
+            }
+        });
+
+        this.window.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                if (!isMaximized()) {
+                    windowState.setWidth(window.getWidth());
+                    windowState.setHeight(window.getHeight());
+                }
+
+                if (wv != null) {
+                    wv.setFixedSize(window.getWidth(), window.getHeight());
+                }
+            }
+
+            @Override
+            public void componentMoved(ComponentEvent e) {
+                if (!isMaximized()) {
+                    windowState.setX(window.getX());
+                    windowState.setY(window.getY());
+                }
+            }
+        });
+
+        this.window.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowIconified(WindowEvent e) {
+                getLifeCycleListener().onMinimize();
+            }
+
+            @Override
+            public void windowClosing(WindowEvent e) {
+                getLifeCycleListener().onCloseRequested();
+            }
+        });
+
+        this.bridge.defineObject("windowState", this.windowState);
+    }
+
+    private boolean isMaximized() {
+        return (this.window.getExtendedState() & JFrame.MAXIMIZED_BOTH) == JFrame.MAXIMIZED_BOTH;
+    }
 
     @Override
     public void loadURL(@Nullable String url) {
@@ -81,7 +168,11 @@ public class WvWebview extends Webview {
 
     @Override
     public void executeJavaScript(@NonNull String script) {
-        this.wv.eval(script);
+        if (this.wv != null) {
+            this.wv.dispatch(() -> {
+                this.wv.eval(script);
+            });
+        }
     }
 
     @Override
@@ -93,30 +184,38 @@ public class WvWebview extends Webview {
     @SneakyThrows
     @Override
     public void open(@Nullable String url) {
-        MainThread.submitTaskAndWait(() -> {
-            this.wv = new dev.webview.Webview();
+        this.window.setVisible(true);
 
-            this.wv.setInitScript(this.bridge.getInitScript());
+        MainThread.submitTaskAndWait(() -> {
+            this.wv = new dev.webview.Webview(this.wvCanvas);
 
             this.wv.bind("__internal_comms", (JsonArray args) -> {
-                JsonElement e = args.get(0);
+                try {
+                    JsonElement e = args.get(0);
 
-                if (e.isJsonObject()) {
-                    JsonObject data = e.getAsObject();
+                    if (e.isJsonObject()) {
+                        JsonObject data = e.getAsObject();
 
-                    this.bridge.handleEmission(data);
-                } else {
-                    String value = e.getAsString();
+                        this.bridge.handleEmission(data);
+                    } else {
+                        String value = e.getAsString();
 
-                    switch (value) {
-                        case "INIT": {
-                            this.bridge.initNoInject();
-                            break;
+                        switch (value) {
+                            case "INIT": {
+                                this.bridge.initNoInject();
+                                this.executeJavaScript("try { onBridgeInit(); } catch (ignored) { }");
+                                break;
+                            }
                         }
                     }
+                } catch (Throwable t) {
+                    t.printStackTrace();
                 }
+
                 return null;
             });
+
+            this.wv.setInitScript(this.bridge.getInitScript());
 
             this.wv.loadURL(url);
         });
@@ -130,37 +229,46 @@ public class WvWebview extends Webview {
     }
 
     @Override
+    public boolean isOpen() {
+        return this.window.isVisible();
+    }
+
+    @Override
     public void close() {
         this.wv.close();
+        this.window.setVisible(false);
     }
 
     @Override
     public void destroy() {
         this.close();
+        this.window.dispose();
     }
 
     @Override
-    public void focus() {}
-
-    @Override
-    public boolean isOpen() {
-        return this.wv != null;
+    public void focus() {
+        this.window.toFront();
     }
 
     @Override
     public void reload() {
-        this.executeJavaScript("location.reload();");
+        this.executeJavaScript("location.reload(true);");
     }
 
     @Override
-    public void setPosition(int x, int y) {}
+    public void setPosition(int x, int y) {
+        this.window.setLocation(x, y);
+    }
 
     @Override
     public void setSize(int width, int height) {
-        this.wv.setSize(width, height);
+        this.window.setSize(width, height);
     }
 
     @Override
-    public void setProperties(@NonNull WebviewWindowProperties properties) {}
+    public void setProperties(@NonNull WebviewWindowProperties properties) {
+        this.window.setFocusable(properties.isFocusable());
+        this.window.setAlwaysOnTop(properties.isAlwaysOnTop());
+    }
 
 }

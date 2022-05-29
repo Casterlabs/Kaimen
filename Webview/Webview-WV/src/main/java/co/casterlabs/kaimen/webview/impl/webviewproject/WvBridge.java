@@ -45,9 +45,8 @@ public class WvBridge extends WebviewBridge {
     /* Comms */
 
     protected void handleEmission(@NonNull JsonObject query) {
-        JsonObject emission = query.getObject("data");
-        String type = emission.getString("type");
-        JsonObject data = emission.getObject("data");
+        String type = query.getString("type");
+        JsonObject data = query.getObject("data");
 
         FastLogger.logStatic(LogLevel.TRACE, "%s: %s", type, data);
 
