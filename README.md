@@ -75,6 +75,11 @@ Caffeinated is a tool suite for live-streamers (made by us :D ). It uses SvelteK
 <br />
 <br />
 
+## Limitations
+ - You cannot use Swing, AWT, or JavaFX on macOS due to how macOS handles UI threads (Not while the main thread is being used for a Webview).
+ - You cannot open more than one webview at a time on macOS or while using the (unsupported) webview project implementation.
+ - 
+
 ## TODO
  - [x] Readme
  - [ ] Some usage docs
