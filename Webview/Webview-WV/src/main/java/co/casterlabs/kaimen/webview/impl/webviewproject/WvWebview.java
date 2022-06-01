@@ -22,6 +22,7 @@ import co.casterlabs.kaimen.app.App;
 import co.casterlabs.kaimen.util.platform.Arch;
 import co.casterlabs.kaimen.util.platform.OperatingSystem;
 import co.casterlabs.kaimen.util.platform.Platform;
+import co.casterlabs.kaimen.util.threading.AsyncTask;
 import co.casterlabs.kaimen.util.threading.MainThread;
 import co.casterlabs.kaimen.webview.Webview;
 import co.casterlabs.kaimen.webview.WebviewFactory;
@@ -147,6 +148,8 @@ public class WvWebview extends Webview {
         });
 
         this.bridge.defineObject("windowState", this.windowState);
+
+        this.getLifeCycleListener().onBrowserPreLoad();
     }
 
     private void updateWebviewSize(int width, int height) {
@@ -220,6 +223,7 @@ public class WvWebview extends Webview {
                             case "INIT": {
                                 this.bridge.initNoInject();
                                 this.executeJavaScript("try { onBridgeInit(); } catch (ignored) { }");
+                                new AsyncTask(this.getLifeCycleListener()::onBrowserOpen);
                                 break;
                             }
                         }
@@ -255,6 +259,7 @@ public class WvWebview extends Webview {
     public void close() {
         this.wv.close();
         this.window.setVisible(false);
+        this.getLifeCycleListener().onBrowserClose();
     }
 
     @Override
