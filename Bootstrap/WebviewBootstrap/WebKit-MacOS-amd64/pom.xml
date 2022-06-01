@@ -56,11 +56,9 @@
 			<scope>compile</scope>
 		</dependency>
 
-		<!-- https://github.com/Casterlabs/eclipse-swt -->
 		<dependency>
 			<groupId>org.eclipse.swt</groupId>
 			<artifactId>cocoa.macosx.x86_64</artifactId>
-			<version>4.22</version>
 			<scope>compile</scope>
 		</dependency>
 
