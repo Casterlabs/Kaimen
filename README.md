@@ -69,8 +69,11 @@ Kaimen is a Java app framework with webviews (similar to electron). Kaimen has a
 <img src="https://i.imgur.com/SCWFPy0.png" alt="A picture of Casterlabs" align="right" height="280px">
 
 ### Caffeinated
-Caffeinated is a tool suite for live-streamers (made by us :D ). It uses SvelteKit for it's UI and Kaimen for the webview. You can find it [here](https://casterlabs.co). 
+Caffeinated is a tool suite for live-streamers (made by us :D ). <br />
+It uses SvelteKit for it's UI and Kaimen for the webview. You can find it [here](https://casterlabs.co). 
 
+<br />
+<br />
 <br />
 <br />
 <br />
@@ -78,7 +81,6 @@ Caffeinated is a tool suite for live-streamers (made by us :D ). It uses SvelteK
 ## Limitations
  - You cannot use Swing, AWT, or JavaFX on macOS due to how macOS handles UI threads (Not while the main thread is being used for a Webview).
  - You cannot open more than one webview at a time on macOS or while using the (unsupported) webview project implementation.
- - 
 
 ## TODO
  - [x] Readme
