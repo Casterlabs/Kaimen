@@ -14,9 +14,7 @@ import lombok.NonNull;
 public abstract class Webview {
     protected static List<WeakReference<Webview>> webviews = new LinkedList<>();
 
-    private static @Getter String webviewBaseUrl =
-        // https://sslip.io/
-        String.format("%s.127-0-0-1.sslip.io", new String(Crypto.generateRandomKey(16)));
+    private static @Getter String password = new String(Crypto.generateRandomKey(16));
 
     private @Getter boolean offScreenRenderingEnabled = false;
     private @Getter boolean transparencyEnabled = false;

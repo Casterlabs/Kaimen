@@ -106,7 +106,7 @@ public class Test {
                 .withFocusable(true)
         );
 
-        webview.open(uiServer.getAddress());
+        webview.open(uiServer.getLocalAddress());
 
         webview
             .getBridge()

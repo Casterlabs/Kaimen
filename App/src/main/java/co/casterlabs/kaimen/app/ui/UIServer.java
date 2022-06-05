@@ -26,10 +26,18 @@ public class UIServer implements Closeable {
 
     private HttpServer server;
     private @Getter int port;
+    private @Getter String password;
+
+    private @Getter String address;
+    private @Getter String localAddress;
 
     @SneakyThrows
     public UIServer() {
-        String baseDomain = Webview.getWebviewBaseUrl();
+        final String webviewPassword = Webview.getPassword();
+        final String baseDomain = String.format("%s.127-0-0-1.sslip.io", webviewPassword); // https://sslip.io/
+
+        this.address = String.format("http://%s:%d", baseDomain, this.port);
+        this.localAddress = String.format("http://127.0.0.1:%d", this.port);
 
         // Find a random port.
         try (ServerSocket serverSocket = new ServerSocket()) {
@@ -45,7 +53,7 @@ public class UIServer implements Closeable {
             .build(new HttpListener() {
                 @Override
                 public @Nullable HttpResponse serveSession(@NonNull String host, @NonNull HttpSession session, boolean secure) {
-                    if (host.contains(baseDomain)) {
+                    if (host.contains(baseDomain) || session.getHeader("User-Agent").contains(webviewPassword)) {
                         try {
                             return handler.produce(session);
                         } catch (InterruptedException e) {}
@@ -59,10 +67,6 @@ public class UIServer implements Closeable {
                     return null;
                 }
             });
-    }
-
-    public String getAddress() {
-        return String.format("http://%s:%d", Webview.getWebviewBaseUrl(), this.port);
     }
 
     public void start() throws IOException {

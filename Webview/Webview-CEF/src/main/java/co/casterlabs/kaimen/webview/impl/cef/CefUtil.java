@@ -7,6 +7,7 @@ import org.cef.CefClient;
 import org.cef.CefSettings;
 import org.cef.CefSettings.LogSeverity;
 
+import co.casterlabs.kaimen.webview.Webview;
 import lombok.SneakyThrows;
 import me.friwi.jcefmaven.CefAppBuilder;
 
@@ -27,7 +28,7 @@ public class CefUtil {
             settings.log_severity = LogSeverity.LOGSEVERITY_DISABLE;
 
             // TODO figure out how to keep this up-to-date
-//            settings.user_agent_product = String.format("Chrome/95.0.4638.69 Kaimen (%s)", webviewToken);
+            settings.user_agent_product = String.format("Chrome/95.0.4638.69 Kaimen (%s)", Webview.getPassword());
 
             builder.setProgressHandler(new CefDownloadProgressDialog());
 
