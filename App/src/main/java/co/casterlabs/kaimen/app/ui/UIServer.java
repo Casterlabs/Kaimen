@@ -36,15 +36,15 @@ public class UIServer implements Closeable {
         final String webviewPassword = Webview.getPassword();
         final String baseDomain = String.format("%s.127-0-0-1.sslip.io", webviewPassword); // https://sslip.io/
 
-        this.address = String.format("http://%s:%d", baseDomain, this.port);
-        this.localAddress = String.format("http://127.0.0.1:%d", this.port);
-
         // Find a random port.
         try (ServerSocket serverSocket = new ServerSocket()) {
             serverSocket.setReuseAddress(false);
             serverSocket.bind(new InetSocketAddress("127.0.0.1", 0), 1);
             this.port = serverSocket.getLocalPort();
         }
+
+        this.address = String.format("http://%s:%d", baseDomain, this.port);
+        this.localAddress = String.format("http://127.0.0.1:%d", this.port);
 
         this.server = HttpServerBuilder
             .getUndertowBuilder()
