@@ -48,7 +48,7 @@ public class UIServer implements Closeable {
 
         this.server = HttpServerBuilder
             .getUndertowBuilder()
-            .setHostname(baseDomain)
+            .setHostname("127.0.0.1")
             .setPort(this.port)
             .build(new HttpListener() {
                 @Override
