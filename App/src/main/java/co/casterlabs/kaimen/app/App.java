@@ -1,5 +1,6 @@
 package co.casterlabs.kaimen.app;
 
+import java.awt.Window;
 import java.net.URL;
 
 import org.jetbrains.annotations.Nullable;
@@ -60,7 +61,16 @@ public abstract class App {
         return themeDetector.isDark() ? Appearance.DARK : Appearance.LIGHT;
     }
 
+    protected void shakeWindowProperties0(Window window) {
+        // Used internally as-needed.
+    }
+
     /* Public */
+
+    @Deprecated
+    public static void shakeWindowProperties(@NonNull Window window) {
+        instance.shakeWindowProperties0(window);
+    }
 
     @SneakyThrows
     public static void setPowermanagementHint(@NonNull PowerManagementHint hint) {

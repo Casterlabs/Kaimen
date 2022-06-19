@@ -3,6 +3,7 @@ package co.casterlabs.kaimen.webview.impl.cef;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Window;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
@@ -83,7 +84,7 @@ public class CefWebview extends Webview {
     private static FastLogger logger = new FastLogger();
     private static boolean cefInitialized = false;
 
-    private Window window;
+    private @Getter Window window;
     private JPanel cefPanel;
 
     private CefClient client;
@@ -94,6 +95,7 @@ public class CefWebview extends Webview {
 
     private @Getter String pageTitle;
 
+    @SuppressWarnings("deprecation")
     @Override
     protected void initialize0() throws Exception {
         // One-time setup.
@@ -126,6 +128,9 @@ public class CefWebview extends Webview {
 
             this.window = frame;
         }
+
+        EventQueue.invokeAndWait(this.window::addNotify);
+        App.shakeWindowProperties(this.window);
 
         if (App.getIconURL() != null) {
             this.window.setIconImage(new ImageIcon(App.getIconURL()).getImage());
