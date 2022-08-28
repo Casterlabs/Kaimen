@@ -238,6 +238,7 @@ public class WvWebview extends Webview {
             this.wv.setInitScript(this.bridge.getInitScript());
 
             this.wv.loadURL(url);
+            this.wv.eval("location.reload();");
 
             this.updateWebviewSize(this.window.getWidth(), this.window.getHeight());
         });
