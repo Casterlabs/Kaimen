@@ -206,7 +206,7 @@ public class WvWebview extends Webview {
         this.window.setVisible(true);
 
         MainThread.submitTaskAndWait(() -> {
-            this.wv = new dev.webview.Webview(this.wvCanvas);
+            this.wv = new dev.webview.Webview(true, this.wvCanvas);
 
             this.wv.bind("__internal_comms", (JsonArray args) -> {
                 try {
