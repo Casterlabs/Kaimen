@@ -9,6 +9,8 @@ import org.jetbrains.annotations.Nullable;
 
 import co.casterlabs.kaimen.util.functional.ConsumingProducer;
 import co.casterlabs.kaimen.webview.Webview;
+import co.casterlabs.kaimen.webview.WebviewFactory;
+import co.casterlabs.kaimen.webview.WebviewRenderer;
 import co.casterlabs.rakurai.io.http.HttpResponse;
 import co.casterlabs.rakurai.io.http.HttpSession;
 import co.casterlabs.rakurai.io.http.server.HttpListener;
@@ -53,7 +55,11 @@ public class UIServer implements Closeable {
             .build(new HttpListener() {
                 @Override
                 public @Nullable HttpResponse serveSession(@NonNull String host, @NonNull HttpSession session, boolean secure) {
-                    if (host.contains(baseDomain) || session.getHeader("User-Agent").contains(webviewPassword)) {
+                    if (host.contains(baseDomain) || session.getHeader("User-Agent").contains(webviewPassword) ||
+
+                    // Still unable to set this :(
+                        (WebviewFactory.get().getRendererType() == WebviewRenderer.WEBVIEW_PROJECT)) {
+
                         try {
                             return handler.produce(session);
                         } catch (InterruptedException e) {}
