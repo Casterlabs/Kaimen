@@ -9,8 +9,6 @@ import org.jetbrains.annotations.Nullable;
 
 import co.casterlabs.kaimen.util.functional.ConsumingProducer;
 import co.casterlabs.kaimen.webview.Webview;
-import co.casterlabs.kaimen.webview.WebviewFactory;
-import co.casterlabs.kaimen.webview.WebviewRenderer;
 import co.casterlabs.rakurai.io.http.HttpResponse;
 import co.casterlabs.rakurai.io.http.HttpSession;
 import co.casterlabs.rakurai.io.http.server.HttpListener;
@@ -22,7 +20,9 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.SneakyThrows;
+import lombok.experimental.Accessors;
 
+@Accessors(chain = true)
 public class UIServer implements Closeable {
     private @Setter ConsumingProducer<HttpSession, HttpResponse> handler;
 
@@ -75,8 +75,9 @@ public class UIServer implements Closeable {
             });
     }
 
-    public void start() throws IOException {
+    public UIServer start() throws IOException {
         this.server.start();
+        return this;
     }
 
     @Override
