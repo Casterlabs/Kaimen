@@ -33,6 +33,9 @@ public class UIServer implements Closeable {
     private @Getter String address;
     private @Getter String localAddress;
 
+    // Still unable to set the webview password in WV. :(
+    private @Setter @Getter boolean ignorePassword = false;
+
     @SneakyThrows
     public UIServer() {
         final String webviewPassword = Webview.getPassword();
@@ -55,10 +58,9 @@ public class UIServer implements Closeable {
             .build(new HttpListener() {
                 @Override
                 public @Nullable HttpResponse serveSession(@NonNull String host, @NonNull HttpSession session, boolean secure) {
-                    if (host.contains(baseDomain) || session.getHeader("User-Agent").contains(webviewPassword) ||
+                    String userAgent = session.getHeader("User-Agent");
 
-                    // Still unable to set this :(
-                        (WebviewFactory.get().getRendererType() == WebviewRenderer.WEBVIEW_PROJECT)) {
+                    if (host.contains(baseDomain) || userAgent.contains(webviewPassword) || ignorePassword) {
 
                         try {
                             return handler.produce(session);

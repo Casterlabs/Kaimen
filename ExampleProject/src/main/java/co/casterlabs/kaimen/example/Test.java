@@ -12,6 +12,7 @@ import co.casterlabs.kaimen.util.platform.Platform;
 import co.casterlabs.kaimen.webview.Webview;
 import co.casterlabs.kaimen.webview.WebviewFactory;
 import co.casterlabs.kaimen.webview.WebviewLifeCycleListener;
+import co.casterlabs.kaimen.webview.WebviewRenderer;
 import co.casterlabs.kaimen.webview.WebviewWindowProperties;
 import co.casterlabs.kaimen.webview.bridge.JavascriptFunction;
 import co.casterlabs.kaimen.webview.bridge.JavascriptObject;
@@ -39,35 +40,36 @@ public class Test {
         App.setPowermanagementHint(PowerManagementHint.HIGH_PERFORMANCE);
 
         // UI Server
-        UIServer uiServer = new UIServer();
-
-        uiServer.start();
-        uiServer.setHandler((session) -> {
-            return HttpResponse.newFixedLengthResponse(
-                StandardHttpStatus.OK,
-                "<!DOCTYPE html>"
-                    + "<html style=\"background-color: transparent;\">"
-                    + "<body style=\"text-align: center; font-family: BlinkMacSystemFont, -apple-system, 'Segoe UI', Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;\">"
-                    + "<br />"
-                    + "<br />"
-                    + "Example App"
-                    + "<br />"
-                    + "<br />"
-                    + "<a href='https://google.com'>Open Google</a> &nbsp;&nbsp; "
-                    + "<a href='https://casterlabs.co'>Open Casterlabs</a>"
-                    + "<p>x: <span id='x'></span> y: <span id='y'></span></p>"
-                    + "<script>"
-                    + "function onBridgeInit() {"
-                    + "const xElem = document.querySelector('#x');"
-                    + "const yElem = document.querySelector('#y');"
-                    + "windowState.mutate('x', (x) => xElem.innerText = x);"
-                    + "windowState.mutate('y', (y) => yElem.innerText = y);"
-                    + "}"
-                    + "</script>"
-                    + "</body>"
-                    + "</html"
-            );
-        });
+        @SuppressWarnings("resource")
+        UIServer uiServer = new UIServer()
+            .setIgnorePassword(true)
+            .setHandler((session) -> {
+                return HttpResponse.newFixedLengthResponse(
+                    StandardHttpStatus.OK,
+                    "<!DOCTYPE html>"
+                        + "<html style=\"background-color: transparent;\">"
+                        + "<body style=\"text-align: center; font-family: BlinkMacSystemFont, -apple-system, 'Segoe UI', Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;\">"
+                        + "<br />"
+                        + "<br />"
+                        + "Example App"
+                        + "<br />"
+                        + "<br />"
+                        + "<a href='https://google.com'>Open Google</a> &nbsp;&nbsp; "
+                        + "<a href='https://casterlabs.co'>Open Casterlabs</a>"
+                        + "<p>x: <span id='x'></span> y: <span id='y'></span></p>"
+                        + "<script>"
+                        + "function onBridgeInit() {"
+                        + "const xElem = document.querySelector('#x');"
+                        + "const yElem = document.querySelector('#y');"
+                        + "windowState.mutate('x', (x) => xElem.innerText = x);"
+                        + "windowState.mutate('y', (y) => yElem.innerText = y);"
+                        + "}"
+                        + "</script>"
+                        + "</body>"
+                        + "</html"
+                );
+            })
+            .start();
 
         // Log some stuff
         FastLogger.logStatic("Running on: %s (%s)", Platform.os, Platform.arch);
@@ -76,7 +78,7 @@ public class Test {
         FastLogger.logStatic("UI Server port (it's ephemeral): %d", uiServer.getPort());
 
         // Setup the webview
-        WebviewFactory factory = WebviewFactory.get();
+        WebviewFactory factory = WebviewFactory.get(WebviewRenderer.WEBVIEW_PROJECT);
         Webview webview = factory.produce();
 
         webview.initialize(new WebviewLifeCycleListener() {
