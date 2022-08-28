@@ -1,7 +1,9 @@
 package co.casterlabs.kaimen.webview;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -14,62 +16,67 @@ import xyz.e3ndr.fastloggingframework.logging.LogLevel;
 import xyz.e3ndr.reflectionlib.ReflectionLib;
 
 public abstract class WebviewFactory implements Producer<Webview> {
-    private static WebviewFactory FACTORY;
+    private static Map<WebviewRenderer, WebviewFactory> factories = new HashMap<>();
 
     static {
+        List<WebviewFactory> includedFactories = new ArrayList<>();
+
         try {
-            List<WebviewFactory> factories = new ArrayList<>();
+            includedFactories.add(
+                ReflectionLib.getStaticValue(
+                    Class.forName("co.casterlabs.kaimen.webview.impl.cef.CefWebview"),
+                    "FACTORY"
+                )
+            );
+        } catch (Exception ignored) {}
 
-            try {
-                factories.add(
-                    ReflectionLib.getStaticValue(
-                        Class.forName("co.casterlabs.kaimen.webview.impl.cef.CefWebview"),
-                        "FACTORY"
-                    )
-                );
-            } catch (Exception ignored) {}
+        try {
+            includedFactories.add(
+                ReflectionLib.getStaticValue(
+                    Class.forName("co.casterlabs.kaimen.webview.impl.webkit.WkWebview"),
+                    "FACTORY"
+                )
+            );
+        } catch (Exception ignored) {}
 
-            try {
-                factories.add(
-                    ReflectionLib.getStaticValue(
-                        Class.forName("co.casterlabs.kaimen.webview.impl.webkit.WkWebview"),
-                        "FACTORY"
-                    )
-                );
-            } catch (Exception ignored) {}
+        try {
+            includedFactories.add(
+                ReflectionLib.getStaticValue(
+                    Class.forName("co.casterlabs.kaimen.webview.impl.webviewproject.WvWebview"),
+                    "FACTORY"
+                )
+            );
+        } catch (Exception ignored) {}
 
-            try {
-                factories.add(
-                    ReflectionLib.getStaticValue(
-                        Class.forName("co.casterlabs.kaimen.webview.impl.webviewproject.WvWebview"),
-                        "FACTORY"
-                    )
-                );
-            } catch (Exception ignored) {}
+        FastLogger.logStatic(LogLevel.DEBUG, "Found factories: %s", includedFactories);
 
-            if (FACTORY == null) {
-                for (WebviewFactory factory : factories) {
-                    try {
-                        if (factory.supportsPlatform()) {
-                            FACTORY = factory;
-                            break;
-                        }
-                    } catch (Throwable ignored) {}
-                }
+        for (WebviewFactory factory : includedFactories) {
+            FastLogger.logStatic(LogLevel.DEBUG, "%s factory supports: %s", factory.getRendererType(), factory.getSupportMap());
 
-                if (FACTORY == null) {
-                    FastLogger.logStatic(LogLevel.SEVERE, "Could not find any webviews. Is your project configured correctly?");
-                    throw new IllegalStateException("Cannot find any webviews. Is your project configured correctly?");
-                }
+            if (factory.supportsPlatform()) {
+                factories.put(factory.getRendererType(), factory);
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        }
+
+        if (factories.isEmpty()) {
+            FastLogger.logStatic(LogLevel.SEVERE, "Could not find any webviews. Is your project configured correctly?");
+            throw new IllegalStateException("Cannot find any webviews. Is your project configured correctly?");
         }
     }
 
-    public static WebviewFactory get() {
-        assert FACTORY != null : "Could not find a suitable webview factory.";
-        return FACTORY;
+    public static WebviewFactory get(WebviewRenderer... orderOfPreference) {
+        if (orderOfPreference.length == 0) {
+            orderOfPreference = WebviewRenderer.values();
+        }
+
+        for (WebviewRenderer renderer : orderOfPreference) {
+            WebviewFactory factory = factories.get(renderer);
+            if (factory != null) {
+                return factory;
+            }
+        }
+
+        throw new IllegalStateException("Could not find a suitable webview factory that satisfies preference: " + Arrays.toString(orderOfPreference));
     }
 
     public boolean supportsPlatform() {
