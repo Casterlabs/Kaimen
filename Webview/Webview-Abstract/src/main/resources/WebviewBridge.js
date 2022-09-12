@@ -96,6 +96,8 @@ if (!window.Bridge) {
     const comms = setupComms();
 
     const Bridge = {
+        internal__raw: comms,
+    
         internal__registerCallback(callback) {
             const callbackId = generateRandomId();
 

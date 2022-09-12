@@ -26,6 +26,8 @@ function setupComms() {
     __internal_comms("INIT");
 
     return {
+        internal__eh: eventHandler,
+    
         internal__sendToParent: sendToParent,
 
         emit(type, data = {}) {
