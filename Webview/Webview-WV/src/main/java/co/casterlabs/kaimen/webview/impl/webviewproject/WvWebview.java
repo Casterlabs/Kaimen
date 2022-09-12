@@ -241,16 +241,17 @@ public class WvWebview extends Webview {
 
                             new AsyncTask(() -> {
                                 this.getLifeCycleListener().onPageTitleChange(this.pageTitle);
+                                this.updateTitle();
                             });
-
-                            updateTitle();
                             break;
                         }
 
                         case "EMIT": {
                             JsonObject data = args.getObject(1);
 
-                            this.bridge.handleEmission(data);
+                            new AsyncTask(() -> {
+                                this.bridge.handleEmission(data);
+                            });
                             break;
                         }
                     }
@@ -260,6 +261,8 @@ public class WvWebview extends Webview {
 
                 return null;
             });
+
+            this.updateTitle();
 
             this.wv.setInitScript(this.bridge.getInitScript());
 
