@@ -96,4 +96,6 @@ public abstract class Webview {
 
     public abstract void setProperties(@NonNull WebviewWindowProperties properties);
 
+    public abstract WebviewRenderer getRendererType();
+
 }

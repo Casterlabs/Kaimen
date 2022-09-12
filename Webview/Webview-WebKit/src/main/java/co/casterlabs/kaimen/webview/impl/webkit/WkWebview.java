@@ -372,4 +372,9 @@ public class WkWebview extends Webview {
         // TODO ugh, swt again.
     }
 
+    @Override
+    public WebviewRenderer getRendererType() {
+        return WebviewRenderer.WEBKIT;
+    }
+
 }

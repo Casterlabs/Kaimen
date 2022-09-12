@@ -436,4 +436,9 @@ public class CefWebview extends Webview {
         this.window.setAlwaysOnTop(properties.isAlwaysOnTop());
     }
 
+    @Override
+    public WebviewRenderer getRendererType() {
+        return WebviewRenderer.CHROMIUM_EMBEDDED_FRAMEWORK;
+    }
+
 }

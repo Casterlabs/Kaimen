@@ -32,6 +32,7 @@ import co.casterlabs.kaimen.webview.bridge.WebviewBridge;
 import co.casterlabs.rakurai.json.element.JsonArray;
 import co.casterlabs.rakurai.json.element.JsonElement;
 import co.casterlabs.rakurai.json.element.JsonObject;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 
@@ -72,7 +73,7 @@ public class WvWebview extends Webview {
 
     };
 
-    private JFrame window;
+    private @Getter JFrame window;
     private Canvas wvCanvas;
 
     private dev.webview.Webview wv;
@@ -293,6 +294,11 @@ public class WvWebview extends Webview {
     public void setProperties(@NonNull WebviewWindowProperties properties) {
         this.window.setFocusable(properties.isFocusable());
         this.window.setAlwaysOnTop(properties.isAlwaysOnTop());
+    }
+
+    @Override
+    public WebviewRenderer getRendererType() {
+        return WebviewRenderer.WEBVIEW_PROJECT;
     }
 
 }

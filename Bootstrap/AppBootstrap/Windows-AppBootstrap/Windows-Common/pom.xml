@@ -26,6 +26,12 @@
 			<version>${project.parent.version}</version>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>co.casterlabs</groupId>
+			<artifactId>Webview-WV</artifactId>
+			<version>${project.parent.version}</version>
+			<scope>provided</scope>
+		</dependency>
 
 		<!-- JNA -->
 		<dependency>
