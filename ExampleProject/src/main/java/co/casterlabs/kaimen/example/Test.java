@@ -12,6 +12,7 @@ import co.casterlabs.kaimen.util.platform.Platform;
 import co.casterlabs.kaimen.webview.Webview;
 import co.casterlabs.kaimen.webview.WebviewFactory;
 import co.casterlabs.kaimen.webview.WebviewLifeCycleListener;
+import co.casterlabs.kaimen.webview.WebviewRenderer;
 import co.casterlabs.kaimen.webview.WebviewWindowProperties;
 import co.casterlabs.kaimen.webview.bridge.JavascriptFunction;
 import co.casterlabs.kaimen.webview.bridge.JavascriptObject;
@@ -77,7 +78,7 @@ public class Test {
         FastLogger.logStatic("UI Server port (it's ephemeral): %d", uiServer.getPort());
 
         // Setup the webview
-        WebviewFactory factory = WebviewFactory.get();
+        WebviewFactory factory = WebviewFactory.get(WebviewRenderer.WEBVIEW_PROJECT);
         Webview webview = factory.produce();
 
         webview.initialize(new WebviewLifeCycleListener() {

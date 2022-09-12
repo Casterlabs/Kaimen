@@ -79,6 +79,8 @@ public class WvWebview extends Webview {
     private dev.webview.Webview wv;
     private WvBridge bridge = new WvBridge(this);
 
+    private String pageTitle = null;
+
     @Override
     protected void initialize0() throws Exception {
         // Setup the canvas
@@ -211,22 +213,45 @@ public class WvWebview extends Webview {
 
             this.wv.bind("__internal_comms", (JsonArray args) -> {
                 try {
-                    JsonElement e = args.get(0);
+                    switch (args.getString(0)) {
+                        case "INIT": {
+                            this.bridge.initNoInject();
+                            this.executeJavaScript("try { onBridgeInit(); } catch (ignored) { }");
+                            new AsyncTask(this.getLifeCycleListener()::onBrowserOpen);
+                            break;
+                        }
 
-                    if (e.isJsonObject()) {
-                        JsonObject data = e.getAsObject();
+                        case "TITLE": {
+                            JsonElement title = args.get(1);
 
-                        this.bridge.handleEmission(data);
-                    } else {
-                        String value = e.getAsString();
+                            if ((title == null) || !title.isJsonString()) {
+                                this.pageTitle = null;
+                            } else {
+                                String titleString = title.getAsString();
 
-                        switch (value) {
-                            case "INIT": {
-                                this.bridge.initNoInject();
-                                this.executeJavaScript("try { onBridgeInit(); } catch (ignored) { }");
-                                new AsyncTask(this.getLifeCycleListener()::onBrowserOpen);
-                                break;
+                                if (titleString.equals("null") ||
+                                    titleString.equals("undefined") ||
+                                    titleString.isEmpty() ||
+                                    this.getCurrentURL().contains(titleString)) {
+                                    this.pageTitle = null;
+                                } else {
+                                    this.pageTitle = titleString;
+                                }
                             }
+
+                            new AsyncTask(() -> {
+                                this.getLifeCycleListener().onPageTitleChange(this.pageTitle);
+                            });
+
+                            updateTitle();
+                            break;
+                        }
+
+                        case "EMIT": {
+                            JsonObject data = args.getObject(1);
+
+                            this.bridge.handleEmission(data);
+                            break;
                         }
                     }
                 } catch (Throwable t) {
@@ -250,6 +275,22 @@ public class WvWebview extends Webview {
 
             // The impl is automatically unregistered once this exits.
         });
+    }
+
+    public void updateTitle() {
+        if (!this.isTransparencyEnabled()) {
+            new AsyncTask(() -> {
+                String title;
+
+                if (this.pageTitle != null) {
+                    title = this.pageTitle;
+                } else {
+                    title = App.getName();
+                }
+
+                this.window.setTitle(title);
+            });
+        }
     }
 
     @Override
