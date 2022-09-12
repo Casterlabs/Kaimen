@@ -4,6 +4,8 @@ if (!window.Bridge) {
         let callbackIdCounter = 0;
 
         return {
+            internal__listeners: listeners,
+    
             on(type, callback) {
                 const callbackId = callbackIdCounter++;
 
@@ -96,8 +98,6 @@ if (!window.Bridge) {
     const comms = setupComms();
 
     const Bridge = {
-        internal__raw: comms,
-    
         internal__registerCallback(callback) {
             const callbackId = generateRandomId();
 
