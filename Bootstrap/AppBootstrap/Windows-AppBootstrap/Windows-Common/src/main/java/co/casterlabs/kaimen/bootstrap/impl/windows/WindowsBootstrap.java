@@ -31,6 +31,7 @@ public class WindowsBootstrap extends App {
                     break;
 
                 case WEBVIEW_PROJECT:
+                    ((WvWebview) wv).updateTitle();
                     break;
 
                 default:
