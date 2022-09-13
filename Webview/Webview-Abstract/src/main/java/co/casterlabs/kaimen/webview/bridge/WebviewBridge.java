@@ -11,6 +11,7 @@ import java.util.Map;
 import org.jetbrains.annotations.Nullable;
 
 import co.casterlabs.kaimen.util.functional.DualConsumer;
+import co.casterlabs.kaimen.webview.Webview;
 import co.casterlabs.kaimen.webview.WebviewFileUtil;
 import co.casterlabs.rakurai.json.element.JsonArray;
 import co.casterlabs.rakurai.json.element.JsonElement;
@@ -44,29 +45,68 @@ public abstract class WebviewBridge {
         bridges.add(this.$ref);
     }
 
-    @Deprecated
-    public void mergeWith(WebviewBridge parent) {
-        parent.downstreamBridges.add(this.$ref);
-        this.attachedBridges.add(parent.$ref);
-        this.objects = parent.objects; // Pointer copy.
-        this.onEvent = parent.onEvent;
-    }
-
     @Override
     protected void finalize() {
         bridges.remove(this.$ref);
     }
 
-    protected void init() {
-        this.eval0(this.getInitScript());
-        this.initNoInject();
+    /**
+     * This method allows you to merge two bridges without needing to maintain two
+     * objects. Calling this will make this bridge inherit all events and objects
+     * from the parent bridge.
+     */
+    public void join(@NonNull WebviewBridge parent) {
+        parent.downstreamBridges.add(this.$ref);
+        this.attachedBridges.add(parent.$ref);
+
+        // Pointer copy.
+        this.objects = parent.objects;
+
+        // This allows the parent's onEvent to change and for this object to still
+        // respect that change. Note that this behavior can still be undone by calling
+        // #setOnEvent() on this object.
+        this.onEvent = (str, obj) -> {
+            if (parent.onEvent != null) {
+                parent.onEvent.accept(str, obj);
+            }
+        };
     }
 
-    protected String getInitScript() {
+    public void defineObject(@NonNull String name, @NonNull JavascriptObject obj) {
+        obj.init(name, this);
+    }
+
+    public void emit(@NonNull String type, @NonNull JsonElement data) {
+        this.emit0(type, data);
+
+        for (WeakReference<WebviewBridge> wb : this.downstreamBridges) {
+            wb.get().emit0(type, data);
+        }
+    }
+
+    /**
+     * @implNote This differs from {@link Webview#executeJavaScript(String)} in that
+     *           it also calls eval on all the downstream bridges (ones that
+     *           join()'ed with this bridge)
+     */
+    public void eval(@NonNull String script) {
+        this.eval0(script);
+
+        for (WeakReference<WebviewBridge> wb : this.downstreamBridges) {
+            wb.get().eval0(script);
+        }
+    }
+
+    protected String getInjectScript() {
         return bridgeScript.replace("\"replace with native comms code\";", this.getNativeBridgeScript());
     }
 
-    protected void initNoInject() {
+    protected void injectAndInit() {
+        this.eval0(this.getInjectScript());
+        this.init();
+    }
+
+    protected void init() {
         for (Map.Entry<String, JavascriptObject> entry : new ArrayList<>(this.objects.entrySet())) {
             if (!entry.getKey().contains(".")) {
                 entry.getValue().init(entry.getKey(), this);
@@ -76,10 +116,6 @@ public abstract class WebviewBridge {
         for (WeakReference<WebviewBridge> wb : this.attachedBridges) {
             wb.get().downstreamBridges.remove(this.$ref);
         }
-    }
-
-    public void defineObject(@NonNull String name, @NonNull JavascriptObject obj) {
-        obj.init(name, this);
     }
 
     protected @Nullable JsonElement processGet(String id, String property) throws Throwable {
@@ -106,23 +142,8 @@ public abstract class WebviewBridge {
         for (JavascriptObject obj : this.objects.values()) {
             if (obj.getId().equals(id)) {
                 obj.set(property, value, this);
+                break;
             }
-        }
-    }
-
-    public void emit(@NonNull String type, @NonNull JsonElement data) {
-        this.emit0(type, data);
-
-        for (WeakReference<WebviewBridge> wb : this.downstreamBridges) {
-            wb.get().emit0(type, data);
-        }
-    }
-
-    public void eval(@NonNull String script) {
-        this.eval0(script);
-
-        for (WeakReference<WebviewBridge> wb : this.downstreamBridges) {
-            wb.get().eval0(script);
         }
     }
 

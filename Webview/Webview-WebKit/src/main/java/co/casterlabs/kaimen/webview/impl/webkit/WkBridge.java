@@ -61,7 +61,7 @@ public class WkBridge extends WebviewBridge {
     }
 
     public void injectBridgeScript() {
-        this.init();
+        this.injectAndInit();
     }
 
     @Override

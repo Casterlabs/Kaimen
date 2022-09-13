@@ -33,13 +33,13 @@ public class WvBridge extends WebviewBridge {
     /* Expose to Webview */
 
     @Override
-    protected String getInitScript() {
-        return super.getInitScript();
+    protected String getInjectScript() {
+        return super.getInjectScript();
     }
 
     @Override
-    protected void initNoInject() {
-        super.initNoInject();
+    protected void init() {
+        super.init();
     }
 
     /* Comms */

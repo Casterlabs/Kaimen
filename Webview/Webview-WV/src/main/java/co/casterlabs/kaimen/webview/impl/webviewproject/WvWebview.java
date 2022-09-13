@@ -215,7 +215,7 @@ public class WvWebview extends Webview {
                 try {
                     switch (args.getString(0)) {
                         case "INIT": {
-                            this.bridge.initNoInject();
+                            this.bridge.init();
                             this.executeJavaScript("try { onBridgeInit(); } catch (ignored) { }");
                             new AsyncTask(this.getLifeCycleListener()::onBrowserOpen);
                             break;
@@ -264,7 +264,7 @@ public class WvWebview extends Webview {
 
             this.updateTitle();
 
-            this.wv.setInitScript(this.bridge.getInitScript());
+            this.wv.setInitScript(this.bridge.getInjectScript());
 
             this.wv.loadURL(url);
             this.wv.eval("location.reload();");

@@ -119,7 +119,7 @@ public class CefJavascriptBridge extends WebviewBridge {
     public void injectBridgeScript(@NonNull CefFrame frame) {
         // Inject the bridge script.
         this.frame = frame;
-        this.init();
+        this.injectAndInit();
         this.loadPromise.fulfill(null);
     }
 

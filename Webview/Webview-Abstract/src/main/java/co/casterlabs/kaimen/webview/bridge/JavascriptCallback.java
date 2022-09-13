@@ -30,7 +30,7 @@ import lombok.NonNull;
  * 
  * // ...
  * 
- * callback.invoke(bridgeCtx, 1, 2, "3"); // Mix types, do whatever you want, yada yada.
+ * callback.invoke(1, 2, "3"); // Mix types, do whatever you want, yada yada.
  * </pre>
  * 
  * @implNote This is actually just a JsonObject in disguise.
