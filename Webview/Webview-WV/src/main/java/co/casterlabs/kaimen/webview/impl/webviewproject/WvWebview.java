@@ -192,7 +192,7 @@ public class WvWebview extends Webview {
     public void executeJavaScript(@NonNull String script) {
         if (this.wv != null) {
             this.wv.dispatch(() -> {
-                this.wv.eval(String.format("try {%s} catch(e) {console.error(e);}", script));
+                this.wv.eval(script);
             });
         }
     }
@@ -208,14 +208,17 @@ public class WvWebview extends Webview {
     public void open(@Nullable String url) {
         this.window.setVisible(true);
 
+        // Wait for the natives to load.
         MainThread.submitTaskAndWait(() -> {
             this.wv = new dev.webview.Webview(true, this.wvCanvas);
+        });
 
+        MainThread.submitTask(() -> {
             this.wv.bind("__internal_comms", (JsonArray args) -> {
                 try {
                     switch (args.getString(0)) {
                         case "INIT": {
-                            this.bridge.init();
+                            this.bridge.injectAndInit();
                             this.executeJavaScript("try { onBridgeInit(); } catch (ignored) { }");
                             new AsyncTask(this.getLifeCycleListener()::onBrowserOpen);
                             break;
@@ -263,16 +266,12 @@ public class WvWebview extends Webview {
             });
 
             this.updateTitle();
+            this.updateWebviewSize(this.window.getWidth(), this.window.getHeight());
 
-            this.wv.setInitScript(this.bridge.getInjectScript());
-
+            this.wv.setInitScript("document.addEventListener('DOMContentLoaded', (event) => __internal_comms('INIT'));");
             this.wv.loadURL(url);
 //            this.wv.eval("location.reload();");
 
-            this.updateWebviewSize(this.window.getWidth(), this.window.getHeight());
-        });
-
-        MainThread.submitTask(() -> {
             MainThread.setImpl(this.wv::dispatch);
             this.wv.run();
 

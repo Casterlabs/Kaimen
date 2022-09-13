@@ -98,7 +98,10 @@ public abstract class WebviewBridge {
     }
 
     protected String getInjectScript() {
-        return bridgeScript.replace("\"replace with native comms code\";", this.getNativeBridgeScript());
+        return String.format(
+            "try { %s } catch (e) { alert(e); } finally { console.log('[Kaimen]', 'Bridge inject completed.'); }",
+            bridgeScript.replace("\"replace with native comms code\";", this.getNativeBridgeScript())
+        );
     }
 
     protected void injectAndInit() {
@@ -116,6 +119,8 @@ public abstract class WebviewBridge {
         for (WeakReference<WebviewBridge> wb : this.attachedBridges) {
             wb.get().downstreamBridges.remove(this.$ref);
         }
+
+        this.eval0("console.log('[Kaimen]', 'Bridge init completed.');");
     }
 
     protected @Nullable JsonElement processGet(String id, String property) throws Throwable {

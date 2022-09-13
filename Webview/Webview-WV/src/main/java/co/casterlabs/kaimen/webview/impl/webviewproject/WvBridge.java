@@ -38,8 +38,8 @@ public class WvBridge extends WebviewBridge {
     }
 
     @Override
-    protected void init() {
-        super.init();
+    protected void injectAndInit() {
+        super.injectAndInit();
     }
 
     /* Comms */

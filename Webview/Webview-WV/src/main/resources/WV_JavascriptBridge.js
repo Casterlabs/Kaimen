@@ -23,8 +23,6 @@ function setupComms() {
         }
 	}).observe(document, {attributes: false, childList: true, characterData: false, subtree:true});
 
-    __internal_comms("INIT");
-
     return {
         internal__sendToParent: sendToParent,
 

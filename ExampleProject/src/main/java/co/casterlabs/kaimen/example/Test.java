@@ -32,7 +32,7 @@ public class Test {
 
     @AppEntry
     public static void entry() throws Exception {
-        FastLoggingFramework.setDefaultLevel(LogLevel.DEBUG);
+        FastLoggingFramework.setDefaultLevel(LogLevel.TRACE);
 
         // Setup the app
         App.setName("Example Application");
@@ -104,7 +104,7 @@ public class Test {
 
         webview.setProperties(
             new WebviewWindowProperties()
-                .withAlwaysOnTop(true)
+                .withAlwaysOnTop(false)
                 .withFocusable(true)
         );
 
