@@ -192,7 +192,7 @@ public class WvWebview extends Webview {
     public void executeJavaScript(@NonNull String script) {
         if (this.wv != null) {
             this.wv.dispatch(() -> {
-                this.wv.eval(script);
+                this.wv.eval(String.format("try {%s} catch(e) {console.error(e);}", script));
             });
         }
     }
@@ -267,7 +267,7 @@ public class WvWebview extends Webview {
             this.wv.setInitScript(this.bridge.getInjectScript());
 
             this.wv.loadURL(url);
-            this.wv.eval("location.reload();");
+//            this.wv.eval("location.reload();");
 
             this.updateWebviewSize(this.window.getWidth(), this.window.getHeight());
         });
