@@ -5,7 +5,7 @@ if (!window.Bridge) {
 
         return {
             internal__listeners: listeners,
-    
+
             on(type, callback) {
                 const callbackId = callbackIdCounter++;
 
@@ -27,7 +27,7 @@ if (!window.Bridge) {
 
                 let callbacks = listeners[type] || {};
 
-                callbacks[callbackId] = function (data) {
+                callbacks[callbackId] = function(data) {
                     delete listeners[type][callbackId];
                     callback(data);
                 };
@@ -136,12 +136,26 @@ if (!window.Bridge) {
                 off(id) {
                     try {
                         comms.off(id[0], id[1]);
-                    } catch (ignored) { }
+                    } catch (ignored) {}
+                },
+                svelte(field) {
+                    return {
+                        subscribe(callback) {
+                            const id = object.mutate(field, callback);
+
+                            return () => {
+                                object.off(id);
+                            };
+                        },
+                        set(val) {
+                            proxy[field] = val;
+                        }
+                    };
                 },
 
                 internal__deffun(name) {
                     Object.defineProperty(object, name, {
-                        value: function () {
+                        value: function() {
                             const args = Array.from(arguments);
 
                             return new Promise((resolve, reject) => {
