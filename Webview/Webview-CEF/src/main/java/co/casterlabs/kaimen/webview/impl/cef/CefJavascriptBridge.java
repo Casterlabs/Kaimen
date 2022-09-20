@@ -1,6 +1,7 @@
 package co.casterlabs.kaimen.webview.impl.cef;
 
 import java.io.IOException;
+import java.net.URLDecoder;
 
 import org.cef.CefClient;
 import org.cef.browser.CefBrowser;
@@ -18,7 +19,6 @@ import co.casterlabs.rakurai.json.element.JsonArray;
 import co.casterlabs.rakurai.json.element.JsonElement;
 import co.casterlabs.rakurai.json.element.JsonObject;
 import co.casterlabs.rakurai.json.element.JsonString;
-import co.casterlabs.rakurai.json.serialization.JsonParseException;
 import lombok.NonNull;
 import xyz.e3ndr.fastloggingframework.logging.FastLogger;
 import xyz.e3ndr.fastloggingframework.logging.LogLevel;
@@ -51,6 +51,14 @@ public class CefJavascriptBridge extends WebviewBridge {
                 CefQueryCallback callback
             ) {
                 try {
+                    // CEF has a weird internal way of handling strings, and unfortunately
+                    // the JNI wrapper mangles them. We've opted to just use URI encoding
+                    // to prevent manglage. decodeURIComponent implementation taken from here:
+                    // https://stackoverflow.com/a/6926987/11611152
+                    request = URLDecoder.decode(request.replace("+", "%2B"), "UTF-8")
+                        .replace("%2B", "+");
+
+                    FastLogger.logStatic(request);
                     JsonObject query = Rson.DEFAULT.fromJson(request, JsonObject.class);
 
                     switch (query.getString("type")) {
@@ -67,7 +75,8 @@ public class CefJavascriptBridge extends WebviewBridge {
                     }
 
                     callback.success("");
-                } catch (JsonParseException ignored) {
+                } catch (Exception e) {
+                    e.printStackTrace();
                     callback.failure(-2, "Invalid JSON payload.");
                 }
 

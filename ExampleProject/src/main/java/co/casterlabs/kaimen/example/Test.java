@@ -18,6 +18,7 @@ import co.casterlabs.kaimen.webview.bridge.JavascriptObject;
 import co.casterlabs.kaimen.webview.bridge.JavascriptValue;
 import co.casterlabs.rakurai.io.http.HttpResponse;
 import co.casterlabs.rakurai.io.http.StandardHttpStatus;
+import co.casterlabs.rakurai.json.element.JsonElement;
 import lombok.SneakyThrows;
 import xyz.e3ndr.fastloggingframework.FastLoggingFramework;
 import xyz.e3ndr.fastloggingframework.logging.FastLogger;
@@ -114,6 +115,11 @@ public class Test {
             .defineObject("test", new JavascriptObject() {
                 @JavascriptValue
                 private int twelve = 12;
+
+                @JavascriptFunction
+                public JsonElement echo(JsonElement e) {
+                    return e;
+                }
 
                 private JavascriptObject system = new JavascriptObject() {
 

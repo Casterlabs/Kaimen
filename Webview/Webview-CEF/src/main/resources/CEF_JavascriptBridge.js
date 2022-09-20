@@ -11,7 +11,10 @@ function setupComms() {
 		};
 
 		cefQuery({
-			request: JSON.stringify(payload),
+			// CEF has a weird internal way of handling strings, and unfortunately
+			// the JNI wrapper mangles them. We've opted to just use URI encoding
+			// to prevent manglage.
+			request: encodeURIComponent(JSON.stringify(payload)),
 			persistent: false,
 			onSuccess() { },
 			onFailure() { }
