@@ -15,7 +15,6 @@ import com.sun.jna.platform.win32.WinDef.HWND;
 import co.casterlabs.kaimen.app.App;
 import co.casterlabs.kaimen.webview.Webview;
 import co.casterlabs.kaimen.webview.impl.cef.CefWebview;
-import co.casterlabs.kaimen.webview.impl.webviewproject.WvWebview;
 import lombok.NonNull;
 import xyz.e3ndr.fastloggingframework.logging.FastLogger;
 import xyz.e3ndr.fastloggingframework.logging.LogLevel;
@@ -28,10 +27,6 @@ public class WindowsBootstrap extends App {
             switch (wv.getRendererType()) {
                 case CHROMIUM_EMBEDDED_FRAMEWORK:
                     ((CefWebview) wv).updateTitle();
-                    break;
-
-                case WEBVIEW_PROJECT:
-                    ((WvWebview) wv).updateTitle();
                     break;
 
                 default:
@@ -47,13 +42,6 @@ public class WindowsBootstrap extends App {
                 case CHROMIUM_EMBEDDED_FRAMEWORK:
                     setWindowAppearance(
                         ((CefWebview) wv).getWindow(),
-                        appearance
-                    );
-                    break;
-
-                case WEBVIEW_PROJECT:
-                    setWindowAppearance(
-                        ((WvWebview) wv).getWindow(),
                         appearance
                     );
                     break;
