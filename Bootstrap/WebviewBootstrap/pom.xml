@@ -37,8 +37,8 @@
 	<properties>
 
 		<!-- CEF -->
-		<cef.version>104.4.23</cef.version>
-		<cef.natives.version>jcef-af53d63+cef-104.4.23+g46ae630+chromium-104.0.5112.102</cef.natives.version>
+		<cef.version>105.3.36</cef.version>
+		<cef.natives.version>jcef-0cdd84c+cef-105.3.36+g88e0038+chromium-105.0.5195.102</cef.natives.version>
 
 		<!-- WebKit -->
 		<swt.version>4.22</swt.version>
