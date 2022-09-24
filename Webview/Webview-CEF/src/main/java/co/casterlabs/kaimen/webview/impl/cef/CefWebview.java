@@ -33,10 +33,10 @@ import org.cef.handler.CefLoadHandlerAdapter;
 import org.cef.network.CefRequest.TransitionType;
 import org.jetbrains.annotations.Nullable;
 
+import co.casterlabs.commons.async.AsyncTask;
+import co.casterlabs.commons.platform.Arch;
+import co.casterlabs.commons.platform.OSDistribution;
 import co.casterlabs.kaimen.app.App;
-import co.casterlabs.kaimen.util.platform.Arch;
-import co.casterlabs.kaimen.util.platform.OperatingSystem;
-import co.casterlabs.kaimen.util.threading.AsyncTask;
 import co.casterlabs.kaimen.webview.Webview;
 import co.casterlabs.kaimen.webview.WebviewFactory;
 import co.casterlabs.kaimen.webview.WebviewRenderer;
@@ -53,21 +53,21 @@ public class CefWebview extends Webview {
     public static final WebviewFactory FACTORY = new WebviewFactory() {
 
         @Override
-        public @Nullable Webview produce() throws Exception {
+        public @Nullable Webview get() {
             return new CefWebview();
         }
 
         @Override
-        public Map<OperatingSystem, List<Arch>> getSupportMap() {
-            Map<OperatingSystem, List<Arch>> supported = new HashMap<>();
+        public Map<OSDistribution, List<Arch>> getSupportMap() {
+            Map<OSDistribution, List<Arch>> supported = new HashMap<>();
 
             supported.put(
-                OperatingSystem.LINUX,
+                OSDistribution.LINUX,
                 Arrays.asList(Arch.AARCH64, Arch.AMD64, Arch.X86)
             );
 
             supported.put(
-                OperatingSystem.WINDOWS,
+                OSDistribution.WINDOWS_NT,
                 Arrays.asList(Arch.AARCH64, Arch.AMD64, Arch.X86)
             );
 
@@ -258,7 +258,7 @@ public class CefWebview extends Webview {
             public void onLoadEnd(CefBrowser _browser, CefFrame _frame, int httpStatusCode) {
                 executeJavaScript("try { onBridgeInit(); } catch (ignored) { }");
 
-                new AsyncTask(() -> {
+                AsyncTask.create(() -> {
                     getLifeCycleListener().onNavigate(getCurrentURL());
                 });
             }
@@ -297,7 +297,7 @@ public class CefWebview extends Webview {
                     pageTitle = title;
                 }
 
-                new AsyncTask(() -> {
+                AsyncTask.create(() -> {
                     getLifeCycleListener().onPageTitleChange(pageTitle);
                 });
 
@@ -310,7 +310,7 @@ public class CefWebview extends Webview {
 
     public void updateTitle() {
         if (!this.isTransparencyEnabled()) {
-            new AsyncTask(() -> {
+            AsyncTask.create(() -> {
                 String title;
 
                 if (this.pageTitle != null) {

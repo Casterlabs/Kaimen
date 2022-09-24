@@ -8,8 +8,7 @@ import java.util.Set;
 import org.reflections8.Reflections;
 import org.reflections8.scanners.MethodAnnotationsScanner;
 
-import co.casterlabs.kaimen.util.platform.Platform;
-import co.casterlabs.kaimen.util.threading.MainThread;
+import co.casterlabs.commons.async.queue.ThreadQueue;
 import lombok.AllArgsConstructor;
 import xyz.e3ndr.fastloggingframework.logging.FastLogger;
 import xyz.e3ndr.reflectionlib.helpers.AccessHelper;
@@ -17,48 +16,54 @@ import xyz.e3ndr.reflectionlib.helpers.AccessHelper;
 public class AppBootstrap {
 
     @SuppressWarnings("deprecation")
-    public static void main(String[] args) throws InvocationTargetException, InterruptedException {
+    public static void main(String[] args) throws Exception {
         ClassLoader.getSystemClassLoader().setDefaultAssertionStatus(true); // Enable assertions.
 
-        MainThread.park(() -> {
-            // Go ahead and get the access warning out of the way
-            try {
-                AccessHelper.makeAccessible((Method) null);
-            } catch (Throwable ignored) {}
-            System.err.println("\n------------ ^ Ignore that warning ^ ------------\n\n");
+        // Go ahead and get the access warning out of the way
+        try {
+            AccessHelper.makeAccessible((Method) null);
+        } catch (Throwable ignored) {}
+        System.err.println("\n------------ ^ Ignore that warning ^ ------------\n\n");
 
-            // Init the framework
-            try {
-                App instance = null;
+        App instance = null;
+        switch (co.casterlabs.commons.platform.Platform.osDistribution) {
+            case LINUX:
+                instance = (App) Class.forName("co.casterlabs.kaimen.bootstrap.impl.linux.LinuxBootstrap").newInstance();
+                break;
 
-                switch (Platform.os) {
-                    case LINUX:
-                        instance = (App) Class.forName("co.casterlabs.kaimen.bootstrap.impl.linux.LinuxBootstrap").newInstance();
-                        break;
+            case MACOSX:
+                instance = (App) Class.forName("co.casterlabs.kaimen.bootstrap.impl.macos.MacOSBootstrap").newInstance();
+                break;
 
-                    case MACOSX:
-                        instance = (App) Class.forName("co.casterlabs.kaimen.bootstrap.impl.macos.MacOSBootstrap").newInstance();
-                        break;
+            case WINDOWS_NT:
+                instance = (App) Class.forName("co.casterlabs.kaimen.bootstrap.impl.windows.WindowsBootstrap").newInstance();
+                break;
 
-                    case WINDOWS:
-                        instance = (App) Class.forName("co.casterlabs.kaimen.bootstrap.impl.windows.WindowsBootstrap").newInstance();
-                        break;
-                }
+            default:
+                throw new IllegalStateException("Failed to find bootstrap");
+        }
 
-                App.init(args, instance);
-            } catch (Exception e) {
-                throw new IllegalStateException("Failed to find bootstrap:", e);
-            }
+        // Init the mainThread.
+        boolean useDefaultMainThreadImpl = instance.getMainThreadImpl() == null;
+        ThreadQueue mainThread;
 
-            // Enter into the app
-            AppEntryPoint entryPoint = findEntryPoint();
+        if (useDefaultMainThreadImpl) {
+            mainThread = new ThreadQueue();
+        } else {
+            mainThread = new ThreadQueue(instance.getMainThreadImpl());
+        }
 
-            if (entryPoint.entryAnnotation.startOnMainThread()) {
-                MainThread.submitTask(entryPoint::enter);
-            } else {
-                entryPoint.enter();
-            }
-        });
+        // Init the framework
+        App.init(args, instance, mainThread);
+
+        // Enter into the app
+        AppEntryPoint entryPoint = findEntryPoint();
+
+        if (entryPoint.entryAnnotation.startOnMainThread()) {
+            mainThread.submitTask(entryPoint::enter);
+        } else {
+            entryPoint.enter();
+        }
     }
 
     private static AppEntryPoint findEntryPoint() {
@@ -92,9 +97,13 @@ class AppEntryPoint {
             }
 
             this.entry.invoke(instance);
-        } catch (Exception e) {
+        } catch (Throwable t) {
+            if (t instanceof InvocationTargetException) {
+                t = ((InvocationTargetException) t).getCause();
+            }
+
             FastLogger.logStatic("Couldn't start the app, this is traditionally considered your fault. Here's the error:");
-            FastLogger.logException(e);
+            FastLogger.logException(t);
             System.exit(1);
         }
     }

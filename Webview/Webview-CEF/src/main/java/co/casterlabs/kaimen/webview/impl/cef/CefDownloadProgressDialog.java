@@ -4,15 +4,15 @@ import java.awt.BorderLayout;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.Closeable;
+import java.util.function.BiConsumer;
 
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JProgressBar;
 import javax.swing.SwingConstants;
 
+import co.casterlabs.commons.async.AsyncTask;
 import co.casterlabs.kaimen.app.App;
-import co.casterlabs.kaimen.util.functional.DualConsumer;
-import co.casterlabs.kaimen.util.threading.AsyncTask;
 import lombok.SneakyThrows;
 import me.friwi.jcefmaven.EnumProgress;
 import me.friwi.jcefmaven.IProgressHandler;
@@ -22,7 +22,7 @@ import xyz.e3ndr.fastloggingframework.logging.FastLogger;
 public class CefDownloadProgressDialog implements IProgressHandler, Closeable {
     private FastLogger logger = new FastLogger("Cef Bundle");
 
-    private DualConsumer<EnumProgress, Integer> progressHandler;
+    private BiConsumer<EnumProgress, Integer> progressHandler;
     private JDialog progressFrame;
 
     @Override
@@ -48,7 +48,7 @@ public class CefDownloadProgressDialog implements IProgressHandler, Closeable {
 
         if (progressFrame != null) {
             if (state == EnumProgress.INITIALIZED) {
-                new AsyncTask(this::close); // Clean up asynchronously.
+                AsyncTask.create(this::close); // Clean up asynchronously.
             } else {
                 this.progressHandler.accept(state, (int) percent);
             }
@@ -98,17 +98,15 @@ public class CefDownloadProgressDialog implements IProgressHandler, Closeable {
 //            frame.setIconImage(img.getImage());
 //        }
 
-        DualConsumer<EnumProgress, Integer> progressHandler = (state, progress) -> {
+        frame.setVisible(true);
+
+        this.progressFrame = frame;
+        this.progressHandler = (state, progress) -> {
             progressBar.setVisible(progress > 0);
             progressBar.setValue(progress);
 
             stateText.setText(enumProgressToString(state));
         };
-
-        frame.setVisible(true);
-
-        this.progressFrame = frame;
-        this.progressHandler = progressHandler;
     }
 
     @Override

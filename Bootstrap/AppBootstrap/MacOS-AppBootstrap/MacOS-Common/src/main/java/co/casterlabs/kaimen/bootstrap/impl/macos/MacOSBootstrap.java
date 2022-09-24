@@ -6,31 +6,18 @@ import org.eclipse.swt.internal.cocoa.OS;
 import org.eclipse.swt.widgets.Display;
 import org.jetbrains.annotations.Nullable;
 
+import co.casterlabs.commons.async.queue.ThreadQueue;
+import co.casterlabs.commons.async.queue.ThreadQueue.Impl;
 import co.casterlabs.kaimen.app.App;
-import co.casterlabs.kaimen.util.threading.MainThread;
 import co.casterlabs.kaimen.webview.Webview;
 import co.casterlabs.kaimen.webview.impl.webkit.WkWebview;
 import lombok.NonNull;
 
 public class MacOSBootstrap extends App {
+    private Display display;
 
-    @SuppressWarnings("deprecation")
     public MacOSBootstrap() {
-        MainThread.submitTask(() -> {
-            // Init the display for the main thread.
-            // We need to create atleast one display for OS.setTheme() to work.
-            Display display = new Display();
-
-            MainThread.setImpl(display::asyncExec);
-
-            while (!display.isDisposed()) {
-                if (!display.readAndDispatch()) {
-                    display.sleep();
-                }
-            }
-
-            // THE END IS NEIGH!
-        });
+        this.display = new Display();
     }
 
     @Override
@@ -46,9 +33,24 @@ public class MacOSBootstrap extends App {
 
     @Override
     protected void setAppearance0(@NonNull Appearance appearance) {
-        MainThread.submitTask(() -> {
+        App.getMainThread().submitTask(() -> {
             OS.setTheme(appearance.isDark());
         });
+    }
+
+    @Override
+    protected Impl getMainThreadImpl() {
+        return new ThreadQueue.Impl() {
+            @Override
+            public Thread getThread() {
+                return display.getThread();
+            }
+
+            @Override
+            public void submitTask(Runnable run) {
+                display.asyncExec(run);
+            }
+        };
     }
 
     @Override

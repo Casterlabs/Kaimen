@@ -7,15 +7,15 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 
-import co.casterlabs.kaimen.util.platform.Arch;
-import co.casterlabs.kaimen.util.platform.OperatingSystem;
+import co.casterlabs.commons.platform.Arch;
+import co.casterlabs.commons.platform.OSDistribution;
 import co.casterlabs.kaimen.webview.WebviewRenderer;
 import co.casterlabs.rakurai.io.IOUtil;
 import xyz.e3ndr.fastloggingframework.logging.FastLogger;
 
 public class MavenUtil {
 
-    public static File getKaimenBootstrap(OperatingSystem os, Arch arch, String version) throws InterruptedException, IOException {
+    public static File getKaimenBootstrap(OSDistribution os, Arch arch, String version) throws InterruptedException, IOException {
         final String group = "co.casterlabs.kaimen";
 
         String osStr = os.toString();
@@ -26,7 +26,7 @@ public class MavenUtil {
         return downloadDependency(group, artifact, version);
     }
 
-    public static File getWebviewBootstrap(OperatingSystem os, Arch arch, String version, WebviewRenderer webviewImplementation) throws InterruptedException, IOException {
+    public static File getWebviewBootstrap(OSDistribution os, Arch arch, String version, WebviewRenderer webviewImplementation) throws InterruptedException, IOException {
         final String group = "co.casterlabs.kaimen";
 
         String osStr = os.toString();

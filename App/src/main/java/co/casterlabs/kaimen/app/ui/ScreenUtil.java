@@ -5,44 +5,49 @@ import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
 
-import co.casterlabs.kaimen.util.EventProvider;
-import co.casterlabs.kaimen.util.threading.AsyncTask;
-import co.casterlabs.kaimen.util.threading.MainThreadPromise;
+import co.casterlabs.commons.async.AsyncTask;
+import co.casterlabs.commons.events.SimpleEventProvider;
+import co.casterlabs.kaimen.app.App;
+import lombok.SneakyThrows;
 
 public class ScreenUtil {
-    public static final EventProvider<Rectangle> sizeEvent = new EventProvider<>();
+    public static final SimpleEventProvider<Rectangle> sizeEvent = new SimpleEventProvider<>();
 
     private static Rectangle fullSize;
     private static boolean initialized = false;
 
+    static {
+        AsyncTask.create(() -> {
+            try {
+                while (true) {
+                    Rectangle size = calculateSize();
+
+                    if (!size.equals(fullSize)) {
+                        fullSize = size;
+                        sizeEvent.fireEvent(size);
+                    }
+
+                    Thread.sleep(1000);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
     public static Rectangle getFullSize() {
         if (!initialized) {
-            // We can't use the mainthread in a static initializer (causes deadlock)
+            // We can't use the main thread in a static initializer (causes deadlock)
             fullSize = calculateSize();
-
-            new AsyncTask(() -> {
-                try {
-                    while (true) {
-                        Rectangle size = calculateSize();
-
-                        if (!size.equals(fullSize)) {
-                            fullSize = size;
-                            sizeEvent.fireEvent(size);
-                        }
-
-                        Thread.sleep(1000);
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            });
+            initialized = true;
         }
 
         return fullSize;
     }
 
+    @SneakyThrows
     private static Rectangle calculateSize() {
-        return new MainThreadPromise<>(() -> {
+        return App.getMainThread().submitTaskWithPromise(() -> {
             Rectangle result = new Rectangle();
             GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 

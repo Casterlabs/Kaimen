@@ -7,14 +7,15 @@ import org.jetbrains.annotations.Nullable;
 
 import com.jthemedetecor.OsThemeDetector;
 
-import co.casterlabs.kaimen.util.EventProvider;
+import co.casterlabs.commons.async.queue.ThreadQueue;
+import co.casterlabs.commons.events.EventProvider;
 import co.casterlabs.kaimen.util.reflection.FieldMutationListener;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import xyz.e3ndr.reflectionlib.ReflectionLib;
 
-public abstract class App {
+public abstract class App extends EventProvider<AppEvent, Void> {
     private static App instance;
 
     private static @Getter String name = "Kaimen Application";
@@ -24,16 +25,20 @@ public abstract class App {
 
     private static OsThemeDetector themeDetector = OsThemeDetector.getDetector();
 
-    public static final EventProvider<Appearance> systemThemeChangeEvent = new EventProvider<>();
-    public static final EventProvider<URL> appIconChangeEvent = new EventProvider<>();
-    public static final EventProvider<PowerManagementHint> powerManagementHintChangeEvent = new EventProvider<>();
+    @Getter
+    private static ThreadQueue mainThread;
 
     @Getter
     private static String[] args;
 
-    static void init(String[] args, App instance) {
+    static void init(String[] args, App instance, ThreadQueue mainThread) {
         App.args = args;
         App.instance = instance;
+        App.mainThread = mainThread;
+
+        try {
+            ReflectionLib.setStaticValue(Class.forName("co.casterlabs.kaimen.webview.Webview"), "mainThread", mainThread);
+        } catch (Exception ignored) {}
 
         setAppearance(Appearance.FOLLOW_SYSTEM);
         setPowermanagementHint(PowerManagementHint.BALANCED);
@@ -41,10 +46,7 @@ public abstract class App {
         themeDetector.registerListener((ignored) -> {
             if (appearance == Appearance.FOLLOW_SYSTEM) {
                 instance.setAppearance0(appearance);
-
-                Appearance a = getSystemAppearance();
-
-                systemThemeChangeEvent.fireEvent(a);
+                instance.fireEvent(AppEvent.APPEARANCE_CHANGE, null);
             }
         });
     }
@@ -65,6 +67,11 @@ public abstract class App {
         // Used internally as-needed.
     }
 
+    protected ThreadQueue.Impl getMainThreadImpl() {
+        // Used internally as-needed.
+        return null;
+    }
+
     /* Public */
 
     @Deprecated
@@ -75,7 +82,7 @@ public abstract class App {
     @SneakyThrows
     public static void setPowermanagementHint(@NonNull PowerManagementHint hint) {
         powerManagementHint = hint;
-        powerManagementHintChangeEvent.fireEvent(hint);
+        instance.fireEvent(AppEvent.POWER_HINT_CHANGE, null);
 
         int fieldMutationListener_pollInterval = 0;
 
@@ -110,7 +117,7 @@ public abstract class App {
 
     public static void setIcon(@Nullable URL url) {
         iconURL = url;
-        appIconChangeEvent.fireEvent(url);
+        instance.fireEvent(AppEvent.ICON_CHANGE, null);
         instance.setIcon0(url);
     }
 

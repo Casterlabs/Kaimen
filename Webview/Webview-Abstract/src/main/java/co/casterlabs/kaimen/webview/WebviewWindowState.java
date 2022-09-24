@@ -3,7 +3,6 @@ package co.casterlabs.kaimen.webview;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 
-import co.casterlabs.kaimen.util.threading.MainThread;
 import co.casterlabs.kaimen.webview.bridge.JavascriptObject;
 import co.casterlabs.kaimen.webview.bridge.JavascriptValue;
 import co.casterlabs.rakurai.json.annotating.JsonClass;
@@ -27,7 +26,7 @@ public class WebviewWindowState extends JavascriptObject {
     public WebviewWindowState() {
         // Setup Defaults.
         // Needs to be done on the main thread.
-        MainThread.submitTaskAndWait(() -> {
+        Webview.mainThread.submitTaskAndWait(() -> {
             GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
 
             int monitorWidth = gd.getDisplayMode().getWidth();

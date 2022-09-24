@@ -1,14 +1,12 @@
 package co.casterlabs.kaimen.example;
 
-import java.lang.reflect.InvocationTargetException;
-
+import co.casterlabs.commons.platform.Platform;
 import co.casterlabs.kaimen.app.App;
 import co.casterlabs.kaimen.app.App.Appearance;
 import co.casterlabs.kaimen.app.App.PowerManagementHint;
 import co.casterlabs.kaimen.app.AppBootstrap;
 import co.casterlabs.kaimen.app.AppEntry;
 import co.casterlabs.kaimen.app.ui.UIServer;
-import co.casterlabs.kaimen.util.platform.Platform;
 import co.casterlabs.kaimen.webview.Webview;
 import co.casterlabs.kaimen.webview.WebviewFactory;
 import co.casterlabs.kaimen.webview.WebviewLifeCycleListener;
@@ -26,7 +24,7 @@ import xyz.e3ndr.fastloggingframework.logging.LogLevel;
 
 public class Test {
 
-    public static void main(String[] args) throws InvocationTargetException, InterruptedException {
+    public static void main(String[] args) throws Exception {
         AppBootstrap.main(args);
     }
 
@@ -71,15 +69,16 @@ public class Test {
             })
             .start();
 
+        WebviewFactory factory = WebviewFactory.getFactory();
+
         // Log some stuff
-        FastLogger.logStatic("Running on: %s (%s)", Platform.os, Platform.arch);
-        FastLogger.logStatic("Using: %s", WebviewFactory.get().getRendererType());
+        FastLogger.logStatic("Running on: %s (%s)", Platform.osDistribution, Platform.arch);
+        FastLogger.logStatic("Using: %s", factory.getRendererType());
         FastLogger.logStatic("System Appearance: %s", App.getSystemAppearance());
         FastLogger.logStatic("UI Server port (it's ephemeral): %d", uiServer.getPort());
 
         // Setup the webview
-        WebviewFactory factory = WebviewFactory.get();
-        Webview webview = factory.produce();
+        Webview webview = factory.get();
 
         webview.initialize(new WebviewLifeCycleListener() {
             @Override

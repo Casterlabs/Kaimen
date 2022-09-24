@@ -23,13 +23,11 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.jetbrains.annotations.Nullable;
 
+import co.casterlabs.commons.async.AsyncTask;
+import co.casterlabs.commons.platform.Arch;
+import co.casterlabs.commons.platform.OSDistribution;
+import co.casterlabs.commons.platform.Platform;
 import co.casterlabs.kaimen.app.App;
-import co.casterlabs.kaimen.util.platform.Arch;
-import co.casterlabs.kaimen.util.platform.OperatingSystem;
-import co.casterlabs.kaimen.util.platform.Platform;
-import co.casterlabs.kaimen.util.threading.AsyncTask;
-import co.casterlabs.kaimen.util.threading.MainThread;
-import co.casterlabs.kaimen.util.threading.MainThreadPromise;
 import co.casterlabs.kaimen.webview.Webview;
 import co.casterlabs.kaimen.webview.WebviewFactory;
 import co.casterlabs.kaimen.webview.WebviewRenderer;
@@ -41,22 +39,21 @@ import lombok.SneakyThrows;
 import xyz.e3ndr.reflectionlib.ReflectionLib;
 
 public class WkWebview extends Webview {
-    private static boolean initialized = false;
     private static Display display;
 
     public static final WebviewFactory FACTORY = new WebviewFactory() {
 
         @Override
-        public @Nullable Webview produce() throws Exception {
+        public @Nullable Webview get() {
             return new WkWebview();
         }
 
         @Override
-        public Map<OperatingSystem, List<Arch>> getSupportMap() {
-            Map<OperatingSystem, List<Arch>> supported = new HashMap<>();
+        public Map<OSDistribution, List<Arch>> getSupportMap() {
+            Map<OSDistribution, List<Arch>> supported = new HashMap<>();
 
             supported.put(
-                OperatingSystem.MACOSX,
+                OSDistribution.MACOSX,
                 Arrays.asList(Arch.AARCH64, Arch.AMD64)
             );
 
@@ -96,16 +93,13 @@ public class WkWebview extends Webview {
             throw new UnsupportedOperationException("Transparency is not supported on macOS at this time.");
         }
 
-        if (!initialized) {
-            initialized = true;
-            MainThread.submitTask(() -> {
-                if (display == null) {
-                    display = Display.getCurrent();
-                }
+        if (display == null) {
+            App.getMainThread().submitTaskAndWait(() -> {
+                display = Display.getCurrent();
             });
         }
 
-        MainThread.submitTaskAndWait(this::mt_initialize);
+        App.getMainThread().submitTaskAndWait(this::mt_initialize);
 
         this.changeImage(App.getIconURL());
     }
@@ -131,7 +125,7 @@ public class WkWebview extends Webview {
         this.browser.setUrl("about:blank");
 
         try {
-            if (Platform.os == OperatingSystem.MACOSX) {
+            if (Platform.osDistribution == OSDistribution.MACOSX) {
                 Object webkit = ReflectionLib.getValue(browser, "webBrowser"); // org.eclipse.swt.browser.WebKit
                 Object view = ReflectionLib.getValue(webkit, "webView"); // org.eclipse.swt.internal.cocoa.WebView
 
@@ -156,7 +150,7 @@ public class WkWebview extends Webview {
                     bridge.injectBridgeScript();
                     browser.evaluate("try { onBridgeInit(); } catch (ignored) { }");
 
-                    new AsyncTask(() -> {
+                    AsyncTask.create(() -> {
                         getLifeCycleListener().onNavigate(getCurrentURL());
                     });
                 }
@@ -183,7 +177,7 @@ public class WkWebview extends Webview {
                     pageTitle = title;
                 }
 
-                new AsyncTask(() -> {
+                AsyncTask.create(() -> {
                     getLifeCycleListener().onPageTitleChange(pageTitle);
                 });
 
@@ -227,7 +221,7 @@ public class WkWebview extends Webview {
 
     @Override
     public void loadURL(@Nullable String _url) {
-        MainThread.submitTask(() -> {
+        App.getMainThread().submitTask(() -> {
             String url = _url; // Pointer.
 
             if (url == null) {
@@ -238,16 +232,17 @@ public class WkWebview extends Webview {
         });
     }
 
+    @SneakyThrows
     @Override
     public String getCurrentURL() {
-        return new MainThreadPromise<String>(() -> this.browser.getUrl()).await();
+        return App.getMainThread().submitTaskWithPromise(() -> this.browser.getUrl()).await();
     }
 
     @SneakyThrows
     @Override
     public void executeJavaScript(@NonNull String script) {
         if (this.browser != null) {
-            MainThread.submitTaskAndWait(() -> {
+            App.getMainThread().submitTaskAndWait(() -> {
                 this.browser.execute(script);
             });
         }
@@ -264,14 +259,14 @@ public class WkWebview extends Webview {
             this.hasPreloaded = true;
             // The following code initializes stuff related to AWT, which can't be done on
             // the main thread (it'll lock up). So we delegate it to another thread.
-            MainThread.executeOffOfMainThread(() -> {
+            App.getMainThread().executeOffOfMainThread(() -> {
                 this.getLifeCycleListener().onBrowserPreLoad();
             });
         }
 
         this.getLifeCycleListener().onBrowserOpen();
 
-        MainThread.submitTask(() -> {
+        App.getMainThread().submitTask(() -> {
             this.mt_initialize();
 //            this.shell.pack();
             this.shell.open();
@@ -285,7 +280,7 @@ public class WkWebview extends Webview {
 
     @Override
     public void close() {
-        MainThread.submitTask(() -> {
+        App.getMainThread().submitTask(() -> {
             // We destroy the shell to prevent it from sticking in the Dock.
             this.shell.setVisible(false);
             this.browser.setUrl("about:blank");
@@ -296,7 +291,7 @@ public class WkWebview extends Webview {
 
     @Override
     public void destroy() {
-        MainThread.submitTask(() -> {
+        App.getMainThread().submitTask(() -> {
             this.shell.setVisible(false);
             this.func.dispose();
             this.shell.dispose();
@@ -309,7 +304,7 @@ public class WkWebview extends Webview {
             try (InputStream in = icon.openStream()) {
                 Image image = new Image(display, in);
 
-                MainThread.submitTask(() -> {
+                App.getMainThread().submitTask(() -> {
                     this.shell.setImage(image);
                 });
             }
@@ -317,7 +312,7 @@ public class WkWebview extends Webview {
     }
 
     public void updateTitle() {
-        new AsyncTask(() -> {
+        AsyncTask.create(() -> {
             String title;
 
             if (this.pageTitle != null) {
@@ -326,7 +321,7 @@ public class WkWebview extends Webview {
                 title = App.getName();
             }
 
-            MainThread.submitTask(() -> {
+            App.getMainThread().submitTask(() -> {
                 this.shell.setText(title);
             });
         });
@@ -334,35 +329,36 @@ public class WkWebview extends Webview {
 
     @Override
     public void focus() {
-        MainThread.submitTask(() -> {
+        App.getMainThread().submitTask(() -> {
             this.shell.setActive();
         });
     }
 
+    @SneakyThrows
     @Override
     public boolean isOpen() {
-        return new MainThreadPromise<>(() -> {
+        return App.getMainThread().submitTaskWithPromise(() -> {
             return this.shell.isVisible();
         }).await();
     }
 
     @Override
     public void reload() {
-        MainThread.submitTask(() -> {
+        App.getMainThread().submitTask(() -> {
             this.browser.refresh();
         });
     }
 
     @Override
     public void setPosition(int x, int y) {
-        MainThread.submitTask(() -> {
+        App.getMainThread().submitTask(() -> {
             this.shell.setLocation(x, y);
         });
     }
 
     @Override
     public void setSize(int width, int height) {
-        MainThread.submitTask(() -> {
+        App.getMainThread().submitTask(() -> {
             this.shell.setSize(width, height);
         });
     }

@@ -4,10 +4,10 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
+import java.util.function.Function;
 
 import org.jetbrains.annotations.Nullable;
 
-import co.casterlabs.kaimen.util.functional.ConsumingProducer;
 import co.casterlabs.kaimen.webview.Webview;
 import co.casterlabs.rakurai.io.http.HttpResponse;
 import co.casterlabs.rakurai.io.http.HttpSession;
@@ -24,7 +24,7 @@ import lombok.experimental.Accessors;
 
 @Accessors(chain = true)
 public class UIServer implements Closeable {
-    private @Setter ConsumingProducer<HttpSession, HttpResponse> handler;
+    private @Setter Function<HttpSession, HttpResponse> handler;
 
     private HttpServer server;
     private @Getter int port;
@@ -61,10 +61,7 @@ public class UIServer implements Closeable {
                     String userAgent = session.getHeader("User-Agent");
 
                     if (host.contains(baseDomain) || userAgent.contains(webviewPassword) || ignorePassword) {
-
-                        try {
-                            return handler.produce(session);
-                        } catch (InterruptedException e) {}
+                        return handler.apply(session);
                     }
 
                     return null;

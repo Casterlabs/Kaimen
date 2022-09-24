@@ -9,12 +9,12 @@ import java.util.List;
 import com.badlogicgames.packr.Packr;
 import com.badlogicgames.packr.PackrConfig;
 
-import co.casterlabs.kaimen.util.platform.Arch;
-import co.casterlabs.kaimen.util.platform.OperatingSystem;
-import co.casterlabs.kaimen.util.platform.Platform;
+import co.casterlabs.commons.functional.tuples.Pair;
+import co.casterlabs.commons.platform.Arch;
+import co.casterlabs.commons.platform.OSDistribution;
+import co.casterlabs.commons.platform.Platform;
 import co.casterlabs.kaimen.webview.WebviewRenderer;
 import co.casterlabs.rakurai.io.IOUtil;
-import kotlin.Pair;
 import lombok.ToString;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -37,7 +37,7 @@ public class ProjectBuilder implements Runnable {
             "-os",
             "--targetOS"
     }, description = "The target operating system to compile for", required = true)
-    private OperatingSystem targetOS;
+    private OSDistribution targetOS;
 
     @Option(names = {
             "-arch",
@@ -137,7 +137,7 @@ public class ProjectBuilder implements Runnable {
 
         PackrConfig config = new PackrConfig();
 
-        if (this.targetOS == OperatingSystem.MACOSX) {
+        if (this.targetOS == OSDistribution.MACOSX) {
             this.vmArgs.add("XstartOnFirstThread");
             config.iconResource = this.appIcon;
             outputDir = new File(outputDir, this.appName + ".app");
@@ -191,7 +191,7 @@ public class ProjectBuilder implements Runnable {
     }
 
     private void doCompletionTasks(File outputDir) throws IOException, InterruptedException {
-        if (this.targetOS == OperatingSystem.MACOSX) {
+        if (this.targetOS == OSDistribution.MACOSX) {
             File infoPlist = new File(outputDir, "/Contents/Info.plist");
 
             String addition = IOUtil.readString(ProjectBuilder.class.getResourceAsStream("/add_Info.plist"));
@@ -200,8 +200,8 @@ public class ProjectBuilder implements Runnable {
             contents.replace("</dict>\n</plist>", addition);
 
             Files.writeString(infoPlist.toPath(), contents);
-        } else if (this.targetOS == OperatingSystem.WINDOWS) {
-            if (Platform.os == OperatingSystem.WINDOWS && new File("rcedit-x64.exe").exists()) {
+        } else if (this.targetOS == OSDistribution.WINDOWS_NT) {
+            if (Platform.osDistribution == OSDistribution.WINDOWS_NT && new File("rcedit-x64.exe").exists()) {
                 File executable = new File(outputDir, this.appName + ".exe");
 
                 if (this.appIcon != null) {
@@ -221,8 +221,8 @@ public class ProjectBuilder implements Runnable {
             System.exit(1);
         }
 
-        if (this.targetOS == OperatingSystem.MACOSX) {
-            if (Platform.os == OperatingSystem.WINDOWS) {
+        if (this.targetOS == OSDistribution.MACOSX) {
+            if (Platform.osDistribution == OSDistribution.WINDOWS_NT) {
                 FastLogger.logStatic(LogLevel.SEVERE, "You cannot target MacOS when building on windows.");
                 System.exit(1);
             }
@@ -232,20 +232,20 @@ public class ProjectBuilder implements Runnable {
             assert this.appIcon.getName().endsWith(".icns") : "App icon must be an .icns file when building for MacOS";
         }
 
-        if (this.targetOS == OperatingSystem.LINUX) {
-            if (Platform.os == OperatingSystem.WINDOWS) {
+        if (this.targetOS == OSDistribution.LINUX) {
+            if (Platform.osDistribution == OSDistribution.WINDOWS_NT) {
                 FastLogger.logStatic(LogLevel.SEVERE, "You cannot target Linux when building on windows.");
                 System.exit(1);
             }
         }
 
-        if (this.targetOS == OperatingSystem.WINDOWS) {
+        if (this.targetOS == OSDistribution.WINDOWS_NT) {
             if (!new File("rcedit-x64.exe").exists()) {
                 FastLogger.logStatic(LogLevel.WARNING, "In order for the setting of appIcon and/or appVersion to work you will need to download the 64 bit version of rcedit from here: https://github.com/electron/rcedit/releases/latest");
             }
 
             if (((this.appIcon != null) || (this.appVersion != null)) &&
-                (Platform.os != OperatingSystem.WINDOWS)) {
+                (Platform.osDistribution != OSDistribution.WINDOWS_NT)) {
                 FastLogger.logStatic(LogLevel.WARNING, "Setting appIcon and/or appVersion when building for Windows but not building on Windows has no effect.");
             }
 

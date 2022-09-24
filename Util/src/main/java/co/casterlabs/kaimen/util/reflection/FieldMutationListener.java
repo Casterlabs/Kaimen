@@ -6,7 +6,7 @@ import java.util.function.Consumer;
 
 import org.jetbrains.annotations.Nullable;
 
-import co.casterlabs.kaimen.util.threading.AsyncTask;
+import co.casterlabs.commons.async.AsyncTask;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import xyz.e3ndr.reflectionlib.helpers.AccessHelper;
@@ -37,7 +37,7 @@ public class FieldMutationListener {
         this.$inst = instance;
         this.lastHash = 0;
 
-        this.task = new AsyncTask(this::asyncChecker);
+        this.task = AsyncTask.create(this::asyncChecker);
     }
 
     @SuppressWarnings("unchecked")

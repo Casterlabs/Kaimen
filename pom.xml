@@ -68,13 +68,6 @@
 			<scope>provided</scope>
 		</dependency>
 
-		<!-- Code related packages -->
-		<dependency> <!-- Kotlin's std libary is just so nice and is very interoperable with Java -->
-			<groupId>org.jetbrains.kotlin</groupId>
-			<artifactId>kotlin-stdlib</artifactId>
-			<version>1.6.10</version>
-			<scope>compile</scope>
-		</dependency>
 	</dependencies>
 
 </project>

@@ -6,16 +6,16 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
-import co.casterlabs.kaimen.util.functional.Producer;
-import co.casterlabs.kaimen.util.platform.Arch;
-import co.casterlabs.kaimen.util.platform.OperatingSystem;
-import co.casterlabs.kaimen.util.platform.Platform;
+import co.casterlabs.commons.platform.Arch;
+import co.casterlabs.commons.platform.OSDistribution;
+import co.casterlabs.commons.platform.Platform;
 import xyz.e3ndr.fastloggingframework.logging.FastLogger;
 import xyz.e3ndr.fastloggingframework.logging.LogLevel;
 import xyz.e3ndr.reflectionlib.ReflectionLib;
 
-public abstract class WebviewFactory implements Producer<Webview> {
+public abstract class WebviewFactory implements Supplier<Webview> {
     private static Map<WebviewRenderer, WebviewFactory> factories = new HashMap<>();
 
     static {
@@ -39,15 +39,6 @@ public abstract class WebviewFactory implements Producer<Webview> {
             );
         } catch (Exception ignored) {}
 
-        try {
-            includedFactories.add(
-                ReflectionLib.getStaticValue(
-                    Class.forName("co.casterlabs.kaimen.webview.impl.webviewproject.WvWebview"),
-                    "FACTORY"
-                )
-            );
-        } catch (Exception ignored) {}
-
         FastLogger.logStatic(LogLevel.DEBUG, "Found factories: %s", includedFactories);
 
         for (WebviewFactory factory : includedFactories) {
@@ -64,7 +55,7 @@ public abstract class WebviewFactory implements Producer<Webview> {
         }
     }
 
-    public static WebviewFactory get(WebviewRenderer... orderOfPreference) {
+    public static WebviewFactory getFactory(WebviewRenderer... orderOfPreference) {
         if (orderOfPreference.length == 0) {
             orderOfPreference = WebviewRenderer.values();
         }
@@ -82,13 +73,13 @@ public abstract class WebviewFactory implements Producer<Webview> {
     public boolean supportsPlatform() {
         return this
             .getSupportMap()
-            .getOrDefault(Platform.os, Collections.emptyList())
+            .getOrDefault(Platform.osDistribution, Collections.emptyList())
             .contains(Platform.arch);
     }
 
     public abstract WebviewRenderer getRendererType();
 
-    public abstract Map<OperatingSystem, List<Arch>> getSupportMap();
+    public abstract Map<OSDistribution, List<Arch>> getSupportMap();
 
     public boolean supportsOSR() {
         return true;

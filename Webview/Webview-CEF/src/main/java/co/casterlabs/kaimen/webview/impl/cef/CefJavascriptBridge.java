@@ -10,8 +10,7 @@ import org.cef.browser.CefMessageRouter;
 import org.cef.callback.CefQueryCallback;
 import org.cef.handler.CefMessageRouterHandlerAdapter;
 
-import co.casterlabs.kaimen.util.threading.AsyncTask;
-import co.casterlabs.kaimen.util.threading.Promise;
+import co.casterlabs.commons.async.AsyncTask;
 import co.casterlabs.kaimen.webview.WebviewFileUtil;
 import co.casterlabs.kaimen.webview.bridge.WebviewBridge;
 import co.casterlabs.rakurai.json.Rson;
@@ -29,8 +28,6 @@ public class CefJavascriptBridge extends WebviewBridge {
 
     private CefMessageRouter router;
     private CefFrame frame;
-
-    private Promise<Void> loadPromise = new Promise<>();
 
     static {
         try {
@@ -93,11 +90,7 @@ public class CefJavascriptBridge extends WebviewBridge {
 
     @Override
     protected void emit0(@NonNull String type, @NonNull JsonElement data) {
-        new AsyncTask(() -> {
-            try {
-                this.loadPromise.await();
-            } catch (Throwable e) {}
-
+        AsyncTask.create(() -> {
             String line = String.format("window.Bridge.broadcast(%s,%s);", new JsonString(type), data);
 
             this.frame.executeJavaScript(line, "", 1);
@@ -129,7 +122,6 @@ public class CefJavascriptBridge extends WebviewBridge {
         // Inject the bridge script.
         this.frame = frame;
         this.injectAndInit();
-        this.loadPromise.fulfill(null);
     }
 
     @Override

@@ -7,10 +7,10 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 import org.jetbrains.annotations.Nullable;
 
-import co.casterlabs.kaimen.util.functional.DualConsumer;
 import co.casterlabs.kaimen.webview.Webview;
 import co.casterlabs.kaimen.webview.WebviewFileUtil;
 import co.casterlabs.rakurai.json.element.JsonArray;
@@ -31,7 +31,7 @@ public abstract class WebviewBridge {
 
     Map<String, JavascriptObject> objects = new HashMap<>();
 
-    protected @Setter DualConsumer<String, JsonObject> onEvent;
+    protected @Setter BiConsumer<String, JsonObject> onEvent;
 
     static {
         try {
