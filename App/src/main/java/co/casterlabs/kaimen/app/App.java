@@ -15,8 +15,9 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import xyz.e3ndr.reflectionlib.ReflectionLib;
 
-public abstract class App extends EventProvider<AppEvent, Void> {
+public abstract class App {
     private static App instance;
+    private static EventProvider<AppEvent, Void> eventProvider = new EventProvider();
 
     private static @Getter String name = "Kaimen Application";
     private static @Getter Appearance appearance;
@@ -46,7 +47,7 @@ public abstract class App extends EventProvider<AppEvent, Void> {
         themeDetector.registerListener((ignored) -> {
             if (appearance == Appearance.FOLLOW_SYSTEM) {
                 instance.setAppearance0(appearance);
-                instance.fireEvent(AppEvent.APPEARANCE_CHANGE, null);
+                eventProvider.fireEvent(AppEvent.APPEARANCE_CHANGE, null);
             }
         });
     }
@@ -72,6 +73,16 @@ public abstract class App extends EventProvider<AppEvent, Void> {
         return null;
     }
 
+    /* Events */
+
+    public static synchronized int on(@NonNull AppEvent type, @NonNull Runnable listener) {
+        return eventProvider.on(type, listener);
+    }
+
+    public static synchronized void off(int id) {
+        eventProvider.off(id);
+    }
+
     /* Public */
 
     @Deprecated
@@ -82,7 +93,7 @@ public abstract class App extends EventProvider<AppEvent, Void> {
     @SneakyThrows
     public static void setPowermanagementHint(@NonNull PowerManagementHint hint) {
         powerManagementHint = hint;
-        instance.fireEvent(AppEvent.POWER_HINT_CHANGE, null);
+        eventProvider.fireEvent(AppEvent.POWER_HINT_CHANGE, null);
 
         int fieldMutationListener_pollInterval = 0;
 
@@ -117,8 +128,8 @@ public abstract class App extends EventProvider<AppEvent, Void> {
 
     public static void setIcon(@Nullable URL url) {
         iconURL = url;
-        instance.fireEvent(AppEvent.ICON_CHANGE, null);
         instance.setIcon0(url);
+        eventProvider.fireEvent(AppEvent.ICON_CHANGE, null);
     }
 
     @SneakyThrows
