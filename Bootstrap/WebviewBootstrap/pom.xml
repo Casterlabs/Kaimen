@@ -29,10 +29,6 @@
 		<module>WebKit-MacOS-aarch64</module>
 		<module>WebKit-MacOS-amd64</module>
 
-		<!-- Webview -->
-
-		<module>WV-Windows-amd64</module>
-		<module>WV-Windows-x86</module>
 
 		<module>AllWebviewImpls</module>
 
