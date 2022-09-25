@@ -55,7 +55,6 @@ public class CefJavascriptBridge extends WebviewBridge {
                     request = URLDecoder.decode(request.replace("+", "%2B"), "UTF-8")
                         .replace("%2B", "+");
 
-                    FastLogger.logStatic(request);
                     JsonObject query = Rson.DEFAULT.fromJson(request, JsonObject.class);
 
                     switch (query.getString("type")) {
