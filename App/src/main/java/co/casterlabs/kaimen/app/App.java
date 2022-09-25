@@ -37,10 +37,6 @@ public abstract class App {
         App.instance = instance;
         App.mainThread = mainThread;
 
-        try {
-            ReflectionLib.setStaticValue(Class.forName("co.casterlabs.kaimen.webview.Webview"), "mainThread", mainThread);
-        } catch (Exception ignored) {}
-
         setAppearance(Appearance.FOLLOW_SYSTEM);
         setPowermanagementHint(PowerManagementHint.BALANCED);
 

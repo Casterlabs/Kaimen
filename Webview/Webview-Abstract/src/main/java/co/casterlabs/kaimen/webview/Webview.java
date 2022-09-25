@@ -13,7 +13,7 @@ import lombok.Getter;
 import lombok.NonNull;
 
 public abstract class Webview {
-    protected static ThreadQueue mainThread = new ThreadQueue();
+    protected static ThreadQueue mainThread;
     protected static List<WeakReference<Webview>> webviews = new LinkedList<>();
 
     private static @Getter String password = new String(Crypto.generateRandomKey(16));

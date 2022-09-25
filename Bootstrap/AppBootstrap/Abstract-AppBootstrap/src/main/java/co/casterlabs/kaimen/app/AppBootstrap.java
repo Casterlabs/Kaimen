@@ -53,6 +53,12 @@ public class AppBootstrap {
             mainThread = new ThreadQueue(instance.getMainThreadImpl());
         }
 
+        // Try to give the ThreadQueue to the Webview package.
+        try {
+            Class<?> clazz = Class.forName("co.casterlabs.kaimen.webview.Webview");
+            ReflectionLib.setStaticValue(clazz, "mainThread", mainThread);
+        } catch (Exception ignored) {}
+
         // Init the framework
         App.init(args, instance, mainThread);
 
