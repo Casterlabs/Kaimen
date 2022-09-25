@@ -6,6 +6,7 @@ import org.eclipse.swt.internal.cocoa.OS;
 import org.eclipse.swt.widgets.Display;
 import org.jetbrains.annotations.Nullable;
 
+import co.casterlabs.commons.async.AsyncTask;
 import co.casterlabs.commons.async.queue.ThreadQueue;
 import co.casterlabs.commons.async.queue.ThreadQueue.Impl;
 import co.casterlabs.kaimen.app.App;
@@ -16,8 +17,35 @@ import lombok.NonNull;
 public class MacOSBootstrap extends App {
     private Display display;
 
-    public MacOSBootstrap() {
+    @Override
+    protected Impl getMainThreadImpl() {
         this.display = new Display();
+
+        return new ThreadQueue.Impl() {
+            @Override
+            public Thread getThread() {
+                return display.getThread();
+            }
+
+            @Override
+            public void submitTask(Runnable run) {
+                display.asyncExec(run);
+            }
+        };
+    }
+
+    @Override
+    protected void parkMainThread(Runnable run) {
+        AsyncTask.createNonDaemon(run);
+
+        while (!display.isDisposed()) {
+            if (!display.readAndDispatch()) {
+                display.sleep();
+            }
+        }
+
+        // THE END IS NEIGH!
+        System.exit(0);
     }
 
     @Override
@@ -36,21 +64,6 @@ public class MacOSBootstrap extends App {
         App.getMainThread().submitTask(() -> {
             OS.setTheme(appearance.isDark());
         });
-    }
-
-    @Override
-    protected Impl getMainThreadImpl() {
-        return new ThreadQueue.Impl() {
-            @Override
-            public Thread getThread() {
-                return display.getThread();
-            }
-
-            @Override
-            public void submitTask(Runnable run) {
-                display.asyncExec(run);
-            }
-        };
     }
 
     @Override

@@ -17,7 +17,7 @@ import xyz.e3ndr.reflectionlib.ReflectionLib;
 
 public abstract class App {
     private static App instance;
-    private static EventProvider<AppEvent, Void> eventProvider = new EventProvider();
+    private static EventProvider<AppEvent, Void> eventProvider = new EventProvider<>();
 
     private static @Getter String name = "Kaimen Application";
     private static @Getter Appearance appearance;
@@ -67,6 +67,11 @@ public abstract class App {
     protected ThreadQueue.Impl getMainThreadImpl() {
         // Used internally as-needed.
         return null;
+    }
+
+    protected void parkMainThread(Runnable run) {
+        // Used internally as-needed.
+        run.run();
     }
 
     /* Events */

@@ -11,6 +11,7 @@ import org.reflections8.scanners.MethodAnnotationsScanner;
 import co.casterlabs.commons.async.queue.ThreadQueue;
 import lombok.AllArgsConstructor;
 import xyz.e3ndr.fastloggingframework.logging.FastLogger;
+import xyz.e3ndr.reflectionlib.ReflectionLib;
 import xyz.e3ndr.reflectionlib.helpers.AccessHelper;
 
 public class AppBootstrap {
@@ -44,13 +45,13 @@ public class AppBootstrap {
         }
 
         // Init the mainThread.
-        boolean useDefaultMainThreadImpl = instance.getMainThreadImpl() == null;
+        ThreadQueue.Impl threadImpl = instance.getMainThreadImpl();
         ThreadQueue mainThread;
 
-        if (useDefaultMainThreadImpl) {
+        if (threadImpl == null) {
             mainThread = new ThreadQueue();
         } else {
-            mainThread = new ThreadQueue(instance.getMainThreadImpl());
+            mainThread = new ThreadQueue(threadImpl);
         }
 
         // Try to give the ThreadQueue to the Webview package.
@@ -62,14 +63,16 @@ public class AppBootstrap {
         // Init the framework
         App.init(args, instance, mainThread);
 
-        // Enter into the app
-        AppEntryPoint entryPoint = findEntryPoint();
+        instance.parkMainThread(() -> {
+            // Enter into the app
+            AppEntryPoint entryPoint = findEntryPoint();
 
-        if (entryPoint.entryAnnotation.startOnMainThread()) {
-            mainThread.submitTask(entryPoint::enter);
-        } else {
-            entryPoint.enter();
-        }
+            if (entryPoint.entryAnnotation.startOnMainThread()) {
+                mainThread.submitTask(entryPoint::enter);
+            } else {
+                entryPoint.enter();
+            }
+        });
     }
 
     private static AppEntryPoint findEntryPoint() {
