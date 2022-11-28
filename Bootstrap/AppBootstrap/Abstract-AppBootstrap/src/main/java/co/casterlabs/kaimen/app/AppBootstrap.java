@@ -8,7 +8,7 @@ import java.util.Set;
 import org.reflections8.Reflections;
 import org.reflections8.scanners.MethodAnnotationsScanner;
 
-import co.casterlabs.commons.async.queue.ThreadQueue;
+import co.casterlabs.commons.async.queue.ThreadExecutionQueue;
 import lombok.AllArgsConstructor;
 import xyz.e3ndr.fastloggingframework.logging.FastLogger;
 import xyz.e3ndr.reflectionlib.ReflectionLib;
@@ -32,7 +32,7 @@ public class AppBootstrap {
                 instance = (App) Class.forName("co.casterlabs.kaimen.bootstrap.impl.linux.LinuxBootstrap").newInstance();
                 break;
 
-            case MACOSX:
+            case MACOS:
                 instance = (App) Class.forName("co.casterlabs.kaimen.bootstrap.impl.macos.MacOSBootstrap").newInstance();
                 break;
 
@@ -45,13 +45,13 @@ public class AppBootstrap {
         }
 
         // Init the mainThread.
-        ThreadQueue.Impl threadImpl = instance.getMainThreadImpl();
-        ThreadQueue mainThread;
+        ThreadExecutionQueue.Impl threadImpl = instance.getMainThreadImpl();
+        ThreadExecutionQueue mainThread;
 
         if (threadImpl == null) {
-            mainThread = new ThreadQueue();
+            mainThread = new ThreadExecutionQueue();
         } else {
-            mainThread = new ThreadQueue(threadImpl);
+            mainThread = new ThreadExecutionQueue(threadImpl);
         }
 
         // Try to give the ThreadQueue to the Webview package.
@@ -68,7 +68,7 @@ public class AppBootstrap {
             AppEntryPoint entryPoint = findEntryPoint();
 
             if (entryPoint.entryAnnotation.startOnMainThread()) {
-                mainThread.submitTask(entryPoint::enter);
+                mainThread.execute(entryPoint::enter);
             } else {
                 entryPoint.enter();
             }

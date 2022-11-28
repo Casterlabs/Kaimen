@@ -19,11 +19,11 @@ public enum JavaVersion {
 
     static {
         OS_MAPPING.put(OSDistribution.WINDOWS_NT, "windows");
-        OS_MAPPING.put(OSDistribution.MACOSX, "mac");
+        OS_MAPPING.put(OSDistribution.MACOS, "mac");
         OS_MAPPING.put(OSDistribution.LINUX, "linux");
-        ARCH_MAPPING.put(Arch.AMD64, "x64");
+        ARCH_MAPPING.put(Arch.X86_64, "x64");
         ARCH_MAPPING.put(Arch.X86, "x86");
-        ARCH_MAPPING.put(Arch.ARM32, "arm");
+        ARCH_MAPPING.put(Arch.ARM, "arm");
         ARCH_MAPPING.put(Arch.AARCH64, "aarch64");
     }
 

@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Nullable;
 
 import com.jthemedetecor.OsThemeDetector;
 
-import co.casterlabs.commons.async.queue.ThreadQueue;
+import co.casterlabs.commons.async.queue.ThreadExecutionQueue;
 import co.casterlabs.commons.events.EventProvider;
 import co.casterlabs.kaimen.util.reflection.FieldMutationListener;
 import lombok.Getter;
@@ -27,12 +27,12 @@ public abstract class App {
     private static OsThemeDetector themeDetector = OsThemeDetector.getDetector();
 
     @Getter
-    private static ThreadQueue mainThread;
+    private static ThreadExecutionQueue mainThread;
 
     @Getter
     private static String[] args;
 
-    static void init(String[] args, App instance, ThreadQueue mainThread) {
+    static void init(String[] args, App instance, ThreadExecutionQueue mainThread) {
         App.args = args;
         App.instance = instance;
         App.mainThread = mainThread;
@@ -64,7 +64,7 @@ public abstract class App {
         // Used internally as-needed.
     }
 
-    protected ThreadQueue.Impl getMainThreadImpl() {
+    protected ThreadExecutionQueue.Impl getMainThreadImpl() {
         // Used internally as-needed.
         return null;
     }

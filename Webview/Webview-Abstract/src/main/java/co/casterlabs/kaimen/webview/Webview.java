@@ -6,14 +6,14 @@ import java.util.List;
 
 import org.jetbrains.annotations.Nullable;
 
-import co.casterlabs.commons.async.queue.ThreadQueue;
+import co.casterlabs.commons.async.queue.ThreadExecutionQueue;
 import co.casterlabs.kaimen.util.Crypto;
 import co.casterlabs.kaimen.webview.bridge.WebviewBridge;
 import lombok.Getter;
 import lombok.NonNull;
 
 public abstract class Webview {
-    protected static ThreadQueue mainThread;
+    protected static ThreadExecutionQueue mainThread;
     protected static List<WeakReference<Webview>> webviews = new LinkedList<>();
 
     private static @Getter String password = new String(Crypto.generateRandomKey(16));

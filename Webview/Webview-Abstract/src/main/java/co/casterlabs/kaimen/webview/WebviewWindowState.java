@@ -26,7 +26,7 @@ public class WebviewWindowState extends JavascriptObject {
     public WebviewWindowState() {
         // Setup Defaults.
         // Needs to be done on the main thread.
-        Webview.mainThread.submitTaskAndWait(() -> {
+        Webview.mainThread.executeWithPromise(() -> {
             GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
 
             int monitorWidth = gd.getDisplayMode().getWidth();
@@ -34,7 +34,9 @@ public class WebviewWindowState extends JavascriptObject {
 
             this.x = (monitorWidth - this.width) / 2;
             this.y = (monitorHeight - this.height) / 2;
-        });
+
+            return null;
+        }).await();
     }
 
     /* Override as needed */

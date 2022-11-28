@@ -7,8 +7,7 @@ import org.eclipse.swt.widgets.Display;
 import org.jetbrains.annotations.Nullable;
 
 import co.casterlabs.commons.async.AsyncTask;
-import co.casterlabs.commons.async.queue.ThreadQueue;
-import co.casterlabs.commons.async.queue.ThreadQueue.Impl;
+import co.casterlabs.commons.async.queue.ThreadExecutionQueue;
 import co.casterlabs.kaimen.app.App;
 import co.casterlabs.kaimen.webview.Webview;
 import co.casterlabs.kaimen.webview.impl.webkit.WkWebview;
@@ -18,10 +17,10 @@ public class MacOSBootstrap extends App {
     private Display display;
 
     @Override
-    protected Impl getMainThreadImpl() {
+    protected ThreadExecutionQueue.Impl getMainThreadImpl() {
         this.display = new Display();
 
-        return new ThreadQueue.Impl() {
+        return new ThreadExecutionQueue.Impl() {
             @Override
             public Thread getThread() {
                 return display.getThread();
@@ -61,7 +60,7 @@ public class MacOSBootstrap extends App {
 
     @Override
     protected void setAppearance0(@NonNull Appearance appearance) {
-        App.getMainThread().submitTask(() -> {
+        App.getMainThread().execute(() -> {
             OS.setTheme(appearance.isDark());
         });
     }

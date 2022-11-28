@@ -137,7 +137,7 @@ public class ProjectBuilder implements Runnable {
 
         PackrConfig config = new PackrConfig();
 
-        if (this.targetOS == OSDistribution.MACOSX) {
+        if (this.targetOS == OSDistribution.MACOS) {
             this.vmArgs.add("XstartOnFirstThread");
             config.iconResource = this.appIcon;
             outputDir = new File(outputDir, this.appName + ".app");
@@ -191,7 +191,7 @@ public class ProjectBuilder implements Runnable {
     }
 
     private void doCompletionTasks(File outputDir) throws IOException, InterruptedException {
-        if (this.targetOS == OSDistribution.MACOSX) {
+        if (this.targetOS == OSDistribution.MACOS) {
             File infoPlist = new File(outputDir, "/Contents/Info.plist");
 
             String addition = IOUtil.readString(ProjectBuilder.class.getResourceAsStream("/add_Info.plist"));
@@ -221,7 +221,7 @@ public class ProjectBuilder implements Runnable {
             System.exit(1);
         }
 
-        if (this.targetOS == OSDistribution.MACOSX) {
+        if (this.targetOS == OSDistribution.MACOS) {
             if (Platform.osDistribution == OSDistribution.WINDOWS_NT) {
                 FastLogger.logStatic(LogLevel.SEVERE, "You cannot target MacOS when building on windows.");
                 System.exit(1);

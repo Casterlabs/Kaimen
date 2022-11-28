@@ -36,6 +36,7 @@ import org.jetbrains.annotations.Nullable;
 import co.casterlabs.commons.async.AsyncTask;
 import co.casterlabs.commons.platform.Arch;
 import co.casterlabs.commons.platform.OSDistribution;
+import co.casterlabs.commons.platform.Platform;
 import co.casterlabs.kaimen.app.App;
 import co.casterlabs.kaimen.webview.Webview;
 import co.casterlabs.kaimen.webview.WebviewFactory;
@@ -44,8 +45,6 @@ import co.casterlabs.kaimen.webview.WebviewWindowProperties;
 import co.casterlabs.kaimen.webview.bridge.WebviewBridge;
 import lombok.Getter;
 import lombok.NonNull;
-import xyz.e3ndr.consoleutil.ConsoleUtil;
-import xyz.e3ndr.consoleutil.platform.JavaPlatform;
 import xyz.e3ndr.fastloggingframework.logging.FastLogger;
 
 public class CefWebview extends Webview {
@@ -63,12 +62,12 @@ public class CefWebview extends Webview {
 
             supported.put(
                 OSDistribution.LINUX,
-                Arrays.asList(Arch.AARCH64, Arch.AMD64, Arch.X86)
+                Arrays.asList(Arch.AARCH64, Arch.X86_64, Arch.X86)
             );
 
             supported.put(
                 OSDistribution.WINDOWS_NT,
-                Arrays.asList(Arch.AARCH64, Arch.AMD64, Arch.X86)
+                Arrays.asList(Arch.AARCH64, Arch.X86_64, Arch.X86)
             );
 
             return supported;
@@ -153,7 +152,7 @@ public class CefWebview extends Webview {
             }
         });
 
-        if (ConsoleUtil.getPlatform() == JavaPlatform.UNIX) {
+        if (Platform.osDistribution == OSDistribution.LINUX) {
             // This is so stupid, but it convinces CEF that it should resize (and is quite
             // effective at it)
             Timer resizeTimer = new Timer(200, (e) -> {

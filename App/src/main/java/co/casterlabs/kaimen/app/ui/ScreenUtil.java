@@ -47,7 +47,7 @@ public class ScreenUtil {
 
     @SneakyThrows
     private static Rectangle calculateSize() {
-        return App.getMainThread().submitTaskWithPromise(() -> {
+        return App.getMainThread().executeWithPromise(() -> {
             Rectangle result = new Rectangle();
             GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 

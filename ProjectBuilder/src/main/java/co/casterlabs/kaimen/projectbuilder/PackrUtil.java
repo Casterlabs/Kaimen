@@ -16,9 +16,9 @@ public class PackrUtil {
     static {
         Map<Pair<OSDistribution, Arch>, PackrConfig.Platform> mapping = new HashMap<>();
 
-        mapping.put(new Pair<>(OSDistribution.WINDOWS_NT, Arch.AMD64), PackrConfig.Platform.Windows64);
-        mapping.put(new Pair<>(OSDistribution.LINUX, Arch.AMD64), PackrConfig.Platform.Linux64);
-        mapping.put(new Pair<>(OSDistribution.MACOSX, Arch.AMD64), PackrConfig.Platform.MacOS);
+        mapping.put(new Pair<>(OSDistribution.WINDOWS_NT, Arch.X86_64), PackrConfig.Platform.Windows64);
+        mapping.put(new Pair<>(OSDistribution.LINUX, Arch.X86_64), PackrConfig.Platform.Linux64);
+        mapping.put(new Pair<>(OSDistribution.MACOS, Arch.X86_64), PackrConfig.Platform.MacOS);
 
         PLATFORM_MAPPING = Collections.unmodifiableMap(mapping);
     }
