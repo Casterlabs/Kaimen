@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 public enum WebviewRenderer {
     WEBKIT("WebKit"),
     CHROMIUM_EMBEDDED_FRAMEWORK("CEF"),
+    WEBVIEW_DEV("WebviewDev"),
 
     ;
 

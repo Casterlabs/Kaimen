@@ -39,6 +39,15 @@ public abstract class WebviewFactory implements Supplier<Webview> {
             );
         } catch (Exception ignored) {}
 
+        try {
+            includedFactories.add(
+                ReflectionLib.getStaticValue(
+                    Class.forName("co.casterlabs.kaimen.webview.impl.webviewdev.WvWebview"),
+                    "FACTORY"
+                )
+            );
+        } catch (Exception ignored) {}
+
         FastLogger.logStatic(LogLevel.DEBUG, "Found factories: %s", includedFactories);
 
         for (WebviewFactory factory : includedFactories) {

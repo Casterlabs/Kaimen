@@ -10,6 +10,7 @@ import co.casterlabs.kaimen.app.ui.UIServer;
 import co.casterlabs.kaimen.webview.Webview;
 import co.casterlabs.kaimen.webview.WebviewFactory;
 import co.casterlabs.kaimen.webview.WebviewLifeCycleListener;
+import co.casterlabs.kaimen.webview.WebviewRenderer;
 import co.casterlabs.kaimen.webview.WebviewWindowProperties;
 import co.casterlabs.kaimen.webview.bridge.JavascriptFunction;
 import co.casterlabs.kaimen.webview.bridge.JavascriptObject;
@@ -69,7 +70,7 @@ public class Test {
             })
             .start();
 
-        WebviewFactory factory = WebviewFactory.getFactory();
+        WebviewFactory factory = WebviewFactory.getFactory(WebviewRenderer.WEBKIT, WebviewRenderer.WEBVIEW_DEV, WebviewRenderer.CHROMIUM_EMBEDDED_FRAMEWORK);
 
         // Log some stuff
         FastLogger.logStatic("Running on: %s (%s)", Platform.osDistribution, Platform.arch);
@@ -107,8 +108,6 @@ public class Test {
                 .withFocusable(true)
         );
 
-        webview.open(uiServer.getLocalAddress());
-
         webview
             .getBridge()
             .defineObject("test", new JavascriptObject() {
@@ -136,6 +135,7 @@ public class Test {
 
             });
 
+        webview.open(uiServer.getLocalAddress());
     }
 
 }
