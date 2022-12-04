@@ -18,7 +18,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.Timer;
 import javax.swing.WindowConstants;
 
 import org.cef.CefClient;
@@ -36,7 +35,6 @@ import org.jetbrains.annotations.Nullable;
 import co.casterlabs.commons.async.AsyncTask;
 import co.casterlabs.commons.platform.Arch;
 import co.casterlabs.commons.platform.OSDistribution;
-import co.casterlabs.commons.platform.Platform;
 import co.casterlabs.kaimen.app.App;
 import co.casterlabs.kaimen.webview.Webview;
 import co.casterlabs.kaimen.webview.WebviewFactory;
@@ -151,28 +149,6 @@ public class CefWebview extends Webview {
                 CefWebview.this.windowState.setHasFocus(false);
             }
         });
-
-        if (Platform.osDistribution == OSDistribution.LINUX) {
-            // This is so stupid, but it convinces CEF that it should resize (and is quite
-            // effective at it)
-            Timer resizeTimer = new Timer(200, (e) -> {
-                this.cefPanel.removeAll();
-                this.cefPanel.add(this.browser.getUIComponent(), BorderLayout.CENTER);
-            });
-            resizeTimer.setRepeats(false);
-
-            this.window.addComponentListener(new ComponentAdapter() {
-                @Override
-                public void componentResized(ComponentEvent e) {
-                    resizeTimer.restart();
-                }
-
-                @Override
-                public void componentMoved(ComponentEvent e) {
-                    resizeTimer.restart();
-                }
-            });
-        }
 
         this.window.addComponentListener(new ComponentAdapter() {
             @Override
