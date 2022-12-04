@@ -97,14 +97,5 @@
 			<scope>compile</scope>
 		</dependency>
 
-		<!-- Webview Dev -->
-		
-		<dependency>
-			<groupId>co.casterlabs</groupId>
-			<artifactId>Webview-WV</artifactId>
-			<version>${project.parent.version}</version>
-			<scope>compile</scope>
-		</dependency>
-
 	</dependencies>
 </project>
