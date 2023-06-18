@@ -216,7 +216,7 @@ public class CefWebview extends Webview {
                     }
 
                     case 2: {
-                        browser.reloadIgnoreCache();
+                        executeJavaScript("location.reload(true);");
                         break;
                     }
                 }
