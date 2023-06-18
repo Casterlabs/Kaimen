@@ -11,9 +11,9 @@ import co.casterlabs.rakurai.json.element.JsonObject;
 import co.casterlabs.rakurai.json.element.JsonString;
 import co.casterlabs.rakurai.json.serialization.JsonParseException;
 import lombok.NonNull;
+import xyz.e3ndr.fastloggingframework.LogUtil;
 import xyz.e3ndr.fastloggingframework.logging.FastLogger;
 import xyz.e3ndr.fastloggingframework.logging.LogLevel;
-import xyz.e3ndr.fastloggingframework.logging.StringUtil;
 
 public class WkBridge extends WebviewBridge {
     private static String bridgeScript = "";
@@ -99,7 +99,7 @@ public class WkBridge extends WebviewBridge {
                                     .put("result", result)
                             );
                         } catch (Throwable e) {
-                            String error = StringUtil.getExceptionStack(e);
+                            String error = LogUtil.getExceptionStack(e);
 
                             emit(
                                 "_get:" + nonce,
@@ -134,7 +134,7 @@ public class WkBridge extends WebviewBridge {
                                     .put("result", result)
                             );
                         } catch (Throwable e) {
-                            String error = StringUtil.getExceptionStack(e);
+                            String error = LogUtil.getExceptionStack(e);
 
                             emit(
                                 "_invoke:" + nonce,
