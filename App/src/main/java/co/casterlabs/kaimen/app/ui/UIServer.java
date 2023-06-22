@@ -9,13 +9,13 @@ import java.util.function.Function;
 import org.jetbrains.annotations.Nullable;
 
 import co.casterlabs.kaimen.webview.Webview;
-import co.casterlabs.rakurai.io.http.HttpResponse;
-import co.casterlabs.rakurai.io.http.HttpSession;
 import co.casterlabs.rakurai.io.http.server.HttpListener;
+import co.casterlabs.rakurai.io.http.server.HttpResponse;
 import co.casterlabs.rakurai.io.http.server.HttpServer;
-import co.casterlabs.rakurai.io.http.server.HttpServerBuilder;
-import co.casterlabs.rakurai.io.http.websocket.WebsocketListener;
-import co.casterlabs.rakurai.io.http.websocket.WebsocketSession;
+import co.casterlabs.rakurai.io.http.server.HttpSession;
+import co.casterlabs.rakurai.io.http.server.config.HttpServerBuilder;
+import co.casterlabs.rakurai.io.http.server.websocket.WebsocketListener;
+import co.casterlabs.rakurai.io.http.server.websocket.WebsocketSession;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;

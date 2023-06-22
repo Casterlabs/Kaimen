@@ -36,8 +36,14 @@
 		</dependency>
 		<dependency>
 			<groupId>co.casterlabs.Rakurai</groupId>
-			<artifactId>Http-Server</artifactId>
-			<version>1.16.0</version>
+			<artifactId>Http-Server-Api</artifactId>
+			<version>1.17.5</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>co.casterlabs.Rakurai</groupId>
+			<artifactId>ImplRakurai</artifactId>
+			<version>1.17.5</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
