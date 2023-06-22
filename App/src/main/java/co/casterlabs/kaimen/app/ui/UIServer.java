@@ -52,7 +52,7 @@ public class UIServer implements Closeable {
         this.localAddress = String.format("http://127.0.0.1:%d", this.port);
 
         this.server = HttpServerBuilder
-            .getUndertowBuilder()
+            .getRakuraiBuilder()
             .setHostname("127.0.0.1")
             .setPort(this.port)
             .build(new HttpListener() {
