@@ -184,6 +184,7 @@ public class ProjectBuilder implements Runnable {
             this.doCompletionTasks(outputDir);
 
             FastLogger.logStatic("You heard Packr, build complete!");
+            System.exit(0);
         } catch (Exception e) {
             FastLogger.logStatic(LogLevel.SEVERE, "Build failed :(");
             FastLogger.logException(e);
