@@ -10,7 +10,7 @@ import com.badlogicgames.packr.Packr;
 import com.badlogicgames.packr.PackrConfig;
 
 import co.casterlabs.commons.functional.tuples.Pair;
-import co.casterlabs.commons.platform.Arch;
+import co.casterlabs.commons.platform.ArchFamily;
 import co.casterlabs.commons.platform.OSDistribution;
 import co.casterlabs.commons.platform.Platform;
 import co.casterlabs.kaimen.webview.WebviewRenderer;
@@ -43,7 +43,13 @@ public class ProjectBuilder implements Runnable {
             "-arch",
             "--targetArch"
     }, description = "The target architecture to compile for", required = true)
-    private Arch targetArch;
+    private ArchFamily targetArch;
+
+    @Option(names = {
+            "-arch",
+            "--targetArch"
+    }, description = "The target architecture word size (32/64) to compile for", required = true)
+    private int targetArchWordSize;
 
     @Option(names = {
             "-wi",
@@ -144,7 +150,7 @@ public class ProjectBuilder implements Runnable {
         }
 
         config.platform = PackrUtil.PLATFORM_MAPPING.get(new Pair<>(this.targetOS, this.targetArch));
-        config.jdk = this.javaVersion.getDownloadUrl(this.targetOS, this.targetArch);
+        config.jdk = this.javaVersion.getDownloadUrl(this.targetOS, this.targetArch.getArchTarget(this.targetArchWordSize));
         config.executable = this.appName;
         config.jrePath = "jre";
         config.classpath = this.classPath;
@@ -157,7 +163,11 @@ public class ProjectBuilder implements Runnable {
         config.verbose = this.debug;
 
         try {
-            File bootstrap = MavenUtil.getKaimenBootstrap(this.targetOS, this.targetArch, this.kaimenVersion);
+            File bootstrap = MavenUtil.getKaimenBootstrap(
+                this.targetOS,
+                this.targetArch.getArchTarget(this.targetArchWordSize),
+                this.kaimenVersion
+            );
 
             this.classPath.add(bootstrap.getCanonicalPath());
         } catch (Exception e) {
@@ -168,7 +178,12 @@ public class ProjectBuilder implements Runnable {
 
         if (this.webviewImplementation != null) {
             try {
-                File webview = MavenUtil.getWebviewBootstrap(this.targetOS, this.targetArch, this.kaimenVersion, this.webviewImplementation);
+                File webview = MavenUtil.getWebviewBootstrap(
+                    this.targetOS,
+                    this.targetArch.getArchTarget(this.targetArchWordSize),
+                    this.kaimenVersion,
+                    this.webviewImplementation
+                );
 
                 this.classPath.add(webview.getCanonicalPath());
             } catch (Exception e) {
