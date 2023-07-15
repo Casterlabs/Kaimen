@@ -120,13 +120,9 @@ public class ProjectBuilder implements Runnable {
             FastLoggingFramework.setDefaultLevel(LogLevel.DEBUG);
         }
 
-        if (this.webviewImplementation == null) {
-
-        }
-
         this.doPreflightChecks();
 
-        File outputDir = new File(String.format("./dist/%s-%s", this.targetOS, this.targetArch));
+        File outputDir = new File(String.format("./dist/%s-%s", this.targetOS.target, this.targetArch.getArchTarget(this.targetArchWordSize)));
 
         if (outputDir.exists()) {
             // Clean the output dir.
