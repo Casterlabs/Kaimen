@@ -52,7 +52,7 @@
 		</dependency>
 		<dependency>
 			<groupId>co.casterlabs</groupId>
-			<artifactId>CEF-Linux-amd64</artifactId>
+			<artifactId>CEF-Linux-x86_64</artifactId>
 			<version>${project.parent.version}</version>
 			<scope>compile</scope>
 		</dependency>
@@ -71,7 +71,7 @@
 		</dependency>
 		<dependency>
 			<groupId>co.casterlabs</groupId>
-			<artifactId>CEF-Windows-amd64</artifactId>
+			<artifactId>CEF-Windows-x86_64</artifactId>
 			<version>${project.parent.version}</version>
 			<scope>compile</scope>
 		</dependency>
@@ -92,7 +92,7 @@
 		</dependency>
 		<dependency>
 			<groupId>co.casterlabs</groupId>
-			<artifactId>WebKit-MacOS-amd64</artifactId>
+			<artifactId>WebKit-MacOS-x86_64</artifactId>
 			<version>${project.parent.version}</version>
 			<scope>compile</scope>
 		</dependency>

@@ -1,10 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>CEF-Linux-amd64</artifactId>
+	<artifactId>MacOS-x86_64</artifactId>
 
 	<parent>
 		<groupId>co.casterlabs</groupId>
-		<artifactId>WebviewBootstrap</artifactId>
+		<artifactId>MacOS-AppBootstrap</artifactId>
 		<version>1.0.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
@@ -40,24 +40,28 @@
 		</plugins>
 	</build>
 
+	<repositories>
+		<repository>
+			<id>eclipse-swt-repo</id>
+			<url>https://casterlabs.github.io/eclipse-swt/maven</url>
+		</repository>
+	</repositories>
+
 	<dependencies>
 
 		<dependency>
 			<groupId>co.casterlabs</groupId>
-			<artifactId>Webview-CEF</artifactId>
+			<artifactId>MacOS-Common</artifactId>
 			<version>${project.parent.version}</version>
 			<scope>compile</scope>
 		</dependency>
 
-		<!-- CEF -->
+		<!-- https://github.com/Casterlabs/eclipse-swt -->
+		<!-- We use this for native system interaction, even though we use WV instead of Webkit. -->
 		<dependency>
-			<groupId>me.friwi</groupId>
-			<artifactId>jcefmaven</artifactId>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>me.friwi</groupId>
-			<artifactId>jcef-natives-linux-amd64</artifactId>
+			<groupId>org.eclipse.swt</groupId>
+			<artifactId>cocoa.macosx.x86_64</artifactId>
+			<version>4.22</version>
 			<scope>compile</scope>
 		</dependency>
 

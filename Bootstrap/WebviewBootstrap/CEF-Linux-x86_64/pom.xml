@@ -1,10 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>Linux-amd64</artifactId>
+	<artifactId>CEF-Linux-x86_64</artifactId>
 
 	<parent>
 		<groupId>co.casterlabs</groupId>
-		<artifactId>Linux-AppBootstrap</artifactId>
+		<artifactId>WebviewBootstrap</artifactId>
 		<version>1.0.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
@@ -44,8 +44,20 @@
 
 		<dependency>
 			<groupId>co.casterlabs</groupId>
-			<artifactId>Linux-Common</artifactId>
+			<artifactId>Webview-CEF</artifactId>
 			<version>${project.parent.version}</version>
+			<scope>compile</scope>
+		</dependency>
+
+		<!-- CEF -->
+		<dependency>
+			<groupId>me.friwi</groupId>
+			<artifactId>jcefmaven</artifactId>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>me.friwi</groupId>
+			<artifactId>jcef-natives-linux-amd64</artifactId>
 			<scope>compile</scope>
 		</dependency>
 

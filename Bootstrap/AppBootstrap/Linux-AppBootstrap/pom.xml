@@ -14,7 +14,7 @@
 
 	<modules>
 		<module>Linux-Common</module>
-		<module>Linux-amd64</module>
+		<module>Linux-x86_64</module>
 		<module>Linux-x86</module>
 		<module>Linux-aarch64</module>
 	</modules>

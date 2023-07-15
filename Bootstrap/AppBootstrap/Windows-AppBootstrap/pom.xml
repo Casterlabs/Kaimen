@@ -14,7 +14,7 @@
 
 	<modules>
 		<module>Windows-Common</module>
-		<module>Windows-amd64</module>
+		<module>Windows-x86_64</module>
 		<module>Windows-x86</module>
 		<module>Windows-aarch64</module>
 	</modules>

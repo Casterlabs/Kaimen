@@ -14,7 +14,7 @@
 
 	<modules>
 		<module>MacOS-Common</module>
-		<module>MacOS-amd64</module>
+		<module>MacOS-x86_64</module>
 		<module>MacOS-aarch64</module>
 	</modules>
 

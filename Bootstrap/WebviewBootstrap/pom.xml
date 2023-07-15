@@ -17,17 +17,17 @@
 		<!-- CEF -->
 
 		<module>CEF-Linux-aarch64</module>
-		<module>CEF-Linux-amd64</module>
+		<module>CEF-Linux-x86_64</module>
 		<module>CEF-Linux-x86</module>
 
 		<module>CEF-Windows-aarch64</module>
-		<module>CEF-Windows-amd64</module>
+		<module>CEF-Windows-x86_64</module>
 		<module>CEF-Windows-x86</module>
 
 		<!-- WebKit -->
 
 		<module>WebKit-MacOS-aarch64</module>
-		<module>WebKit-MacOS-amd64</module>
+		<module>WebKit-MacOS-x86_64</module>
 
 
 		<module>AllWebviewImpls</module>
