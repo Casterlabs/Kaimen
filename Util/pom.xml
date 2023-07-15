@@ -24,7 +24,7 @@
 		<dependency>
 			<groupId>co.casterlabs</groupId>
 			<artifactId>Commons</artifactId>
-			<version>1.3.2</version>
+			<version>1.4.0</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
