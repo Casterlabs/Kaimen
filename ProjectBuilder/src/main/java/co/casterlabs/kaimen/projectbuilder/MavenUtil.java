@@ -17,7 +17,7 @@ public class MavenUtil {
     public static File getKaimenBootstrap(OSDistribution os, String archTarget, String version) throws InterruptedException, IOException {
         final String group = "co.casterlabs.kaimen";
 
-        String osStr = os.toString();
+        String osStr = os.target;
         osStr = osStr.substring(0, 1).toUpperCase() + osStr.substring(1); // Just some silly string manipulation.
 
         String artifact = String.format("%s-%s", osStr, archTarget);
@@ -28,7 +28,7 @@ public class MavenUtil {
     public static File getWebviewBootstrap(OSDistribution os, String archTarget, String version, WebviewRenderer webviewImplementation) throws InterruptedException, IOException {
         final String group = "co.casterlabs.kaimen";
 
-        String osStr = os.toString();
+        String osStr = os.target;
         osStr = osStr.substring(0, 1).toUpperCase() + osStr.substring(1); // Just some silly string manipulation.
 
         String artifact = String.format("%s-%s-%s", webviewImplementation, osStr, archTarget);
