@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import co.casterlabs.commons.platform.Arch;
 import co.casterlabs.commons.platform.OSDistribution;
 import co.casterlabs.commons.platform.Platform;
 import xyz.e3ndr.fastloggingframework.logging.FastLogger;
@@ -83,12 +82,12 @@ public abstract class WebviewFactory implements Supplier<Webview> {
         return this
             .getSupportMap()
             .getOrDefault(Platform.osDistribution, Collections.emptyList())
-            .contains(Platform.arch);
+            .contains(Platform.archFamily.getArchTarget(Platform.wordSize));
     }
 
     public abstract WebviewRenderer getRendererType();
 
-    public abstract Map<OSDistribution, List<Arch>> getSupportMap();
+    public abstract Map<OSDistribution, List<String>> getSupportMap();
 
     public boolean supportsOSR() {
         return true;

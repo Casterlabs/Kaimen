@@ -3,7 +3,6 @@ package co.casterlabs.kaimen.webview.impl.webkit;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -24,7 +23,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.jetbrains.annotations.Nullable;
 
 import co.casterlabs.commons.async.AsyncTask;
-import co.casterlabs.commons.platform.Arch;
+import co.casterlabs.commons.platform.ArchFamily;
 import co.casterlabs.commons.platform.OSDistribution;
 import co.casterlabs.commons.platform.Platform;
 import co.casterlabs.kaimen.app.App;
@@ -49,15 +48,13 @@ public class WkWebview extends Webview {
         }
 
         @Override
-        public Map<OSDistribution, List<Arch>> getSupportMap() {
-            Map<OSDistribution, List<Arch>> supported = new HashMap<>();
-
-            supported.put(
-                OSDistribution.MACOS,
-                Arrays.asList(Arch.AARCH64, Arch.X86_64)
+        public Map<OSDistribution, List<String>> getSupportMap() {
+            return Map.of(
+                OSDistribution.MACOS, Arrays.asList(
+                    ArchFamily.ARM.getArchTarget(64),
+                    ArchFamily.X86.getArchTarget(64)
+                )
             );
-
-            return supported;
         };
 
         @Override

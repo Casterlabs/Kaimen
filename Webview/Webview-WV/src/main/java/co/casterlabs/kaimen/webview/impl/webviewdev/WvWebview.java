@@ -1,13 +1,10 @@
 package co.casterlabs.kaimen.webview.impl.webviewdev;
 
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.jetbrains.annotations.Nullable;
 
-import co.casterlabs.commons.platform.Arch;
 import co.casterlabs.commons.platform.OSDistribution;
 import co.casterlabs.kaimen.webview.Webview;
 import co.casterlabs.kaimen.webview.WebviewFactory;
@@ -27,15 +24,14 @@ public class WvWebview extends Webview {
         }
 
         @Override
-        public Map<OSDistribution, List<Arch>> getSupportMap() {
-            Map<OSDistribution, List<Arch>> supported = new HashMap<>();
-
-            supported.put(
-                OSDistribution.WINDOWS_NT,
-                Arrays.asList(Arch.AARCH64, Arch.X86_64, Arch.X86)
+        public Map<OSDistribution, List<String>> getSupportMap() {
+            return Map.of(
+                //                OSDistribution.WINDOWS_NT, Arrays.asList(
+//                    ArchFamily.ARM.getArchTarget(64),
+//                    ArchFamily.X86.getArchTarget(64),
+//                    ArchFamily.X86.getArchTarget(32)
+//                )
             );
-
-            return supported;
         };
 
         @Override

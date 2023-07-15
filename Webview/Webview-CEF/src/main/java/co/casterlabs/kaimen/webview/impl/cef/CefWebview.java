@@ -10,7 +10,6 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -33,7 +32,7 @@ import org.cef.network.CefRequest.TransitionType;
 import org.jetbrains.annotations.Nullable;
 
 import co.casterlabs.commons.async.AsyncTask;
-import co.casterlabs.commons.platform.Arch;
+import co.casterlabs.commons.platform.ArchFamily;
 import co.casterlabs.commons.platform.OSDistribution;
 import co.casterlabs.kaimen.app.App;
 import co.casterlabs.kaimen.webview.Webview;
@@ -55,20 +54,20 @@ public class CefWebview extends Webview {
         }
 
         @Override
-        public Map<OSDistribution, List<Arch>> getSupportMap() {
-            Map<OSDistribution, List<Arch>> supported = new HashMap<>();
+        public Map<OSDistribution, List<String>> getSupportMap() {
+            return Map.of(
+                OSDistribution.LINUX, Arrays.asList(
+                    ArchFamily.ARM.getArchTarget(64),
+                    ArchFamily.X86.getArchTarget(64),
+                    ArchFamily.X86.getArchTarget(32)
+                ),
 
-            supported.put(
-                OSDistribution.LINUX,
-                Arrays.asList(Arch.AARCH64, Arch.X86_64, Arch.X86)
+                OSDistribution.WINDOWS_NT, Arrays.asList(
+                    ArchFamily.ARM.getArchTarget(64),
+                    ArchFamily.X86.getArchTarget(64),
+                    ArchFamily.X86.getArchTarget(32)
+                )
             );
-
-            supported.put(
-                OSDistribution.WINDOWS_NT,
-                Arrays.asList(Arch.AARCH64, Arch.X86_64, Arch.X86)
-            );
-
-            return supported;
         };
 
         @Override
