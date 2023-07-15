@@ -9,7 +9,6 @@ import java.util.List;
 import com.badlogicgames.packr.Packr;
 import com.badlogicgames.packr.PackrConfig;
 
-import co.casterlabs.commons.functional.tuples.Pair;
 import co.casterlabs.commons.platform.ArchFamily;
 import co.casterlabs.commons.platform.OSDistribution;
 import co.casterlabs.commons.platform.Platform;
@@ -46,8 +45,8 @@ public class ProjectBuilder implements Runnable {
     private ArchFamily targetArch;
 
     @Option(names = {
-            "-arch",
-            "--targetArch"
+            "-archWord",
+            "--targetArchWord"
     }, description = "The target architecture word size (32/64) to compile for", required = true)
     private int targetArchWordSize;
 
@@ -149,7 +148,7 @@ public class ProjectBuilder implements Runnable {
             outputDir = new File(outputDir, this.appName + ".app");
         }
 
-        config.platform = PackrUtil.PLATFORM_MAPPING.get(new Pair<>(this.targetOS, this.targetArch));
+        config.platform = PackrUtil.PLATFORM_MAPPING.get(this.targetOS.target + '-' + this.targetArch.getArchTarget(this.targetArchWordSize));
         config.jdk = this.javaVersion.getDownloadUrl(this.targetOS, this.targetArch.getArchTarget(this.targetArchWordSize));
         config.executable = this.appName;
         config.jrePath = "jre";
@@ -232,8 +231,8 @@ public class ProjectBuilder implements Runnable {
     }
 
     private void doPreflightChecks() {
-        if (!PackrUtil.PLATFORM_MAPPING.containsKey(new Pair<>(this.targetOS, this.targetArch))) {
-            FastLogger.logStatic(LogLevel.SEVERE, "Unfortunately, Packr does not support %s:%s.", this.targetOS, this.targetArch);
+        if (!PackrUtil.PLATFORM_MAPPING.containsKey(this.targetOS.target + '-' + this.targetArch.getArchTarget(this.targetArchWordSize))) {
+            FastLogger.logStatic(LogLevel.SEVERE, "Unfortunately, Packr does not support %s-%s.", this.targetOS.target, this.targetArch.getArchTarget(this.targetArchWordSize));
             System.exit(1);
         }
 
