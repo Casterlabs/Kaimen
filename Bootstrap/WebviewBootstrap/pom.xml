@@ -37,7 +37,7 @@
 	<properties>
 
 		<!-- CEF -->
-		<cef.version>110.0.25</cef.version>
+		<cef.version>110.0.25.1</cef.version>
 		<cef.natives.version>jcef-87476e9+cef-110.0.25+g75b1c96+chromium-110.0.5481.78</cef.natives.version>
 
 		<!-- WebKit -->
