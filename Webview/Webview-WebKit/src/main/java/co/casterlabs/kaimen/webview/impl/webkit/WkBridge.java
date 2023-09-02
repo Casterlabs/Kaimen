@@ -1,6 +1,8 @@
 package co.casterlabs.kaimen.webview.impl.webkit;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import co.casterlabs.kaimen.webview.WebviewFileUtil;
 import co.casterlabs.kaimen.webview.bridge.WebviewBridge;
@@ -19,6 +21,8 @@ public class WkBridge extends WebviewBridge {
     private static String bridgeScript = "";
 
     private WkWebview webview;
+
+    private ExecutorService threadPool = Executors.newCachedThreadPool();
 
     static {
         // Get the javascript bridge.
@@ -71,85 +75,87 @@ public class WkBridge extends WebviewBridge {
 
     // Called by SwtWebview
     public void query(String request) {
-        FastLogger.logStatic(LogLevel.TRACE, request);
+        this.threadPool.submit(() -> {
+            FastLogger.logStatic(LogLevel.TRACE, request);
 
-        try {
-            JsonObject query = Rson.DEFAULT.fromJson(request, JsonObject.class);
+            try {
+                JsonObject query = Rson.DEFAULT.fromJson(request, JsonObject.class);
 
-            switch (query.getString("type")) {
-                case "emission": {
-                    JsonObject emission = query.getObject("data");
-                    String type = emission.getString("type");
-                    JsonObject data = emission.getObject("data");
+                switch (query.getString("type")) {
+                    case "emission": {
+                        JsonObject emission = query.getObject("data");
+                        String type = emission.getString("type");
+                        JsonObject data = emission.getObject("data");
 
-                    FastLogger.logStatic(LogLevel.TRACE, "%s: %s", type, data);
+                        FastLogger.logStatic(LogLevel.TRACE, "%s: %s", type, data);
 
-                    if (type.startsWith("_get:")) {
-                        String id = type.substring("_get:".length());
-                        String property = data.getString("property");
-                        String nonce = data.getString("nonce");
+                        if (type.startsWith("_get:")) {
+                            String id = type.substring("_get:".length());
+                            String property = data.getString("property");
+                            String nonce = data.getString("nonce");
 
-                        try {
-                            JsonElement result = this.processGet(id, property);
+                            try {
+                                JsonElement result = this.processGet(id, property);
 
-                            emit(
-                                "_get:" + nonce,
-                                new JsonObject()
-                                    .put("isError", false)
-                                    .put("result", result)
-                            );
-                        } catch (Throwable e) {
-                            String error = LogUtil.getExceptionStack(e);
+                                emit(
+                                    "_get:" + nonce,
+                                    new JsonObject()
+                                        .put("isError", false)
+                                        .put("result", result)
+                                );
+                            } catch (Throwable e) {
+                                String error = LogUtil.getExceptionStack(e);
 
-                            emit(
-                                "_get:" + nonce,
-                                new JsonObject()
-                                    .put("isError", true)
-                                    .put("result", error)
-                            );
+                                emit(
+                                    "_get:" + nonce,
+                                    new JsonObject()
+                                        .put("isError", true)
+                                        .put("result", error)
+                                );
+                            }
+                        } else if (type.startsWith("_set:")) {
+                            String id = type.substring("_set:".length());
+                            String property = data.getString("property");
+                            JsonElement value = data.get("value");
+
+                            try {
+                                this.processSet(id, property, value);
+                            } catch (Throwable e) {
+                                FastLogger.logException(e);
+                            }
+                        } else if (type.startsWith("_invoke:")) {
+                            String id = type.substring("_invoke:".length());
+                            String function = data.getString("function");
+                            JsonArray args = data.getArray("args");
+                            String nonce = data.getString("nonce");
+
+                            try {
+                                JsonElement result = this.processInvoke(id, function, args);
+
+                                emit(
+                                    "_invoke:" + nonce,
+                                    new JsonObject()
+                                        .put("isError", false)
+                                        .put("result", result)
+                                );
+                            } catch (Throwable e) {
+                                String error = LogUtil.getExceptionStack(e);
+
+                                emit(
+                                    "_invoke:" + nonce,
+                                    new JsonObject()
+                                        .put("isError", true)
+                                        .put("result", error)
+                                );
+                            }
+                        } else if (this.onEvent != null) {
+                            this.onEvent.accept(type, data);
                         }
-                    } else if (type.startsWith("_set:")) {
-                        String id = type.substring("_set:".length());
-                        String property = data.getString("property");
-                        JsonElement value = data.get("value");
-
-                        try {
-                            this.processSet(id, property, value);
-                        } catch (Throwable e) {
-                            FastLogger.logException(e);
-                        }
-                    } else if (type.startsWith("_invoke:")) {
-                        String id = type.substring("_invoke:".length());
-                        String function = data.getString("function");
-                        JsonArray args = data.getArray("args");
-                        String nonce = data.getString("nonce");
-
-                        try {
-                            JsonElement result = this.processInvoke(id, function, args);
-
-                            emit(
-                                "_invoke:" + nonce,
-                                new JsonObject()
-                                    .put("isError", false)
-                                    .put("result", result)
-                            );
-                        } catch (Throwable e) {
-                            String error = LogUtil.getExceptionStack(e);
-
-                            emit(
-                                "_invoke:" + nonce,
-                                new JsonObject()
-                                    .put("isError", true)
-                                    .put("result", error)
-                            );
-                        }
-                    } else if (this.onEvent != null) {
-                        this.onEvent.accept(type, data);
+                        break;
                     }
-                    break;
                 }
-            }
-        } catch (JsonParseException ignored) {}
+            } catch (JsonParseException ignored) {}
+        });
     }
 
 }

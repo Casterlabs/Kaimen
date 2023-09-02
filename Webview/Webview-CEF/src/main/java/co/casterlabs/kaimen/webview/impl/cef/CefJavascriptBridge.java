@@ -2,6 +2,8 @@ package co.casterlabs.kaimen.webview.impl.cef;
 
 import java.io.IOException;
 import java.net.URLDecoder;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.cef.CefClient;
 import org.cef.browser.CefBrowser;
@@ -29,6 +31,8 @@ public class CefJavascriptBridge extends WebviewBridge {
     private CefMessageRouter router;
     private CefFrame frame;
 
+    private ExecutorService threadPool = Executors.newCachedThreadPool();
+
     static {
         try {
             bridgeScript = WebviewFileUtil.loadResourceFromBuildProject("CEF_JavascriptBridge.js", "Webview-CEF");
@@ -43,38 +47,37 @@ public class CefJavascriptBridge extends WebviewBridge {
         this.router.addHandler(new CefMessageRouterHandlerAdapter() {
 
             @Override
-            public boolean onQuery(
-                CefBrowser browser, CefFrame frame, long queryId, String request, boolean persistent,
-                CefQueryCallback callback
-            ) {
-                try {
-                    // CEF has a weird internal way of handling strings, and unfortunately
-                    // the JNI wrapper mangles them. We've opted to just use URI encoding
-                    // to prevent manglage. decodeURIComponent implementation taken from here:
-                    // https://stackoverflow.com/a/6926987/11611152
-                    request = URLDecoder.decode(request.replace("+", "%2B"), "UTF-8")
-                        .replace("%2B", "+");
+            public boolean onQuery(CefBrowser browser, CefFrame frame, long queryId, String _request, boolean persistent, CefQueryCallback callback) {
+                threadPool.submit(() -> {
+                    try {
+                        // CEF has a weird internal way of handling strings, and unfortunately
+                        // the JNI wrapper mangles them. We've opted to just use URI encoding
+                        // to prevent manglage. decodeURIComponent implementation taken from here:
+                        // https://stackoverflow.com/a/6926987/11611152
+                        String request = URLDecoder.decode(_request.replace("+", "%2B"), "UTF-8")
+                            .replace("%2B", "+");
 
-                    JsonObject query = Rson.DEFAULT.fromJson(request, JsonObject.class);
+                        JsonObject query = Rson.DEFAULT.fromJson(request, JsonObject.class);
 
-                    switch (query.getString("type")) {
-                        case "emission": {
-                            if (!persistent) {
-                                handleEmission(query);
+                        switch (query.getString("type")) {
+                            case "emission": {
+                                if (!persistent) {
+                                    handleEmission(query);
+                                }
+                                break;
                             }
-                            break;
+
+                            default: {
+                                callback.failure(-2, "Invalid payload type.");
+                            }
                         }
 
-                        default: {
-                            callback.failure(-2, "Invalid payload type.");
-                        }
+                        callback.success("");
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        callback.failure(-2, "Invalid JSON payload.");
                     }
-
-                    callback.success("");
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    callback.failure(-2, "Invalid JSON payload.");
-                }
+                });
 
                 return true;
             }
