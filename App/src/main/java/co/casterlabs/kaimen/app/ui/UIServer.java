@@ -9,13 +9,13 @@ import java.util.function.Function;
 import org.jetbrains.annotations.Nullable;
 
 import co.casterlabs.kaimen.webview.Webview;
-import co.casterlabs.rakurai.io.http.server.HttpListener;
-import co.casterlabs.rakurai.io.http.server.HttpResponse;
-import co.casterlabs.rakurai.io.http.server.HttpServer;
-import co.casterlabs.rakurai.io.http.server.HttpSession;
-import co.casterlabs.rakurai.io.http.server.config.HttpServerBuilder;
-import co.casterlabs.rakurai.io.http.server.websocket.WebsocketListener;
-import co.casterlabs.rakurai.io.http.server.websocket.WebsocketSession;
+import co.casterlabs.rhs.server.HttpListener;
+import co.casterlabs.rhs.server.HttpResponse;
+import co.casterlabs.rhs.server.HttpServer;
+import co.casterlabs.rhs.server.HttpServerBuilder;
+import co.casterlabs.rhs.session.HttpSession;
+import co.casterlabs.rhs.session.WebsocketListener;
+import co.casterlabs.rhs.session.WebsocketSession;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -51,16 +51,15 @@ public class UIServer implements Closeable {
         this.address = String.format("http://%s:%d", baseDomain, this.port);
         this.localAddress = String.format("http://127.0.0.1:%d", this.port);
 
-        this.server = HttpServerBuilder
-            .getRakuraiBuilder()
+        this.server = new HttpServerBuilder()
             .setHostname("127.0.0.1")
             .setPort(this.port)
             .build(new HttpListener() {
                 @Override
-                public @Nullable HttpResponse serveSession(@NonNull String host, @NonNull HttpSession session, boolean secure) {
+                public @Nullable HttpResponse serveHttpSession(@NonNull HttpSession session) {
                     String userAgent = session.getHeader("User-Agent");
 
-                    if (host.contains(baseDomain) || userAgent.contains(webviewPassword) || ignorePassword) {
+                    if (session.getHost().contains(baseDomain) || userAgent.contains(webviewPassword) || ignorePassword) {
                         return handler.apply(session);
                     }
 
@@ -68,7 +67,7 @@ public class UIServer implements Closeable {
                 }
 
                 @Override
-                public @Nullable WebsocketListener serveWebsocketSession(@NonNull String host, @NonNull WebsocketSession session, boolean secure) {
+                public @Nullable WebsocketListener serveWebsocketSession(@NonNull WebsocketSession session) {
                     return null;
                 }
             });
