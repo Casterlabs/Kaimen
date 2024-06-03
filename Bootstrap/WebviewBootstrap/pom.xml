@@ -37,11 +37,11 @@
 	<properties>
 
 		<!-- CEF -->
-		<cef.version>110.0.25.1</cef.version>
-		<cef.natives.version>jcef-87476e9+cef-110.0.25+g75b1c96+chromium-110.0.5481.78</cef.natives.version>
+		<cef.version>122.1.10</cef.version>
+		<cef.natives.version>jcef-0b8e42e+cef-122.1.10+gc902316+chromium-122.0.6261.112</cef.natives.version>
 
 		<!-- WebKit -->
-		<swt.version>4.22</swt.version>
+		<swt.version>4.31</swt.version>
 
 	</properties>
 

@@ -30,16 +30,11 @@ public class UIServer implements Closeable {
     private @Getter int port;
     private @Getter String password;
 
-    private @Getter String address;
     private @Getter String localAddress;
-
-    // Still unable to set the webview password in WV. :(
-    private @Setter @Getter boolean ignorePassword = false;
 
     @SneakyThrows
     public UIServer() {
-        final String webviewPassword = Webview.getPassword();
-        final String baseDomain = String.format("%s.127-0-0-1.sslip.io", webviewPassword); // https://sslip.io/
+//        final String webviewPassword = Webview.getPassword(); // TODO.
 
         // Find a random port.
         try (ServerSocket serverSocket = new ServerSocket()) {
@@ -48,22 +43,21 @@ public class UIServer implements Closeable {
             this.port = serverSocket.getLocalPort();
         }
 
-        this.address = String.format("http://%s:%d", baseDomain, this.port);
         this.localAddress = String.format("http://127.0.0.1:%d", this.port);
 
         this.server = new HttpServerBuilder()
-            .setHostname("127.0.0.1")
-            .setPort(this.port)
+        		.withHostname("127.0.0.1")
+            .withPort(this.port)
             .build(new HttpListener() {
                 @Override
                 public @Nullable HttpResponse serveHttpSession(@NonNull HttpSession session) {
-                    String userAgent = session.getHeader("User-Agent");
+//                    String userAgent = session.getHeader("User-Agent");
 
-                    if (session.getHost().contains(baseDomain) || userAgent.contains(webviewPassword) || ignorePassword) {
+//                    if (session.getHost().contains(baseDomain) || userAgent.contains(webviewPassword) || ignorePassword) {
                         return handler.apply(session);
-                    }
+//                    }
 
-                    return null;
+//                    return null;
                 }
 
                 @Override

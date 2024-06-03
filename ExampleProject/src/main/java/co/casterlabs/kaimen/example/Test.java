@@ -41,7 +41,7 @@ public class Test {
         // UI Server
         @SuppressWarnings("resource")
         UIServer uiServer = new UIServer()
-            .setIgnorePassword(true)
+//            .setIgnorePassword(true)
             .setHandler((session) -> {
                 return HttpResponse.newFixedLengthResponse(
                     StandardHttpStatus.OK,
@@ -73,7 +73,7 @@ public class Test {
         WebviewFactory factory = WebviewFactory.getFactory(WebviewRenderer.WEBKIT, WebviewRenderer.WEBVIEW_DEV, WebviewRenderer.CHROMIUM_EMBEDDED_FRAMEWORK);
 
         // Log some stuff
-        FastLogger.logStatic("Running on: %s (%s)", Platform.osDistribution, Platform.arch);
+        FastLogger.logStatic("Running on: %s (%s)", Platform.osDistribution, Platform.archTarget);
         FastLogger.logStatic("Using: %s", factory.getRendererType());
         FastLogger.logStatic("System Appearance: %s", App.getSystemAppearance());
         FastLogger.logStatic("UI Server port (it's ephemeral): %d", uiServer.getPort());
