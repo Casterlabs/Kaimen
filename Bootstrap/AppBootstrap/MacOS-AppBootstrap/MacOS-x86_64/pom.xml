@@ -61,7 +61,7 @@
 		<dependency>
 			<groupId>org.eclipse.swt</groupId>
 			<artifactId>cocoa.macosx.x86_64</artifactId>
-			<version>4.31</version>
+			<version>4.22</version>
 			<scope>compile</scope>
 		</dependency>
 

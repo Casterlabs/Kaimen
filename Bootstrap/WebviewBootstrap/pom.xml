@@ -41,7 +41,7 @@
 		<cef.natives.version>jcef-0b8e42e+cef-122.1.10+gc902316+chromium-122.0.6261.112</cef.natives.version>
 
 		<!-- WebKit -->
-		<swt.version>4.31</swt.version>
+		<swt.version>4.22</swt.version>
 
 	</properties>
 
