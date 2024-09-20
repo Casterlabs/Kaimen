@@ -1,10 +1,10 @@
 package co.casterlabs.kaimen.projectbuilder;
 
+import java.net.URLDecoder;
 import java.util.Map;
 
 import co.casterlabs.commons.platform.ArchFamily;
 import co.casterlabs.commons.platform.OSDistribution;
-import co.casterlabs.rakurai.StringUtil;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -35,9 +35,10 @@ public enum JavaVersion {
         );
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public String toString() {
-        return StringUtil.prettifyHeader(this.name().toLowerCase()); // Hey, it works!
+        return URLDecoder.decode(this.name().toLowerCase());
     }
 
 }

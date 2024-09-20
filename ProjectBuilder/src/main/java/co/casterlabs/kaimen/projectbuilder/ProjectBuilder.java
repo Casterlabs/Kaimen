@@ -2,6 +2,7 @@ package co.casterlabs.kaimen.projectbuilder;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,11 +10,11 @@ import java.util.List;
 import com.badlogicgames.packr.Packr;
 import com.badlogicgames.packr.PackrConfig;
 
+import co.casterlabs.commons.io.streams.StreamUtil;
 import co.casterlabs.commons.platform.ArchFamily;
 import co.casterlabs.commons.platform.OSDistribution;
 import co.casterlabs.commons.platform.Platform;
 import co.casterlabs.kaimen.webview.WebviewRenderer;
-import co.casterlabs.rakurai.io.IOUtil;
 import lombok.ToString;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -205,7 +206,7 @@ public class ProjectBuilder implements Runnable {
         if (this.targetOS == OSDistribution.MACOS) {
             File infoPlist = new File(outputDir, "/Contents/Info.plist");
 
-            String addition = IOUtil.readString(ProjectBuilder.class.getResourceAsStream("/add_Info.plist"));
+            String addition = StreamUtil.toString(ProjectBuilder.class.getResourceAsStream("/add_Info.plist"), StandardCharsets.UTF_8);
             String contents = Files.readString(infoPlist.toPath());
 
             contents.replace("</dict>\n</plist>", addition);

@@ -7,9 +7,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 
+import co.casterlabs.commons.io.streams.StreamUtil;
 import co.casterlabs.commons.platform.OSDistribution;
 import co.casterlabs.kaimen.webview.WebviewRenderer;
-import co.casterlabs.rakurai.io.IOUtil;
 import xyz.e3ndr.fastloggingframework.logging.FastLogger;
 
 public class MavenUtil {
@@ -48,7 +48,7 @@ public class MavenUtil {
 
             try (InputStream in = new URL(url).openStream()) {
                 try (OutputStream out = new FileOutputStream(target)) {
-                    IOUtil.writeInputStreamToOutputStream(in, out);
+                    StreamUtil.streamTransfer(in, out, 2048);
                 }
             }
         }
