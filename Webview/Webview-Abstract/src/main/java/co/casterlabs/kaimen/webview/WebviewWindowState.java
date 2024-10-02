@@ -3,6 +3,8 @@ package co.casterlabs.kaimen.webview;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 
+import co.casterlabs.commons.platform.OSDistribution;
+import co.casterlabs.commons.platform.Platform;
 import co.casterlabs.kaimen.webview.bridge.JavascriptObject;
 import co.casterlabs.kaimen.webview.bridge.JavascriptValue;
 import co.casterlabs.rakurai.json.annotating.JsonClass;
@@ -24,9 +26,8 @@ public class WebviewWindowState extends JavascriptObject {
 
     @SneakyThrows
     public WebviewWindowState() {
-        // Setup Defaults.
-        // Needs to be done on the main thread.
-        Webview.mainThread.executeWithPromise(() -> {
+        // Setup Defaults. This hangs on macOS.
+        if (Platform.osDistribution != OSDistribution.MACOS) {
             GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
 
             int monitorWidth = gd.getDisplayMode().getWidth();
@@ -34,9 +35,7 @@ public class WebviewWindowState extends JavascriptObject {
 
             this.x = (monitorWidth - this.width) / 2;
             this.y = (monitorHeight - this.height) / 2;
-
-            return null;
-        }).await();
+        }
     }
 
     /* Override as needed */
